@@ -1,0 +1,144 @@
+.review-panel { background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); margin-top: 1.5rem; overflow: hidden; }
+
+.review-summary { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.review-summary-stat { background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-radius: 12px; border: 1px solid var(--glass-border); padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: var(--glass-shadow); min-width: 110px; }
+.review-summary-stat.pending .rs-num { color: var(--primary); }
+.review-summary-stat.approved .rs-num { color: var(--success); }
+.review-summary-stat.rejected .rs-num { color: var(--error); }
+.rs-num { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.rs-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+.review-panel-header { padding: 1.1rem 1.4rem; background: linear-gradient(135deg, #1E1B4B, #3730A3); display: flex; justify-content: space-between; align-items: center; }
+.review-panel-header h3 { color: white; font-size: 0.95rem; font-weight: 600; margin: 0; }
+.review-panel-meta { color: rgba(255,255,255,0.6); font-size: 0.78rem; }
+.review-back-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.35rem 0.8rem; border-radius: 7px; cursor: pointer; font-size: 0.78rem; font-weight: 600; font-family: inherit; }
+.review-back-btn:hover { background: rgba(255,255,255,0.25); }
+.review-panel-body { padding: 1.5rem; }
+.review-question { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 1.25rem; line-height: 1.6; }
+.review-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.4rem; }
+.review-option { display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 0.9rem; border-radius: 10px; border: 1.5px solid var(--border); }
+.review-option.correct { border-color: var(--success); background: var(--success-light); }
+.opt-key { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; background: var(--border); color: var(--text-muted); flex-shrink: 0; }
+.review-option.correct .opt-key { background: var(--success); color: white; }
+.opt-text { font-size: 0.88rem; color: var(--text); flex: 1; }
+.correct-tag { font-size: 0.7rem; font-weight: 700; color: var(--success); white-space: nowrap; }
+
+.review-actions-bar { display: flex; flex-direction: column; gap: 0.85rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.review-verdict { display: flex; gap: 0.75rem; }
+.verdict-btn { flex: 1; padding: 0.7rem; border-radius: 10px; border: 2px solid var(--border); background: white; cursor: pointer; font-size: 0.875rem; font-weight: 700; font-family: inherit; transition: all 0.2s; }
+.verdict-btn.approve { color: var(--success); border-color: var(--success); }
+.verdict-btn.approve.selected, .verdict-btn.approve:hover { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+.verdict-btn.reject { color: var(--error); border-color: var(--error); }
+.verdict-btn.reject.selected, .verdict-btn.reject:hover { background: var(--error); color: white; box-shadow: 0 4px 12px rgba(239,68,68,0.3); }
+.review-comment-label { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; display: block; }
+.review-comment textarea { width: 100%; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.875rem; font-family: inherit; color: var(--text); outline: none; resize: vertical; min-height: 70px; transition: border-color 0.2s; box-sizing: border-box; }
+.review-comment textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
+.review-submit-row { display: flex; gap: 0.6rem; justify-content: flex-end; }
+
+/* ─── MOBILE ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .review-summary { gap: 0.4rem; }
+  .review-layout { grid-template-columns: 1fr !important; }
+  .review-list-panel { max-height: 240px; }
+  .review-verdict { flex-direction: column; gap: 0.5rem; }
+  .verdict-btn { padding: 0.55rem; font-size: 0.82rem; }
+  .review-submit-row { flex-direction: column; }
+  .review-submit-row button { width: 100%; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK THEME OVERRIDE — AI Reviewer Workflow (Image 5 inspired)
+   ═══════════════════════════════════════════════════════════════ */
+
+body.dark-mode .page-container { background: transparent !important; }
+body.dark-mode .page-header h1 { color: #e2e8f0 !important; }
+body.dark-mode .page-header p  { color: #8b949e !important; }
+
+/* Summary stat pills */
+.review-summary-stat {
+  background: #161b22 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+.rs-label { color: #8b949e !important; }
+
+/* Tab filters */
+body.dark-mode .tab-bar,
+body.dark-mode .tab-filters {
+  background: #161b22 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+body.dark-mode .tab-btn { color: #94a3b8 !important; background: transparent !important; }
+body.dark-mode .tab-btn.active { color: #818cf8 !important; border-color: #6366f1 !important; }
+
+/* Review list items / cards */
+body.dark-mode .card,
+body.dark-mode .review-card,
+body.dark-mode .review-item {
+  background: #161b22 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+body.dark-mode .review-item:hover { background: rgba(255,255,255,0.03) !important; }
+
+/* Review detail panel */
+.review-panel {
+  background: #161b22 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important;
+}
+.review-panel-body { background: #161b22; }
+.review-question { color: #e2e8f0 !important; }
+
+/* Options */
+.review-option {
+  background: rgba(255,255,255,0.03) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+.review-option.correct {
+  background: rgba(16,185,129,0.08) !important;
+  border-color: rgba(16,185,129,0.3) !important;
+}
+.opt-key { background: rgba(255,255,255,0.08) !important; color: #94a3b8 !important; }
+.review-option.correct .opt-key { background: rgba(16,185,129,0.7) !important; color: white !important; }
+.opt-text { color: #e2e8f0 !important; }
+
+/* Actions bar */
+.review-actions-bar { border-top-color: rgba(255,255,255,0.07) !important; }
+.verdict-btn {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #94a3b8 !important;
+}
+.verdict-btn.approve { color: #34d399 !important; border-color: rgba(52,211,153,0.4) !important; }
+.verdict-btn.reject  { color: #f87171 !important; border-color: rgba(248,113,113,0.4) !important; }
+.verdict-btn.approve.selected, .verdict-btn.approve:hover {
+  background: rgba(16,185,129,0.15) !important; color: #34d399 !important;
+  box-shadow: 0 4px 12px rgba(16,185,129,0.2) !important;
+}
+.verdict-btn.reject.selected, .verdict-btn.reject:hover {
+  background: rgba(239,68,68,0.12) !important; color: #f87171 !important;
+  box-shadow: 0 4px 12px rgba(239,68,68,0.2) !important;
+}
+
+/* Comment textarea */
+.review-comment-label { color: #8b949e !important; }
+.review-comment textarea {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #e2e8f0 !important;
+}
+.review-comment textarea:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important;
+}
+
+/* Empty state */
+body.dark-mode .empty-state,
+body.dark-mode .empty { color: #8b949e !important; }
+
+/* Fix: empty-state white card override */
+body.dark-mode .empty-state {
+  background: #161b22 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  color: #8b949e !important;
+}
+body.dark-mode .empty-state h3 { color: #e2e8f0 !important; }

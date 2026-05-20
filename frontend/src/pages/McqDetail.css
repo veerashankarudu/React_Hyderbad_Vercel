@@ -1,0 +1,83 @@
+.mcqdetail-container { max-width: 860px; margin: 0 auto; padding: 1.5rem 2rem; }
+.detail-card { background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); overflow: hidden; }
+.detail-header { padding: 1.25rem 1.5rem; background: linear-gradient(135deg, #1E1B4B, #3730A3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+.detail-header-left h3 { color: white; font-size: 0.95rem; font-weight: 600; margin: 0 0 0.25rem; }
+.detail-header-meta { color: rgba(255,255,255,0.6); font-size: 0.78rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+.detail-header-actions { display: flex; gap: 0.5rem; }
+.detail-body { padding: 1.75rem; }
+.question-stem { font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 1.5rem; line-height: 1.6; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+.options-list { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.5rem; }
+.option-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; border-radius: 10px; border: 1.5px solid var(--border); transition: all 0.2s; }
+.option-row.correct { border-color: var(--success); background: var(--success-light); }
+.option-key { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.82rem; font-weight: 700; background: var(--border); color: var(--text-muted); flex-shrink: 0; }
+.option-row.correct .option-key { background: var(--success); color: white; }
+.option-text { font-size: 0.9rem; color: var(--text); flex: 1; }
+.correct-badge { font-size: 0.72rem; font-weight: 700; color: var(--success); background: rgba(16,185,129,0.1); padding: 0.2rem 0.6rem; border-radius: 20px; margin-left: auto; white-space: nowrap; }
+.detail-meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.meta-item { background: var(--surface, #FAFAFA); border-radius: 10px; padding: 0.75rem 1rem; }
+.meta-item label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.3rem; }
+.meta-item span { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+.comments-section h4 { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 0.75rem; margin-top: 1.5rem; }
+.comment-item { background: var(--primary-light); border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; border-left: 3px solid var(--primary); }
+.comment-author { font-size: 0.75rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 0.25rem; }
+.comment-text { font-size: 0.85rem; color: var(--text); }
+
+/* ── Dark mode ── */
+body.dark-mode .detail-header-meta { color: rgba(255,255,255,0.55); }
+body.dark-mode .option-row { border-color: rgba(99,102,241,0.22); background: rgba(99,102,241,0.07); }
+body.dark-mode .option-row:hover { filter: brightness(1.2); }
+body.dark-mode .option-text { color: #e2e8f0; }
+body.dark-mode .correct-badge { background: rgba(16,185,129,0.2); color: #34d399; }
+
+/* Per-option VIVID distinct colors — dark mode */
+body.dark-mode .options-list .option-row:nth-child(1) {
+  background: #0b3d27;
+  border: 2px solid #10b981;
+}
+body.dark-mode .options-list .option-row:nth-child(2) {
+  background: #0c1f45;
+  border: 2px solid #3b82f6;
+}
+body.dark-mode .options-list .option-row:nth-child(3) {
+  background: #3b2200;
+  border: 2px solid #f59e0b;
+}
+body.dark-mode .options-list .option-row:nth-child(4) {
+  background: #3d0d24;
+  border: 2px solid #ec4899;
+}
+body.dark-mode .options-list .option-row:nth-child(1) .option-key { background: #10b981; color: #fff; }
+body.dark-mode .options-list .option-row:nth-child(2) .option-key { background: #3b82f6; color: #fff; }
+body.dark-mode .options-list .option-row:nth-child(3) .option-key { background: #f59e0b; color: #1a1000; }
+body.dark-mode .options-list .option-row:nth-child(4) .option-key { background: #ec4899; color: #fff; }
+
+/* correct always overrides to solid green */
+body.dark-mode .option-row.correct { background: #0b3d27 !important; border: 2px solid #10b981 !important; }
+body.dark-mode .option-row.correct .option-key { background: #10b981 !important; color: #fff !important; }
+
+/* Per-option VIVID distinct colors — light mode */
+.options-list .option-row:nth-child(1) { background: #d1fae5; border: 2px solid #10b981; }
+.options-list .option-row:nth-child(2) { background: #dbeafe; border: 2px solid #3b82f6; }
+.options-list .option-row:nth-child(3) { background: #fef3c7; border: 2px solid #f59e0b; }
+.options-list .option-row:nth-child(4) { background: #fce7f3; border: 2px solid #ec4899; }
+.options-list .option-row:nth-child(1) .option-key { background: #10b981; color: #fff; }
+.options-list .option-row:nth-child(2) .option-key { background: #3b82f6; color: #fff; }
+.options-list .option-row:nth-child(3) .option-key { background: #f59e0b; color: #fff; }
+.options-list .option-row:nth-child(4) .option-key { background: #ec4899; color: #fff; }
+.option-row.correct { background: #d1fae5 !important; border: 2px solid #10b981 !important; }
+.option-row.correct .option-key { background: #10b981 !important; color: white !important; }
+body.dark-mode .meta-item label { color: #6b7280; }
+body.dark-mode .meta-item span { color: #e2e8f0; }
+body.dark-mode .detail-meta-grid { border-top-color: rgba(255,255,255,0.07); }
+body.dark-mode .comment-item { background: rgba(124,58,237,0.1); border-left-color: #7c3aed; }
+body.dark-mode .comment-author { color: #a78bfa; }
+body.dark-mode .comment-text { color: #cbd5e1; }
+
+/* ─── MOBILE ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .detail-meta-grid { grid-template-columns: repeat(2, 1fr); }
+  .detail-header { flex-direction: column; gap: 0.75rem; }
+  .detail-header-actions { flex-wrap: wrap; }
+  .detail-body { padding: 1rem; }
+  .question-stem { font-size: 0.95rem; }
+}

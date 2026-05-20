@@ -1,0 +1,181 @@
+.qb-stats-bar { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+
+.qb-table { table-layout: fixed; width: 100%; }
+.qb-table td, .qb-table th { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qb-table td:last-child { text-align: center; padding-left: 0.25rem; padding-right: 0.25rem; }
+
+/* invisible overlay to close dropdown on click-outside */
+.qb-overlay { position: fixed; inset: 0; z-index: 9998; }
+
+/* ⋮ action menu button */
+.qb-menu-btn {
+  background: none; border: 1.5px solid var(--border); color: var(--text-muted);
+  width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.15s; font-family: inherit; line-height: 1;
+}
+.qb-menu-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+/* dropdown panel */
+.qb-dropdown {
+  position: absolute; right: 0; top: 100%; z-index: 200;
+  background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border: 1px solid var(--glass-border); border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 150px; overflow: hidden;
+}
+.qb-dropdown button {
+  display: flex; align-items: center; gap: 0.5rem; width: 100%;
+  padding: 0.55rem 0.9rem; border: none; background: var(--surface, white);
+  font-size: 0.83rem; color: var(--text); cursor: pointer; font-family: inherit;
+  text-align: left; transition: background 0.12s;
+}
+.qb-dropdown button:hover { background: #F5F3FF; color: var(--primary); }
+.qb-dropdown-delete { border-top: 1px solid var(--border) !important; }
+.qb-dropdown-delete:hover { background: #FEF2F2 !important; color: var(--error) !important; }
+.qb-stat-pill { background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: var(--glass-shadow); }
+.qb-stat-num { font-size: 1.1rem; font-weight: 800; }
+.qb-stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+
+.btn-outline { background: white; color: var(--primary); border: 1.5px solid var(--primary); padding: 0.45rem 0.9rem; border-radius: 7px; cursor: pointer; font-size: 0.8rem; font-weight: 600; font-family: inherit; transition: all 0.2s; }
+.btn-outline:hover { background: var(--primary-light); }
+.btn-sm { padding: 0.35rem 0.7rem; font-size: 0.76rem; border-radius: 6px; }
+.btn-amber { background: var(--warning); color: white; border: none; padding: 0.35rem 0.7rem; border-radius: 6px; cursor: pointer; font-size: 0.76rem; font-weight: 600; font-family: inherit; transition: all 0.2s; }
+.btn-amber:hover { background: #D97706; }
+
+.pagination { display: flex; align-items: center; gap: 0.4rem; margin-top: 1.25rem; justify-content: center; flex-wrap: wrap; }
+.pagination button { background: white; border: 1px solid var(--border); color: var(--text); padding: 0.4rem 0.7rem; border-radius: 7px; cursor: pointer; font-size: 0.82rem; font-family: inherit; transition: all 0.15s; }
+.pagination button:hover { border-color: var(--primary); color: var(--primary); }
+.pagination button.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
+.pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── MOBILE ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .qb-stats-bar { gap: 0.5rem; }
+  .qb-stat-pill { padding: 0.45rem 0.75rem; }
+  .qb-stat-num { font-size: 0.95rem; }
+
+  /* Horizontal scroll — all columns visible by swiping */
+  .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Compact table — natural min-width forces scroll */
+  .qb-table { font-size: 0.72rem; table-layout: auto; width: auto; min-width: 600px; }
+  .qb-table th, .qb-table td { padding: 0.45rem 0.5rem; white-space: nowrap; }
+
+  /* Question column: clamp width & truncate with ellipsis */
+  .qb-table td:nth-child(2),
+  .qb-table th:nth-child(2) { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK THEME OVERRIDE — MCQ Question Bank (Image 4 inspired)
+   ═══════════════════════════════════════════════════════════════ */
+
+body:has(.page-container .qb-stats-bar) .page-container { background: transparent !important; }
+body:has(.page-container .qb-stats-bar) .page-header h1 { color: #e2e8f0 !important; }
+body:has(.page-container .qb-stats-bar) .page-header p  { color: #8b949e !important; }
+
+/* Stat pills */
+.qb-stat-pill {
+  background: #161b22 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+.qb-stat-label { color: #8b949e !important; }
+
+/* Filter bar / search area */
+body:has(.qb-stats-bar) .filters-row input,
+body:has(.qb-stats-bar) .filter-bar input,
+body:has(.qb-stats-bar) input[type=search],
+body:has(.qb-stats-bar) input[type=text],
+body:has(.qb-stats-bar) select {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #e2e8f0 !important;
+}
+body:has(.qb-stats-bar) select option { background: #1e293b; color: #e2e8f0; }
+
+/* Table */
+body:has(.qb-stats-bar) .card,
+body:has(.qb-stats-bar) .table-card {
+  background: #161b22 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+.qb-table th {
+  background: #0d1117 !important;
+  color: #8b949e !important;
+  border-bottom-color: rgba(255,255,255,0.08) !important;
+}
+.qb-table td {
+  color: #e2e8f0 !important;
+  border-bottom-color: rgba(255,255,255,0.05) !important;
+}
+.qb-table tr:hover td { background: rgba(255,255,255,0.03) !important; }
+
+/* Action menu */
+.qb-menu-btn {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #cbd5e1 !important;
+}
+.qb-menu-btn:hover { border-color: #6366f1 !important; color: #818cf8 !important; }
+.qb-dropdown {
+  background: #1e293b !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+}
+.qb-dropdown button { background: #1e293b !important; color: #e2e8f0 !important; }
+.qb-dropdown button:hover { background: rgba(99,102,241,0.12) !important; color: #818cf8 !important; }
+.qb-dropdown-delete:hover { background: rgba(239,68,68,0.1) !important; color: #f87171 !important; }
+
+/* Outline buttons */
+.btn-outline {
+  background: rgba(255,255,255,0.04) !important;
+  color: #818cf8 !important;
+  border-color: rgba(99,102,241,0.4) !important;
+}
+.btn-outline:hover { background: rgba(99,102,241,0.12) !important; }
+
+/* Pagination */
+.pagination button {
+  background: #161b22 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  color: #94a3b8 !important;
+}
+.pagination button:hover { border-color: #6366f1 !important; color: #818cf8 !important; }
+.pagination button.active { background: #6366f1 !important; border-color: #6366f1 !important; color: white !important; }
+
+/* Status badges inside table */
+body:has(.qb-stats-bar) .status-badge,
+body:has(.qb-stats-bar) .badge {
+  font-weight: 700;
+}
+
+/* ═══ PATCH: Fix table to match UserManagement dark style ═══ */
+
+/* Table wrapper card */
+body:has(.qb-stats-bar) .table-wrapper {
+  background: #161b22 !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* Restore indigo gradient header (was overridden to #0d1117) */
+body:has(.qb-stats-bar) .qb-table th,
+body:has(.qb-stats-bar) .data-table.qb-table th {
+  background: linear-gradient(135deg, #1E1B4B, #3730A3) !important;
+  color: rgba(255,255,255,0.9) !important;
+  border-bottom: none !important;
+}
+
+/* Dark table body rows */
+body:has(.qb-stats-bar) .data-table {
+  background: #161b22 !important;
+}
+body:has(.qb-stats-bar) .data-table td {
+  background: #161b22 !important;
+  color: #e2e8f0 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+}
+body:has(.qb-stats-bar) .data-table tr:hover td {
+  background: rgba(99,102,241,0.06) !important;
+}

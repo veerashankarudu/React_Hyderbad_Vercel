@@ -1,0 +1,180 @@
+/* UserManagement overlay / modals */
+.um-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.um-modal {
+  background: var(--surface, #fff);
+  border-radius: 14px;
+  padding: 2rem;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.um-modal-lg {
+  max-width: 580px;
+}
+
+.um-modal-msg {
+  font-size: 1rem;
+  color: var(--text, #1F2937);
+  margin-bottom: 1.5rem;
+  line-height: 1.55;
+}
+
+.um-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.btn-danger {
+  background: #EF4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+.btn-danger:hover { background: #DC2626; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-muted, #6B7280);
+  border: 1.5px solid #D1D5DB;
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: border-color 0.15s;
+}
+.btn-secondary:hover { border-color: #9CA3AF; }
+
+/* Add user form */
+.um-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* ── UserManagement mobile ── */
+@media (max-width: 900px) {
+  .um-form-grid { grid-template-columns: 1fr; }
+  .um-modal { padding: 1.25rem; }
+  .um-modal-actions { flex-direction: column-reverse; }
+  .um-modal-actions button { width: 100%; }
+}
+
+/* Tech stack chip picker */
+.um-stack-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.um-chip {
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  border: 1.5px solid #D1D5DB;
+  background: transparent;
+  color: var(--text-muted, #6B7280);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+
+.um-chip:hover {
+  border-color: var(--primary, #7C3AED);
+  color: var(--primary, #7C3AED);
+}
+
+.um-chip.selected {
+  background: var(--primary, #7C3AED);
+  border-color: var(--primary, #7C3AED);
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .um-table th:nth-child(3),
+  .um-table td:nth-child(3),
+  .um-table th:nth-child(4),
+  .um-table td:nth-child(4) { display: none; }
+  .um-table { font-size: 0.78rem; }
+  .um-table th, .um-table td { padding: 0.55rem 0.5rem; }
+  .um-filters { flex-direction: column; gap: 0.5rem; }
+  .um-filters input, .um-filters select { width: 100%; }
+  .um-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
+
+/* ── Tech Stack Coverage card ── */
+.um-coverage-card {
+  margin-top: 1.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--glass-shadow);
+}
+.um-coverage-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.um-coverage-title {
+  font-size: 0.9rem; font-weight: 700; color: var(--text);
+}
+.um-coverage-sub {
+  font-size: 0.72rem; color: var(--text-muted);
+}
+.um-coverage-grid { display: flex; flex-direction: column; gap: 0.7rem; }
+.um-coverage-row { display: flex; align-items: center; gap: 0.75rem; }
+.um-coverage-label {
+  display: flex; align-items: center; justify-content: space-between;
+  min-width: 150px; gap: 0.5rem;
+}
+.um-coverage-stack { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+.um-coverage-count {
+  font-size: 0.72rem; font-weight: 700; color: var(--primary);
+  background: rgba(124,58,237,0.1); border-radius: 20px; padding: 1px 7px;
+}
+.um-coverage-track {
+  flex: 1; height: 8px; background: rgba(0,0,0,0.07);
+  border-radius: 99px; overflow: hidden;
+}
+.um-coverage-fill {
+  height: 100%; border-radius: 99px;
+  transition: width 0.8s cubic-bezier(.4,0,.2,1);
+}
+.um-coverage-avatars { display: flex; align-items: center; gap: -4px; }
+.um-coverage-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  color: white; font-size: 0.58rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--bg, white); margin-left: -6px;
+  flex-shrink: 0;
+}
+.um-coverage-avatar:first-child { margin-left: 0; }
+.um-coverage-more {
+  font-size: 0.68rem; color: var(--text-muted); font-weight: 600; margin-left: 4px;
+}
+
+/* ── Dark mode ── */
+body.dark-mode .um-coverage-track { background: rgba(255,255,255,0.08); }
+body.dark-mode .um-chip { border-color: rgba(255,255,255,0.15); }
+body.dark-mode .um-chip:hover { border-color: var(--primary); color: var(--primary); }
+body.dark-mode .um-modal { box-shadow: 0 20px 60px rgba(0,0,0,0.55); }
+body.dark-mode .btn-secondary { border-color: rgba(255,255,255,0.15); }

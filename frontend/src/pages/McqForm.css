@@ -1,0 +1,307 @@
+.mcqform-container { max-width: 900px; margin: 0 auto; padding: 1.5rem 2rem; }
+.form-card { background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); overflow: hidden; margin-bottom: 1rem; }
+.form-card-header { padding: 1rem 1.5rem; background: linear-gradient(135deg, #1E1B4B, #3730A3); }
+.form-card-header h3 { color: white; font-size: 0.92rem; font-weight: 600; margin: 0; }
+.form-card-body { padding: 1.4rem 1.5rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-group label { font-size: 0.75rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em; }
+.form-group select, .form-group textarea, .form-group input[type=text] { padding: 0.65rem 0.9rem; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.875rem; font-family: inherit; color: var(--text); background: #FAFAFA; outline: none; transition: border-color 0.2s; width: 100%; }
+.form-group select:focus, .form-group textarea:focus, .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,0.08); background: white; }
+.form-group select:disabled { opacity: 0.5; cursor: not-allowed; background: #F3F4F6; }
+.form-group textarea { resize: vertical; min-height: 90px; }
+
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 1rem; }
+.option-input-wrap { display: flex; align-items: center; gap: 0.5rem; }
+.option-letter { font-weight: 800; color: var(--primary); font-size: 0.9rem; min-width: 18px; }
+
+.radio-options { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.4rem; }
+.radio-label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; background: #FAFAFA; border: 1.5px solid var(--border); padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+.radio-label input { accent-color: var(--primary); }
+
+.ai-check-wrap { display: flex; align-items: flex-start; gap: 0.6rem; }
+.ai-check-wrap textarea { flex: 1; }
+.ai-btn { padding: 0.55rem 0.9rem; background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.78rem; font-weight: 600; white-space: nowrap; font-family: inherit; transition: all 0.2s; align-self: flex-end; }
+.ai-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(245,158,11,0.4); }
+.ai-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── DUPLICATE MATCH LIST ──────────────────────── */
+.duplicate-match-box { padding: 0.75rem 0.9rem !important; }
+.duplicate-match-box.blocked { background: #fef2f2 !important; border-color: rgba(220,38,38,0.3) !important; color: #7f1d1d !important; }
+.duplicate-match-list { list-style: none; margin: 0.3rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.duplicate-match-item { display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.82rem; }
+.dup-badge { padding: 0.1rem 0.45rem; border-radius: 12px; color: #fff; font-weight: 700; font-size: 0.75rem; white-space: nowrap; flex-shrink: 0; }
+.dup-id { font-weight: 600; color: #374151; white-space: nowrap; flex-shrink: 0; }
+.dup-stem { color: #4b5563; }
+
+.form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid var(--border); margin-top: 0.5rem; align-items: center; }
+.send-review-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer; color: var(--text-muted); margin-right: auto; }
+.send-review-check input { accent-color: var(--primary); width: 16px; height: 16px; }
+
+/* ─── AI ACTION BUTTONS SECTION ──────────────────────── */
+.validate-section {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+.distractor-btn,
+.validate-btn,
+.explain-btn {
+  padding: 0.45rem 0.9rem;
+  background: linear-gradient(135deg, #7C3AED, #5B21B6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.distractor-btn:hover:not(:disabled),
+.validate-btn:hover:not(:disabled),
+.explain-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(124,58,237,0.4); transform: translateY(-1px); }
+.distractor-btn:disabled,
+.validate-btn:disabled,
+.explain-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.validate-hint {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.distractor-success { font-size: 0.78rem; color: #059669; font-weight: 600; }
+.distractor-error { font-size: 0.78rem; color: var(--error, #DC2626); font-weight: 600; }
+
+/* ─── AI SHORTCUT BUTTON (top of form) ───────────────── */
+.ai-gen-shortcut-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.48rem 0.9rem;
+  background: linear-gradient(135deg, #1E1B4B, #4C1D95);
+  color: rgba(255,255,255,0.9);
+  border: 1px solid rgba(124,58,237,0.4);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.ai-gen-shortcut-btn:hover { background: linear-gradient(135deg, #2D1F5E, #5B21B6); box-shadow: 0 4px 12px rgba(124,58,237,0.3); }
+
+/* ─── ANSWER VALIDATION RESULT ───────────────────────── */
+.confidence-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.7rem 0.9rem;
+  background: #F9FAFB;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-top: 0.5rem;
+}
+.conf-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.05rem; }
+.conf-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+.conf-verdict { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+.conf-score-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: white;
+  margin-left: 0.5rem;
+}
+.conf-bar-wrap {
+  height: 6px;
+  background: #E5E7EB;
+  border-radius: 3px;
+  margin: 0.4rem 0;
+  overflow: hidden;
+}
+.conf-bar { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+.conf-explanation { font-size: 0.82rem; color: var(--text-muted); margin: 0.3rem 0 0; line-height: 1.5; }
+.conf-ambiguity { font-size: 0.78rem; color: #D97706; margin: 0.3rem 0 0; font-style: italic; }
+
+/* ─── REJECTION BANNER ───────────────────────────────── */
+.rejection-banner {
+  background: #FEF2F2;
+  border: 1.5px solid rgba(239,68,68,0.25);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.rejection-banner-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #DC2626;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.6rem;
+}
+.rejection-comment {
+  border-top: 1px solid rgba(239,68,68,0.15);
+  padding-top: 0.55rem;
+  margin-top: 0.35rem;
+}
+.rejection-comment:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+.rejection-who { font-size: 0.75rem; color: #9CA3AF; display: block; margin-bottom: 0.2rem; }
+.rejection-text { margin: 0; font-size: 0.85rem; color: #374151; line-height: 1.5; }
+
+/* ─── EXPLANATION CARD ───────────────────────────────── */
+.explanation-card {
+  background: #F5F3FF;
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-top: 0.5rem;
+}
+.exp-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(124,58,237,0.1);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.exp-row:last-child { border-bottom: none; }
+.exp-correct { color: #065f46; }
+.exp-label { font-weight: 700; flex-shrink: 0; min-width: 160px; }
+.exp-text { color: var(--text); }
+.exp-unavailable { color: var(--text-muted); font-style: italic; font-size: 0.82rem; margin: 0; }
+
+/* ─── MOBILE ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .mcqform-container { padding: 0.75rem 0.5rem; }
+  .form-row, .form-row-3 { grid-template-columns: 1fr; }
+  .options-grid { grid-template-columns: 1fr; }
+  .form-card-body { padding: 1rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK THEME OVERRIDE — AI-QuizzBot inspired (Image 10)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Scope dark theme to mcqform-container */
+.mcqform-container {
+  background: transparent;
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+/* Form cards */
+.form-card {
+  background: #161b22 !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3) !important;
+}
+.form-card-header {
+  background: linear-gradient(135deg, #0d0b2e 0%, #1e1060 50%, #2d1b69 100%) !important;
+  border-bottom: 1px solid rgba(99,102,241,0.2) !important;
+}
+.form-card-header h3 { color: #e2e8f0 !important; }
+.form-card-body { background: #161b22; }
+
+/* Inputs & selects */
+.form-group label { color: #94a3b8 !important; }
+.form-group select,
+.form-group textarea,
+.form-group input[type=text] {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #e2e8f0 !important;
+}
+.form-group select:focus,
+.form-group textarea:focus,
+.form-group input:focus {
+  border-color: #6366f1 !important;
+  background: rgba(99,102,241,0.08) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important;
+}
+.form-group select:disabled {
+  background: rgba(255,255,255,0.03) !important;
+  color: #475569 !important;
+}
+.form-group select option { background: #1e293b; color: #e2e8f0; }
+.form-group textarea { min-height: 100px; }
+
+/* Option letter */
+.option-letter { color: #818cf8 !important; }
+
+/* Radio options */
+.radio-label {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #cbd5e1 !important;
+}
+.radio-label:hover { border-color: rgba(99,102,241,0.4) !important; }
+.radio-label input { accent-color: #6366f1; }
+
+/* Duplicate / warning boxes */
+.duplicate-match-box {
+  background: rgba(245,158,11,0.08) !important;
+  border-color: rgba(245,158,11,0.25) !important;
+  color: #fbbf24 !important;
+}
+.duplicate-match-box.blocked {
+  background: rgba(239,68,68,0.08) !important;
+  border-color: rgba(239,68,68,0.25) !important;
+  color: #f87171 !important;
+}
+.dup-id { color: #e2e8f0 !important; }
+.dup-stem { color: #94a3b8 !important; }
+
+/* Form actions */
+.form-actions { border-top-color: rgba(255,255,255,0.07) !important; }
+.send-review-check { color: #8b949e !important; }
+
+/* AI Action buttons */
+.ai-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+.distractor-btn,
+.validate-btn,
+.explain-btn {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+}
+.validate-hint { color: #8b949e !important; }
+.distractor-success { color: #34d399 !important; }
+.distractor-error { color: #f87171 !important; }
+
+/* Validate/explain result boxes */
+.validate-result,
+.explain-result {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  color: #e2e8f0 !important;
+}
+.quality-result,
+.quality-badge {
+  background: rgba(99,102,241,0.1) !important;
+  border-color: rgba(99,102,241,0.2) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Review comment section inside McqForm */
+.review-comment-box,
+.comment-bubble {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  color: #cbd5e1 !important;
+}
+
+/* Alert banners */
+.alert-info { background: rgba(59,130,246,0.1) !important; border-color: rgba(59,130,246,0.2) !important; color: #93c5fd !important; }
+.alert-success { background: rgba(16,185,129,0.1) !important; border-color: rgba(16,185,129,0.2) !important; color: #6ee7b7 !important; }
+.alert-error { background: rgba(239,68,68,0.1) !important; border-color: rgba(239,68,68,0.2) !important; color: #fca5a5 !important; }
+.alert-warning { background: rgba(245,158,11,0.1) !important; border-color: rgba(245,158,11,0.2) !important; color: #fde68a !important; }

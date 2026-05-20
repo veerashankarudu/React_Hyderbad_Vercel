@@ -1,0 +1,50 @@
+/* ── Dark theme for Reviewer Metrics ── */
+body.dark-mode .page-container { background: transparent !important; color: #e2e8f0 !important; }
+body.dark-mode .page-header h2 { color: #e2e8f0 !important; }
+body.dark-mode .detail-card {
+  background: #161b22 !important;
+  border: 1px solid #30363d !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .detail-card > div:first-child {
+  background: #1c2128 !important;
+  border-bottom-color: #30363d !important;
+  color: #c9d1d9 !important;
+}
+body.dark-mode table thead tr {
+  background: linear-gradient(135deg, #1E1B4B, #3730A3) !important;
+}
+body.dark-mode table th {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  border-bottom: none !important;
+}
+body.dark-mode table td {
+  color: #c9d1d9 !important;
+  border-top-color: #30363d !important;
+  background: transparent !important;
+}
+body.dark-mode table tbody tr:nth-child(odd) td { background: #161b22 !important; }
+body.dark-mode table tbody tr:nth-child(even) td { background: #1c2128 !important; }
+body.dark-mode .loading { color: #8b949e !important; }
+body.dark-mode .error-msg { background: #2d1a1a !important; color: #f87171 !important; }
+
+/* SLA breach table - red tint preserved */
+body.dark-mode table thead tr.sla-head {
+  background: linear-gradient(135deg, #3b0a0a, #7f1d1d) !important;
+}
+
+/* Pagination */
+.rm-page .pagination {
+  display: flex; align-items: center; gap: 0.4rem;
+  margin-top: 1.25rem; justify-content: center; flex-wrap: wrap;
+}
+.rm-page .pagination button {
+  background: #161b22; border: 1px solid #30363d; color: #e2e8f0;
+  padding: 0.4rem 0.75rem; border-radius: 7px; cursor: pointer;
+  font-size: 0.82rem; font-family: inherit; transition: all 0.15s;
+}
+.rm-page .pagination button:hover { border-color: #6366f1; color: #818cf8; }
+.rm-page .pagination button.active { background: #6366f1; color: white; border-color: #6366f1; font-weight: 600; }
+.rm-page .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+.rm-page .pagination span { font-size: 0.85rem; color: #8b949e; }

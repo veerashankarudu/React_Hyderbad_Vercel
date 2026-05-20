@@ -1,0 +1,46 @@
+.qsr-root {
+  font-size: inherit;
+  line-height: 1.65;
+  color: inherit;
+}
+
+.qsr-text {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Code block container ── */
+.qsr-code-block {
+  position: relative;
+  margin: 0.75rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+/* highlight.js atom-one-dark sets the background on pre/code — just round corners */
+.qsr-code-block pre {
+  margin: 0;
+  border-radius: 0 0 8px 8px;
+}
+
+.qsr-code-block pre code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  display: block;
+  border-radius: 0;
+}
+
+.qsr-lang-badge {
+  display: block;
+  background: #282c34;
+  color: #a78bfa;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.25rem 0.85rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}

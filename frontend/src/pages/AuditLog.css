@@ -1,0 +1,66 @@
+/* ── Dark theme for Audit Log ── */
+body.dark-mode .page-container { background: transparent !important; color: #e2e8f0 !important; }
+body.dark-mode .page-header h2 { color: #e2e8f0 !important; }
+body.dark-mode .detail-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .btn-secondary {
+  background: #1c2128 !important;
+  border: 1px solid #30363d !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .btn-secondary:hover { border-color: #6366f1 !important; color: #818cf8 !important; }
+body.dark-mode input[type="text"] {
+  background: #1c2128 !important;
+  border-color: #30363d !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode input[type="text"]::placeholder { color: #6e7681 !important; }
+body.dark-mode select {
+  background: #1c2128 !important;
+  border-color: #30363d !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .loading { color: #8b949e !important; }
+body.dark-mode .error-msg { background: #2d1a1a !important; color: #f87171 !important; }
+
+/* Table */
+body.dark-mode table thead tr {
+  background: linear-gradient(135deg, #1E1B4B, #3730A3) !important;
+}
+body.dark-mode table th {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  border-bottom: none !important;
+}
+body.dark-mode table td {
+  color: #c9d1d9 !important;
+  border-top-color: #30363d !important;
+  background: transparent !important;
+}
+body.dark-mode table tbody tr:nth-child(odd) td { background: #161b22 !important; }
+body.dark-mode table tbody tr:nth-child(even) td { background: #1c2128 !important; }
+/* Keep action badge colours vivid on dark */
+body.dark-mode table td span[style] { filter: brightness(1.2); }
+
+/* Entry count text */
+body.dark-mode span[style*="color: var(--text-muted)"] { color: #6e7681 !important; }
+
+/* Pagination */
+.al-page .pagination {
+  display: flex; align-items: center; gap: 0.4rem;
+  margin-top: 1.25rem; justify-content: center; flex-wrap: wrap;
+}
+.al-page .pagination button {
+  background: #161b22; border: 1px solid #30363d; color: #e2e8f0;
+  padding: 0.4rem 0.75rem; border-radius: 7px; cursor: pointer;
+  font-size: 0.82rem; font-family: inherit; transition: all 0.15s;
+}
+.al-page .pagination button:hover { border-color: #6366f1; color: #818cf8; }
+.al-page .pagination button.active { background: #6366f1; color: white; border-color: #6366f1; font-weight: 600; }
+.al-page .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+.al-page .pagination span { font-size: 0.85rem; color: #8b949e; }

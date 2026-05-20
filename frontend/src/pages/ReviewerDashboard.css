@@ -1,0 +1,215 @@
+.rd-kpi-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.rd-kpi-card {
+  flex: 1;
+  min-width: 120px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  text-align: center;
+}
+
+.rd-kpi-num {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rd-kpi-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
+.rd-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.rd-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.85rem;
+}
+
+.rd-rate-bar-bg {
+  height: 14px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.rd-rate-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+.rd-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 700px) {
+  .rd-two-col { grid-template-columns: 1fr; }
+}
+
+.rd-stack-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.rd-stack-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.rd-stack-name {
+  width: 110px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rd-stack-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.rd-stack-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+.rd-stack-count {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  width: 28px;
+  text-align: right;
+}
+
+.rd-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rd-recent-item {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.rd-recent-item:hover {
+  border-color: var(--primary);
+}
+
+.rd-recent-stem {
+  font-size: 0.83rem;
+  color: var(--text-primary);
+  margin-bottom: 0.35rem;
+}
+
+.rd-recent-meta {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.status-pill {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  background: #E5E7EB;
+  color: #374151;
+}
+
+.status-pill.approved { background: #D1FAE5; color: #065F46; }
+.status-pill.rejected { background: #FEE2E2; color: #991B1B; }
+.status-pill.under_review { background: #EDE9FE; color: #5B21B6; }
+
+@media (max-width: 768px) {
+  .rd-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .rd-two-col { grid-template-columns: 1fr; }
+  .rd-card { padding: 1rem; }
+  .rd-stat-num { font-size: 1.4rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK THEME OVERRIDE — Reviewer Dashboard (Image 3+5 inspired)
+   ═══════════════════════════════════════════════════════════════ */
+
+body:has(.rd-kpi-row) .page-container { background: transparent !important; }
+body:has(.rd-kpi-row) .page-header h1 { color: #e2e8f0 !important; }
+body:has(.rd-kpi-row) .page-header p  { color: #8b949e !important; }
+
+/* KPI cards */
+.rd-kpi-card {
+  background: #161b22 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35) !important;
+}
+.rd-kpi-num  { color: #e2e8f0 !important; }
+.rd-kpi-label { color: #8b949e !important; }
+
+/* Section cards */
+.rd-section {
+  background: #161b22 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35) !important;
+}
+.rd-section-title { color: #e2e8f0 !important; }
+
+/* Rate bar */
+.rd-rate-bar-bg { background: rgba(255,255,255,0.07) !important; }
+
+/* Stack list */
+.rd-stack-item { border-bottom-color: rgba(255,255,255,0.06) !important; }
+.rd-stack-name { color: #cbd5e1 !important; }
+.rd-stack-bar-bg { background: rgba(255,255,255,0.07) !important; }
+.rd-stack-count { color: #8b949e !important; }
+
+/* Recent list */
+.rd-recent-item {
+  background: rgba(255,255,255,0.02) !important;
+  border-color: rgba(255,255,255,0.06) !important;
+}
+.rd-recent-item:hover { background: rgba(255,255,255,0.05) !important; }
+.rd-recent-stem { color: #e2e8f0 !important; }
+.rd-recent-meta { color: #8b949e !important; }
+
+/* Status pills — dark-friendly versions */
+.status-pill { font-weight: 700 !important; }
+.status-pill.approved   { background: rgba(16,185,129,0.15) !important; color: #34d399 !important; }
+.status-pill.rejected   { background: rgba(239,68,68,0.12)  !important; color: #f87171 !important; }
+.status-pill.under_review { background: rgba(99,102,241,0.15) !important; color: #818cf8 !important; }
+.status-pill.draft      { background: rgba(107,114,128,0.15) !important; color: #9ca3af !important; }
