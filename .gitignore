@@ -1,0 +1,32 @@
+# Node
+frontend/node_modules/
+frontend/build/
+
+# Maven
+backend/target/
+
+# Screenshots (large files)
+test-screenshots/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Playwright logs
+.playwright-mcp/
+
+# Word docs / Excel (large generated files)
+*.docx
+*.xlsx
+
+# OS
+.DS_Store
+
+# Env / secrets
+*.env
+.env*
+
+# IDE
+.idea/
+*.iml
+.vscode/

@@ -1,0 +1,86 @@
+package com.accenture.quizhub.controller;
+
+import com.accenture.quizhub.dto.request.ChangePasswordRequest;
+import com.accenture.quizhub.dto.request.LoginRequest;
+import com.accenture.quizhub.dto.request.RegisterRequest;
+import com.accenture.quizhub.dto.response.AuthResponse;
+import com.accenture.quizhub.entity.User;
+import com.accenture.quizhub.exception.ResourceNotFoundException;
+import com.accenture.quizhub.repository.UserRepository;
+import com.accenture.quizhub.service.AuthService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+    private final UserRepository userRepository;
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<AuthResponse> getMe(@AuthenticationPrincipal String enterpriseId) {
+        User user = userRepository.findByEnterpriseId(enterpriseId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return ResponseEntity.ok(authService.getMe(user));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            @AuthenticationPrincipal String enterpriseId) {
+        User user = userRepository.findByEnterpriseId(enterpriseId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        authService.changePassword(request, user);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/demo-users")
+    public ResponseEntity<List<Map<String, String>>> getDemoUsers() {
+        List<Map<String, String>> users = userRepository.findAll().stream()
+                .filter(User::isApproved)
+                .map(u -> Map.of(
+                        "enterpriseId", u.getEnterpriseId(),
+                        "fullName", u.getFullName(),
+                        "role", u.getRole().name()
+                ))
+                .toList();
+        return ResponseEntity.ok(users);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> body) {
+        String id = body.get("enterpriseId");
+        if (id == null || id.isBlank()) id = body.get("email");
+        authService.forgotPassword(id != null ? id.trim() : "");
+        // Always return 200 — never reveal whether account exists
+        return ResponseEntity.ok(Map.of("message",
+                "If that account exists, a password reset link has been sent to the registered email."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        String newPassword = body.get("newPassword");
+        authService.resetPassword(token, newPassword);
+        return ResponseEntity.ok(Map.of("message", "Password reset successful. You can now log in."));
+    }
+}

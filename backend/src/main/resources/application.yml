@@ -1,0 +1,80 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: smart-quiz-ai-hub
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/quizhub?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+
+  cache:
+    type: simple
+
+  sql:
+    init:
+      mode: always
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:sk-placeholder-no-key-set}
+      chat:
+        options:
+          model: gpt-4o-mini
+
+  mail:
+    host: ${MAIL_HOST:smtp.office365.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:myS3cr3tK3yForJWTThatIsAtLeast32Chars!}
+    expiration-ms: 86400000
+  cors:
+    allowed-origins: http://localhost:3000
+  upload:
+    max-rows: 500
+  url: ${APP_URL:http://localhost:3000}
+
+management:
+  health:
+    mail:
+      enabled: false
+
+logging:
+  level:
+    root: INFO
+    com.accenture.quizhub: DEBUG
+    org.springframework.security: WARN
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs

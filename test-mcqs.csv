@@ -1,0 +1,3 @@
+id,techStack,topic,difficulty,questionStem,optionA,optionB,optionC,optionD,correctAnswer
+1,Spring MVC & REST,REST Controllers,EASY,What does @RequestMapping do in Spring MVC?,Maps HTTP requests to handler methods,Injects dependencies,Creates a database table,Configures security,A
+2,Spring MVC & REST,REST Controllers,MEDIUM,Which HTTP method is typically used to create a new resource?,GET,POST,PUT,DELETE,B
