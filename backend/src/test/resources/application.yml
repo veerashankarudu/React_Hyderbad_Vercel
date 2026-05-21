@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      mode: never
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: false
+  mail:
+    host: localhost
+    port: 25
+
+app:
+  jwt:
+    secret: testSecretKeyForJunitTestingPurposesOnlyAtLeast256BitsLong
+    expiration-ms: 3600000
+  cors:
+    allowed-origins: http://localhost:3000
+  upload:
+    max-rows: 500
+  url: http://localhost:3000
+
+spring.ai.openai.api-key: test-key
+spring.ai.openai.chat.enabled: false

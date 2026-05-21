@@ -59,21 +59,33 @@ public class BulkUploadService {
         for (int i = 0; i < rows.size(); i++) {
             String[] row = rows.get(i);
             int lineNum = i + 2; // 1-based, accounting for header
+
+            // Pre-extract all columns for error reporting (so the frontend can pre-fill an inline edit form)
+            final String rowTechStack  = row.length > 1 ? row[1].trim() : "";
+            final String rowTopic      = row.length > 2 ? row[2].trim() : "";
+            final String rowDifficulty = row.length > 3 ? row[3].trim() : "";
+            final String rowStem       = row.length > 4 ? row[4].trim() : "";
+            final String rowOptA       = row.length > 5 ? row[5].trim() : "";
+            final String rowOptB       = row.length > 6 ? row[6].trim() : "";
+            final String rowOptC       = row.length > 7 ? row[7].trim() : "";
+            final String rowOptD       = row.length > 8 ? row[8].trim() : "";
+            final String rowAnswer     = row.length > 9 ? row[9].trim() : "";
+
             try {
                 // Columns: Question ID (A, ignored), Tech Stack (B), Topic (C), Difficulty (D),
                 //          Question Stem (E), Option A (F), Option B (G), Option C (H), Option D (I), Correct Answer (J)
                 if (row.length < 10) throw new BadRequestException("Row has insufficient columns");
 
                 // col 0 = Question ID (ignored)
-                String techStackName = row[1].trim();
-                String topicName = row[2].trim();
-                String difficultyStr = row[3].trim().toUpperCase();
-                String questionStem = row[4].trim();
-                String optA = row[5].trim();
-                String optB = row[6].trim();
-                String optC = row[7].trim();
-                String optD = row[8].trim();
-                String correctAns = row[9].trim().toUpperCase();
+                String techStackName = rowTechStack;
+                String topicName = rowTopic;
+                String difficultyStr = rowDifficulty.toUpperCase();
+                String questionStem = rowStem;
+                String optA = rowOptA;
+                String optB = rowOptB;
+                String optC = rowOptC;
+                String optD = rowOptD;
+                String correctAns = rowAnswer.toUpperCase();
 
                 if (questionStem.isBlank()) throw new BadRequestException("Question stem is empty");
                 if (optA.isBlank()) throw new BadRequestException("Option A is required");
@@ -149,6 +161,15 @@ public class BulkUploadService {
                 Map<String, String> err = new HashMap<>();
                 err.put("row", String.valueOf(lineNum));
                 err.put("error", e.getMessage());
+                err.put("techStack", rowTechStack);
+                err.put("topic", rowTopic);
+                err.put("difficulty", rowDifficulty.isEmpty() ? "MEDIUM" : rowDifficulty.toUpperCase());
+                err.put("questionStem", rowStem);
+                err.put("optionA", rowOptA);
+                err.put("optionB", rowOptB);
+                err.put("optionC", rowOptC);
+                err.put("optionD", rowOptD);
+                err.put("correctAnswer", rowAnswer.toUpperCase());
                 errors.add(err);
             }
         }

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import API from '../api';
 import Navbar from '../components/Navbar';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +17,93 @@ export default function BulkUpload() {
   const [copied, setCopied] = useState(null);
   const fileRef = useRef();
   const { t } = useTranslation();
+
+  // ── Duplicate preview modal ──
+  const [previewMcq, setPreviewMcq] = useState(null); // null=closed, {loading}|{error, dbMcq, uploadedRow}=open
+
+  const openDuplicatePreview = async (id, uploadedRow) => {
+    setPreviewMcq({ loading: true, uploadedRow });
+    try {
+      const { data } = await API.get(`/mcqs/${id}`);
+      setPreviewMcq({ dbMcq: data, uploadedRow });
+    } catch {
+      setPreviewMcq({ error: true, uploadedRow });
+    }
+  };
+
+  // ── Inline edit modal ──
+  const [inlineEdit, setInlineEdit] = useState(null);   // null=closed, errorRow=open
+  const [inlineForm, setInlineForm] = useState({});
+  const [inlineTopics, setInlineTopics] = useState([]);
+  const [inlineSubmitting, setInlineSubmitting] = useState(false);
+
+  const openInlineEdit = (errorRow) => {
+    const matchedStack = techStacks.find(
+      ts => ts.name.toLowerCase() === (errorRow.techStack || '').toLowerCase()
+    );
+    const validDiffs = ['EASY', 'MEDIUM', 'HARD'];
+    const rawDiff = (errorRow.difficulty || '').toUpperCase().trim();
+    setInlineForm({
+      questionStem: errorRow.questionStem || '',
+      optionA: errorRow.optionA || '',
+      optionB: errorRow.optionB || '',
+      optionC: errorRow.optionC || '',
+      optionD: errorRow.optionD || '',
+      correctAnswer: errorRow.correctAnswer || '',
+      difficulty: validDiffs.includes(rawDiff) ? rawDiff : 'MEDIUM',
+      techStackId: matchedStack ? String(matchedStack.id) : '',
+      topicId: '',
+    });
+    setInlineEdit(errorRow);
+    if (matchedStack) {
+      API.get(`/master/tech-stacks/${matchedStack.id}/topics`)
+        .then(({ data }) => setInlineTopics(Array.isArray(data) ? data : []))
+        .catch(() => setInlineTopics([]));
+    } else {
+      setInlineTopics([]);
+    }
+  };
+
+  const submitInlineEdit = async () => {
+    if (inlineSubmitting) return;
+    setInlineSubmitting(true);
+    try {
+      const matchedTopic = inlineTopics.find(
+        t => t.name.toLowerCase() === (inlineForm.topicName || '').toLowerCase()
+      );
+      await API.post('/mcqs', {
+        techStackId: Number(inlineForm.techStackId),
+        topicId: inlineForm.topicId ? Number(inlineForm.topicId) : (matchedTopic ? matchedTopic.id : null),
+        questionStem: inlineForm.questionStem,
+        optionA: inlineForm.optionA,
+        optionB: inlineForm.optionB,
+        optionC: inlineForm.optionC,
+        optionD: inlineForm.optionD,
+        correctAnswer: inlineForm.correctAnswer,
+        difficulty: inlineForm.difficulty,
+        sendForReview: false,
+      });
+      // Remove the fixed row from the error list
+      setResult(prev => {
+        const newErrors = prev.data.errors.filter(e => e !== inlineEdit);
+        return {
+          ...prev,
+          data: {
+            ...prev.data,
+            errors: newErrors,
+            failed: newErrors.length,
+            success: (prev.data.success || 0) + 1,
+          }
+        };
+      });
+      setInlineEdit(null);
+      toast.success('Question saved as draft successfully!', { autoClose: 15000 });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit question.');
+    } finally {
+      setInlineSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     API.get('/master/tech-stacks')
@@ -82,6 +170,11 @@ export default function BulkUpload() {
   };
 
   const formatSize = (bytes) => bytes < 1024 * 1024 ? `${(bytes/1024).toFixed(1)} KB` : `${(bytes/1024/1024).toFixed(1)} MB`;
+
+  const modalOverlay = { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' };
+  const modalBox = { background: 'var(--card-bg)', borderRadius: '12px', padding: '1.5rem', maxWidth: '600px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' };
+  const inputStyle = { width: '100%', padding: '0.5rem 0.65rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', boxSizing: 'border-box', fontSize: '0.85rem' };
+  const labelStyle = { display: 'block', fontWeight: 600, marginBottom: '0.25rem', fontSize: '0.82rem', color: 'var(--text-muted)' };
 
   const COLUMNS = [
     { col: 'Col 1', reqKey: 'bu.colAny', descKey: 'bu.col1desc' },
@@ -188,9 +281,20 @@ export default function BulkUpload() {
                                   <td className={isDup ? 'err-row-msg err-msg-dup' : isSimilar ? 'err-row-msg err-msg-similar' : 'err-row-msg'}>
                                     {isDup ? '🔁 ' : isSimilar ? '⚠️ ' : ''}{displayMsg}
                                     {linkedId && (
-                                      <> &nbsp;<a href={`/mcq/${linkedId}`} target="_blank" rel="noreferrer" style={{ color: '#f59e0b', fontWeight: 700, textDecoration: 'underline', whiteSpace: 'nowrap' }}>
-                                        🔗 View
-                                      </a></>
+                                      <> &nbsp;<button
+                                        onClick={() => openDuplicatePreview(linkedId, e)}
+                                        style={{ color: '#f59e0b', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, whiteSpace: 'nowrap' }}
+                                      >
+                                        👁 View
+                                      </button></>
+                                    )}
+                                    {e.questionStem && (
+                                      <> &nbsp;<button
+                                        onClick={() => openInlineEdit(e)}
+                                        style={{ color: '#60a5fa', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, whiteSpace: 'nowrap' }}
+                                      >
+                                        ✏️ Edit &amp; Submit
+                                      </button></>
                                     )}
                                   </td>
                                 </tr>
@@ -315,6 +419,234 @@ export default function BulkUpload() {
           </div>
         )}
       </div>
+
+      {/* ── Duplicate Comparison Modal ── */}
+      {previewMcq && (() => {
+        const { loading: pmLoading, error: pmError, dbMcq, uploadedRow } = previewMcq;
+        // helper: returns true if two strings differ (case-insensitive trim)
+        const diff = (a, b) => (a || '').trim().toLowerCase() !== (b || '').trim().toLowerCase();
+        const uploadOptKey = (opt) => opt === 'A' ? 'optionA' : opt === 'B' ? 'optionB' : opt === 'C' ? 'optionC' : 'optionD';
+        // Both columns share the same neutral base — only differing cells get amber
+        const col = { flex: 1, minWidth: 0, padding: '0.85rem', borderRadius: '10px', background: 'var(--bg)', border: '1.5px solid var(--border)' };
+        const colLabel = { fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '0.5rem' };
+        const stemBox  = (highlight) => ({
+          padding: '0.6rem 0.75rem', borderRadius: '7px', fontSize: '0.88rem', lineHeight: 1.5,
+          background: highlight ? 'rgba(245,158,11,0.18)' : 'transparent',
+          border: highlight ? '1px solid #f59e0b' : '1px solid transparent',
+        });
+        const optBox = (isCorrect, highlight) => ({
+          padding: '0.4rem 0.65rem', marginBottom: '0.3rem', borderRadius: '6px', fontSize: '0.84rem',
+          background: isCorrect ? 'rgba(5,150,105,0.15)' : highlight ? 'rgba(245,158,11,0.15)' : 'transparent',
+          border: isCorrect ? '1px solid #059669' : highlight ? '1px solid #f59e0b' : '1px solid transparent',
+        });
+        return (
+          <div style={modalOverlay} onClick={() => setPreviewMcq(null)}>
+            <div style={{ ...modalBox, maxWidth: '820px' }} onClick={ev => ev.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1rem' }}>🔁 Duplicate Question Comparison</h3>
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>Differences are highlighted in <span style={{ color: '#f59e0b', fontWeight: 700 }}>amber</span></p>
+                </div>
+                <button onClick={() => setPreviewMcq(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem', lineHeight: 1, color: 'var(--text-muted)' }}>✕</button>
+              </div>
+
+              {pmLoading ? (
+                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>Loading…</p>
+              ) : pmError ? (
+                <p style={{ color: 'var(--error)' }}>Could not load the existing question.</p>
+              ) : (
+                <>
+                  {/* Column headers */}
+                  <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                    <div style={{ flex: 1, ...colLabel, color: '#d97706' }}>📤 Your Upload (Excel)</div>
+                    <div style={{ flex: 1, ...colLabel, color: '#059669' }}>🗄 Already in Database</div>
+                  </div>
+
+                  {/* Question Stem */}
+                  {(() => {
+                    const stemDiff = diff(uploadedRow?.questionStem, dbMcq.questionStem);
+                    return (
+                      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.65rem' }}>
+                        <div style={col}>
+                          <div style={{ ...colLabel, color: '#d97706', marginBottom: '0.3rem' }}>QUESTION</div>
+                          <div style={stemBox(stemDiff)}>
+                            {uploadedRow?.questionStem || <em style={{ color: 'var(--text-muted)' }}>—</em>}
+                            {stemDiff && <span style={{ float: 'right', color: '#d97706', fontSize: '0.72rem', fontWeight: 700 }}>CHANGED</span>}
+                          </div>
+                        </div>
+                        <div style={col}>
+                          <div style={{ ...colLabel, color: '#059669', marginBottom: '0.3rem' }}>QUESTION</div>
+                          <div style={stemBox(stemDiff)}>{dbMcq.questionStem}</div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Options A–D */}
+                  {['A', 'B', 'C', 'D'].map(opt => {
+                    const uploadVal  = uploadedRow?.[uploadOptKey(opt)] || '';
+                    const dbVal      = dbMcq[`option${opt}`] || '';
+                    const isDiffVal  = diff(uploadVal, dbVal);
+                    const uploadCorrect = (uploadedRow?.correctAnswer || '').toUpperCase().trim() === opt;
+                    const dbCorrect    = dbMcq.correctAnswer === opt;
+                    const isDiffAns    = uploadCorrect !== dbCorrect;
+                    return (
+                      <div key={opt} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.3rem' }}>
+                        <div style={col}>
+                          <div style={optBox(uploadCorrect, isDiffVal || isDiffAns)}>
+                            <span style={{ fontWeight: 700, marginRight: '0.4rem', color: uploadCorrect ? '#059669' : (isDiffVal || isDiffAns) ? '#d97706' : 'var(--text-muted)' }}>{opt}.</span>
+                            {uploadVal || <em style={{ color: 'var(--text-muted)' }}>—</em>}
+                            {uploadCorrect && <span style={{ float: 'right', color: '#059669', fontWeight: 700, fontSize: '0.75rem' }}>✓ Correct</span>}
+                            {isDiffAns && !uploadCorrect && dbCorrect && <span style={{ float: 'right', color: '#d97706', fontSize: '0.75rem' }}>⚠ was correct</span>}
+                            {(isDiffVal || (isDiffAns && !uploadCorrect)) && !uploadCorrect && <span style={{ float: 'right', color: '#d97706', fontSize: '0.72rem', fontWeight: 700 }}>CHANGED</span>}
+                          </div>
+                        </div>
+                        <div style={col}>
+                          <div style={optBox(dbCorrect, isDiffVal || isDiffAns)}>
+                            <span style={{ fontWeight: 700, marginRight: '0.4rem', color: dbCorrect ? '#059669' : (isDiffVal || isDiffAns) ? '#d97706' : 'var(--text-muted)' }}>{opt}.</span>
+                            {dbVal}
+                            {dbCorrect && <span style={{ float: 'right', color: '#059669', fontWeight: 700, fontSize: '0.75rem' }}>✓ Correct</span>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Metadata row */}
+                  {(() => {
+                    const diffDiff = diff(uploadedRow?.difficulty, dbMcq.difficulty);
+                    const diffStack = diff(uploadedRow?.techStack, dbMcq.techStackName);
+                    const diffTopic = diff(uploadedRow?.topic, dbMcq.topicName);
+                    const metaTag = (label, hasDiff) => ({
+                      padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem',
+                      background: hasDiff ? 'rgba(245,158,11,0.18)' : 'transparent',
+                      border: hasDiff ? '1px solid #f59e0b' : '1px solid transparent',
+                      color: hasDiff ? '#d97706' : 'var(--text-muted)',
+                    });
+                    return (
+                      <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+                        <div style={{ ...col, display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                          <span style={metaTag('diff', diffDiff)}>🎯 {uploadedRow?.difficulty || '—'}</span>
+                          <span style={metaTag('stack', diffStack)}>📚 {uploadedRow?.techStack || '—'}</span>
+                          {<span style={metaTag('topic', diffTopic)}>🏷 {uploadedRow?.topic || '—'}</span>}
+                        </div>
+                        <div style={{ ...col, display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                          <span style={metaTag('diff', diffDiff)}>🎯 {dbMcq.difficulty}</span>
+                          <span style={metaTag('stack', diffStack)}>📚 {dbMcq.techStackName}</span>
+                          {<span style={metaTag('topic', diffTopic)}>🏷 {dbMcq.topicName || '—'}</span>}
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.25rem' }}>📋 {dbMcq.status}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+              <div style={{ marginTop: '1.25rem', textAlign: 'right' }}>
+                <button className="btn-secondary" onClick={() => setPreviewMcq(null)}>Close</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── Inline Edit & Submit Modal ── */}
+      {inlineEdit && (
+        <div style={modalOverlay} onClick={() => setInlineEdit(null)}>
+          <div style={{ ...modalBox, maxWidth: '660px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1rem' }}>✏️ Edit &amp; Submit — Row {inlineEdit.row}</h3>
+              <button onClick={() => setInlineEdit(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem', lineHeight: 1, color: 'var(--text-muted)' }}>✕</button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Tech Stack *</label>
+                <select
+                  value={inlineForm.techStackId}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setInlineForm(f => ({ ...f, techStackId: val, topicId: '' }));
+                    if (val) {
+                      API.get(`/master/tech-stacks/${val}/topics`)
+                        .then(({ data }) => setInlineTopics(Array.isArray(data) ? data : []))
+                        .catch(() => setInlineTopics([]));
+                    } else { setInlineTopics([]); }
+                  }}
+                  style={inputStyle}
+                >
+                  <option value="">Select Tech Stack</option>
+                  {techStacks.map(ts => <option key={ts.id} value={ts.id}>{ts.name}</option>)}
+                </select>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Topic</label>
+                <select
+                  value={inlineForm.topicId}
+                  onChange={e => setInlineForm(f => ({ ...f, topicId: e.target.value }))}
+                  style={inputStyle}
+                  disabled={!inlineForm.techStackId}
+                >
+                  <option value="">Select Topic</option>
+                  {inlineTopics.map(tp => <option key={tp.id} value={tp.id}>{tp.name}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label style={labelStyle}>Question Stem *</label>
+              <textarea
+                value={inlineForm.questionStem}
+                onChange={e => setInlineForm(f => ({ ...f, questionStem: e.target.value }))}
+                rows={3}
+                style={{ ...inputStyle, resize: 'vertical' }}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              {['A', 'B', 'C', 'D'].map(opt => (
+                <div key={opt}>
+                  <label style={labelStyle}>Option {opt} *</label>
+                  <input
+                    type="text"
+                    value={inlineForm[`option${opt}`] || ''}
+                    onChange={e => setInlineForm(f => ({ ...f, [`option${opt}`]: e.target.value }))}
+                    style={inputStyle}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Correct Answer *</label>
+                <select value={inlineForm.correctAnswer} onChange={e => setInlineForm(f => ({ ...f, correctAnswer: e.target.value }))} style={inputStyle}>
+                  <option value="">Select</option>
+                  {['A', 'B', 'C', 'D'].map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Difficulty *</label>
+                <select value={inlineForm.difficulty} onChange={e => setInlineForm(f => ({ ...f, difficulty: e.target.value }))} style={inputStyle}>
+                  <option value="EASY">EASY</option>
+                  <option value="MEDIUM">MEDIUM</option>
+                  <option value="HARD">HARD</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
+              <button className="btn-secondary" onClick={() => setInlineEdit(null)}>Cancel</button>
+              <button
+                className="btn-primary"
+                onClick={submitInlineEdit}
+                disabled={inlineSubmitting || !inlineForm.techStackId || !inlineForm.questionStem.trim() || !inlineForm.correctAnswer}
+              >
+                {inlineSubmitting ? 'Submitting…' : '✓ Save as Draft'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

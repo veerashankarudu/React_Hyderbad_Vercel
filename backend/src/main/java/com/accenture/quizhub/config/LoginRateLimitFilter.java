@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
-    private static final int    MAX_ATTEMPTS     = 10;   // attempts allowed per window
+    private static final int    MAX_ATTEMPTS     = 100;  // attempts allowed per window
     private static final long   WINDOW_SECONDS   = 60;   // rolling window length
 
     /** Per-IP attempt counter + window start time. */

@@ -17,6 +17,7 @@ export default function McqDetail() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
+  // isCreator is determined after mcq loads — see below in render
   const [mcq, setMcq] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -100,7 +101,9 @@ export default function McqDetail() {
   };
 
   if (loading) return <><Navbar /><div className="page-container"><div className="loading">{t('common.loading')}</div></div></>;
-  if (!mcq) return <><Navbar /><div className="page-container"><div className="error-msg">MCQ not found.</div></div></>;
+  if (!mcq) return <><Navbar /><div className="page-container"><div className="error-msg">MCQ not found.</div></div></>;  
+
+  const isCreator = mcq.creatorEnterpriseId && user?.enterpriseId === mcq.creatorEnterpriseId;
 
   const options = [
     { key: 'A', text: txA || mcq.optionA },
@@ -116,12 +119,12 @@ export default function McqDetail() {
         <div className="page-header" style={{ marginBottom: '1rem' }}>
           <button className="btn-secondary" onClick={() => navigate(-1)}>&larr; Back</button>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {mcq.status === 'DRAFT' && (
+            {mcq.status === 'DRAFT' && isCreator && (
               <button className="btn-sm btn-blue" onClick={handleSubmitForReview} disabled={submitting}>
                 {submitting ? t('detail.submitting') : `📬 ${t('detail.submitForReview')}`}
               </button>
             )}
-            {((['DRAFT','REJECTED'].includes(mcq.status)) || (isAdmin && mcq.status !== 'DRAFT')) && (
+            {((isCreator && ['DRAFT','REJECTED'].includes(mcq.status)) || (isAdmin && mcq.status !== 'DRAFT')) && (
               <button className="btn-primary" onClick={() => navigate(`/mcq/${id}/edit`)}>{t('detail.editMcq')}</button>
             )}
             <button className="btn-sm btn-outline" onClick={handleExplain} disabled={explainLoading}>

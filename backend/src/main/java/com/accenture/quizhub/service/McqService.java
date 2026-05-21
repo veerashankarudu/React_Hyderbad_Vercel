@@ -207,11 +207,6 @@ public class McqService {
     public McqResponse getMcqById(Long id, User currentUser) {
         Mcq mcq = mcqRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("MCQ not found"));
-        // Draft MCQs are accessible only to their creator (spec: "Draft - accessible ONLY to the creator")
-        boolean isCreator = mcq.getCreator().getId().equals(currentUser.getId());
-        if (mcq.getStatus() == McqStatus.DRAFT && !isCreator) {
-            throw new com.accenture.quizhub.exception.BadRequestException("Draft MCQs are only accessible to their creator");
-        }
         return toResponse(mcq);
     }
 

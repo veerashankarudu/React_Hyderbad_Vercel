@@ -96,7 +96,7 @@ export default function App() {
           <Route path="/inbox" element={<PrivateRoute><Inbox /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        <ToastContainer position="top-right" autoClose={3000} />
+        <ToastContainer position="top-right" autoClose={30000} />
         <ChatBotGuard />
         <ExamLockGuard />
       </BrowserRouter>
