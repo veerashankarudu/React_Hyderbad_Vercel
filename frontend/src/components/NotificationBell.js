@@ -266,7 +266,12 @@ export default function NotificationBell() {
                                   <span className="notif-type-icon">{meta.icon}</span>
                                   <span className="notif-ref">{n.mcqRef}</span>
                                   <span className="notif-status-pill" style={{ color: meta.color }}>
-                                    {n.type === 'ASSIGNED' ? t('nb.pendingReview') : n.type === 'APPROVED' ? t('common.approved') : t('common.rejected')}
+                                    {n.type === 'ASSIGNED' ? t('nb.pendingReview')
+                                    : n.type === 'APPROVED' ? t('common.approved')
+                                    : n.type === 'REJECTED' ? t('common.rejected')
+                                    : n.type === 'SUBMITTED' ? t('nb.pendingReview')
+                                    : n.type === 'MENTION' ? 'Mention'
+                                    : ''}
                                   </span>
                                 </div>
                               )}

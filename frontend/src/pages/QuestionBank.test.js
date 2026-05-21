@@ -619,9 +619,7 @@ describe('PendingReviews – branch coverage', () => {
     await waitFor(() => expect(document.querySelector('.review-panel')).toBeTruthy());
 
     // Without selecting APPROVE/REJECT and without checklist, submit is disabled
-    const submitBtn = Array.from(document.querySelectorAll('.review-submit-row button')).find(
-      (b) => /submit/i.test(b.textContent)
-    );
+    const submitBtn = document.querySelector('.review-submit-row .btn-submit-review');
     expect(submitBtn).toBeTruthy();
     expect(submitBtn.disabled).toBe(true);
   });

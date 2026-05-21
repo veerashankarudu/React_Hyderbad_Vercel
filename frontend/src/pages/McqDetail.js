@@ -244,6 +244,21 @@ export default function McqDetail() {
               <div className="meta-item"><label>{t('detail.aiWarning')}</label><span>{mcq.aiWarning || t('detail.none')}</span></div>
             </div>
 
+            {mcq.comments && mcq.comments.length > 0 && (
+              <div style={{ marginTop: '1rem', padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', borderLeft: '4px solid #dc2626' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#991b1b', marginBottom: '0.75rem' }}>📋 Reviewer Feedback</div>
+                {mcq.comments.map((c, i) => (
+                  <div key={i} style={{ marginBottom: i < mcq.comments.length - 1 ? '0.75rem' : 0, paddingBottom: i < mcq.comments.length - 1 ? '0.75rem' : 0, borderBottom: i < mcq.comments.length - 1 ? '1px solid #fecaca' : 'none' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.3rem' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#7f1d1d', background: '#fee2e2', padding: '0.1rem 0.5rem', borderRadius: '20px' }}>@{c.reviewerEnterpriseId}</span>
+                      <span style={{ fontSize: '0.72rem', color: '#9ca3af' }}>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ''}</span>
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#374151', lineHeight: 1.5 }}>{c.comment}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {explanations && (
               <div className="explanation-card" style={{ marginTop: '1rem' }}>
                 <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#1D4ED8', marginBottom: '0.6rem' }}>🤖 {t('detail.aiExplanation')}</div>

@@ -337,23 +337,29 @@ export default function PendingReviews() {
                   </button>
                 </div>
                 <div className="review-comment">
-                  <span className="review-comment-label">{t('pr.comment')} {action === 'REJECT' ? `(${t('pr.required')})` : `(${t('pr.optional')})`}</span>
-                  <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t('pr.commentPlaceholder')} rows={3} />
+                  <span className="review-comment-label">
+                    {t('pr.comment')}
+                    {action === 'REJECT'
+                      ? <span className="required-badge">Required</span>
+                      : <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '0.3rem', fontSize: '0.75rem' }}>(optional)</span>}
+                  </span>
+                  <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder={action === 'REJECT' ? 'Explain why you are rejecting this question...' : t('pr.commentPlaceholder')} rows={3} />
                 </div>
                 {error && <div className="error-msg">{error}</div>}
                 <div className="review-submit-row">
                   <button className="btn-sm btn-outline" onClick={closeReview}>{t('common.cancel')}</button>
                   <button
-                    className="btn-sm btn-primary"
+                    className="btn-submit-review"
                     onClick={handleSubmitReview}
                     disabled={!action || submitting || !checklist.every(Boolean)}
-                    title={checklist.every(Boolean) ? '' : t('pr.checklistIncomplete')}
+                    title={!action ? 'Select Approve or Reject first' : !checklist.every(Boolean) ? t('pr.checklistIncomplete') : ''}
                   >
                     {(() => {
                       if (submitting) return t('pr.submitting');
                       const done = checklist.filter(Boolean).length;
-                      if (done < 4) return `${t('pr.submitReview')} (${done}/4 checklist)`;
-                      return t('pr.submitReview');
+                      if (done < 4) return `Complete checklist (${done}/4)`;
+                      if (!action) return 'Select a verdict above';
+                      return action === 'APPROVE' ? '✔ Submit Approval' : '✖ Submit Rejection';
                     })()}
                   </button>
                 </div>

@@ -229,12 +229,15 @@ class McqServiceTest {
     }
 
     @Test
-    void getMcqById_draftByNonCreator_throwsBadRequest() {
+    void getMcqById_draftByNonCreator_succeeds() {
+        // TC-245: Draft MCQs are now accessible by any user (e.g. admin/reviewer)
+        // to support the duplicate-preview modal in bulk upload.
         User other = User.builder().id(99L).build();
         Mcq existing = buildMcq(1L, McqStatus.DRAFT);
         existing.setCreator(smeUser);
         when(mcqRepository.findById(1L)).thenReturn(Optional.of(existing));
-        assertThrows(BadRequestException.class, () -> mcqService.getMcqById(1L, other));
+        when(reviewCommentRepository.findByMcqIdOrderByCreatedAtDesc(any())).thenReturn(Collections.emptyList());
+        assertNotNull(mcqService.getMcqById(1L, other));
     }
 
     @Test

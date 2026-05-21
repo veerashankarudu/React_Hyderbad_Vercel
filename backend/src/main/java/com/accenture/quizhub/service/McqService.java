@@ -29,6 +29,7 @@ public class McqService {
     private final NotificationService notificationService;
     private final UserRepository userRepository;
     private final McqVersionRepository mcqVersionRepository;
+    private final InboxMessageService inboxMessageService;
 
     @Transactional
     public McqResponse createMcq(McqRequest request, User creator) {
@@ -164,7 +165,12 @@ public class McqService {
             throw new BadRequestException("MCQ must be in DRAFT or REJECTED state to submit for review");
         }
 
-        mcq.setStatus(McqStatus.READY_FOR_REVIEW);
+        // If reviewer already assigned (resubmit after rejection), go directly to UNDER_REVIEW
+        if (mcq.getStatus() == McqStatus.REJECTED && mcq.getReviewer() != null) {
+            mcq.setStatus(McqStatus.UNDER_REVIEW);
+        } else {
+            mcq.setStatus(McqStatus.READY_FOR_REVIEW);
+        }
 
         // Run AI scoring before saving
         try {
@@ -192,6 +198,21 @@ public class McqService {
                 .filter(u -> u.getRole().name().equals("ADMIN"))
                 .forEach(admin -> notificationService.notify(
                         admin, preview, "SUBMITTED", saved.getId(), currentUser, mcqRef));
+
+        // Notify the assigned reviewer (if any) that the SME has resubmitted after rejection
+        if (saved.getReviewer() != null) {
+            notificationService.notify(
+                    saved.getReviewer(), preview, "SUBMITTED", saved.getId(), currentUser, mcqRef);
+            inboxMessageService.sendSystem(
+                    saved.getReviewer(),
+                    "🔄 MCQ Resubmitted — " + mcqRef,
+                    "Hi " + saved.getReviewer().getFullName() + ",\n\n" +
+                    currentUser.getFullName() + " has revised and resubmitted an MCQ for your review.\n\n" +
+                    "MCQ: " + preview + "\n\n" +
+                    "Please review the updated question.\n\n— QuizHub AI",
+                    saved.getId()
+            );
+        }
 
         return toResponse(saved);
     }
