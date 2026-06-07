@@ -1,7 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    Login / Register — Dark AI Split-Screen
    ═══════════════════════════════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; }
 
 .login-root {
   display: flex;
@@ -560,7 +559,7 @@
 .reg-footer a:hover { text-decoration: underline; }
 
 /* Responsive */
-@media (max-width: 960px) {
+@media (max-width: 1024px) {
   .login-right, .reg-visual { display: none; }
   .login-left { width: 100%; min-width: unset; }
   .reg-form-panel { width: 100%; min-width: unset; border-left: none; }

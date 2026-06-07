@@ -17,6 +17,7 @@
 .meta-item { background: var(--surface, #FAFAFA); border-radius: 10px; padding: 0.75rem 1rem; }
 .meta-item label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.3rem; }
 .meta-item span { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+.ai-generated-badge { display: inline-block; margin-left: 0.5rem; font-size: 0.7rem; font-weight: 600; background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%); color: #fff; padding: 0.15rem 0.5rem; border-radius: 20px; vertical-align: middle; }
 .comments-section h4 { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 0.75rem; margin-top: 1.5rem; }
 .comment-item { background: var(--primary-light); border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; border-left: 3px solid var(--primary); }
 .comment-author { font-size: 0.75rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 0.25rem; }
@@ -26,33 +27,33 @@
 body.dark-mode .detail-header-meta { color: rgba(255,255,255,0.55); }
 body.dark-mode .option-row { border-color: rgba(99,102,241,0.22); background: rgba(99,102,241,0.07); }
 body.dark-mode .option-row:hover { filter: brightness(1.2); }
-body.dark-mode .option-text { color: #e2e8f0; }
+body.dark-mode .option-text { color: #ffffff; font-weight: 500; }
 body.dark-mode .correct-badge { background: rgba(16,185,129,0.2); color: #34d399; }
 
-/* Per-option VIVID distinct colors — dark mode */
+/* Per-option subtle distinct colors — dark mode */
 body.dark-mode .options-list .option-row:nth-child(1) {
-  background: #0b3d27;
-  border: 2px solid #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1.5px solid rgba(16, 185, 129, 0.4);
 }
 body.dark-mode .options-list .option-row:nth-child(2) {
-  background: #0c1f45;
-  border: 2px solid #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1.5px solid rgba(59, 130, 246, 0.4);
 }
 body.dark-mode .options-list .option-row:nth-child(3) {
-  background: #3b2200;
-  border: 2px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
 }
 body.dark-mode .options-list .option-row:nth-child(4) {
-  background: #3d0d24;
-  border: 2px solid #ec4899;
+  background: rgba(236, 72, 153, 0.08);
+  border: 1.5px solid rgba(236, 72, 153, 0.4);
 }
 body.dark-mode .options-list .option-row:nth-child(1) .option-key { background: #10b981; color: #fff; }
 body.dark-mode .options-list .option-row:nth-child(2) .option-key { background: #3b82f6; color: #fff; }
 body.dark-mode .options-list .option-row:nth-child(3) .option-key { background: #f59e0b; color: #1a1000; }
 body.dark-mode .options-list .option-row:nth-child(4) .option-key { background: #ec4899; color: #fff; }
 
-/* correct always overrides to solid green */
-body.dark-mode .option-row.correct { background: #0b3d27 !important; border: 2px solid #10b981 !important; }
+/* correct always overrides to highlighted green */
+body.dark-mode .option-row.correct { background: rgba(16, 185, 129, 0.15) !important; border: 1.5px solid #10b981 !important; }
 body.dark-mode .option-row.correct .option-key { background: #10b981 !important; color: #fff !important; }
 
 /* Per-option VIVID distinct colors — light mode */

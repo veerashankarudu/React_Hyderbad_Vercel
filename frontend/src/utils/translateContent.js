@@ -40,7 +40,7 @@ async function translateViaMyMemory(text, targetLang) {
  * Tries lingva.ml first, falls back to MyMemory, falls back to original text.
  */
 export async function translateText(text, lang) {
-  if (!text || !lang || lang === 'en') return text;
+  if (!text || !lang || lang === 'en' || lang.startsWith('en')) return text;
   const targetLang = LANG_MAP[lang] || lang;
   const cacheKey = `${targetLang}:${text}`;
   if (cache.has(cacheKey)) return cache.get(cacheKey);

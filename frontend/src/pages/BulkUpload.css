@@ -55,50 +55,49 @@
 }
 
 /* ── Dark theme for Bulk Upload ── */
-body.dark-mode .page-container { background: transparent !important; color: #e2e8f0 !important; }
-body.dark-mode .page-header h2 { color: #e2e8f0 !important; }
-body.dark-mode .upload-card { background: #161b22 !important; border-color: #30363d !important; }
-body.dark-mode .upload-card-body { background: #161b22 !important; color: #e2e8f0 !important; }
-body.dark-mode .upload-dropzone { background: #1c2128 !important; border-color: #30363d !important; }
-body.dark-mode .upload-dropzone:hover { background: #21262d !important; border-color: #6366f1 !important; }
-body.dark-mode .upload-dropzone h4 { color: #e2e8f0 !important; }
-body.dark-mode .upload-dropzone p { color: #8b949e !important; }
-body.dark-mode .file-selected { background: rgba(124,58,237,0.15) !important; border-color: rgba(124,58,237,0.3) !important; }
-body.dark-mode .file-name { color: #a78bfa !important; }
-body.dark-mode .file-size { color: #8b949e !important; }
-body.dark-mode .format-table th { background: rgba(124,58,237,0.15) !important; color: #a78bfa !important; }
-body.dark-mode .format-table td { border-color: #30363d !important; color: #c9d1d9 !important; }
-body.dark-mode .format-table code { background: rgba(124,58,237,0.2) !important; color: #a78bfa !important; }
-body.dark-mode .upload-error-table-wrap { border-color: rgba(245,158,11,0.3) !important; }
-body.dark-mode .upload-error-table th { background: rgba(120,83,19,0.4) !important; color: #fbbf24 !important; }
-body.dark-mode .upload-error-table td { border-color: rgba(245,158,11,0.15) !important; color: #c9d1d9 !important; }
-body.dark-mode .upload-error-table tr:nth-child(odd) td { background: rgba(120,83,19,0.1) !important; }
-body.dark-mode .result-stat-total { background: rgba(55,48,163,0.3) !important; color: #818cf8 !important; }
-body.dark-mode .result-stat-ok { background: rgba(5,150,105,0.2) !important; color: #34d399 !important; }
-body.dark-mode .result-stat-fail { background: rgba(220,38,38,0.2) !important; color: #f87171 !important; }
+body.dark-mode .page-header h2 { color: #e2e8f0; }
+body.dark-mode .upload-card { background: #161b22; border-color: #30363d; }
+body.dark-mode .upload-card-body { background: #161b22; color: #e2e8f0; }
+body.dark-mode .upload-dropzone { background: #1c2128; border-color: #30363d; }
+body.dark-mode .upload-dropzone:hover { background: #21262d; border-color: #6366f1; }
+body.dark-mode .upload-dropzone h4 { color: #e2e8f0; }
+body.dark-mode .upload-dropzone p { color: #8b949e; }
+body.dark-mode .file-selected { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3); }
+body.dark-mode .file-name { color: #a78bfa; }
+body.dark-mode .file-size { color: #8b949e; }
+body.dark-mode .format-table th { background: rgba(124,58,237,0.15); color: #a78bfa; }
+body.dark-mode .format-table td { border-color: #30363d; color: #c9d1d9; }
+body.dark-mode .format-table code { background: rgba(124,58,237,0.2); color: #a78bfa; }
+body.dark-mode .upload-error-table-wrap { border-color: rgba(245,158,11,0.3); }
+body.dark-mode .upload-error-table th { background: rgba(120,83,19,0.4); color: #fbbf24; }
+body.dark-mode .upload-error-table td { border-color: rgba(245,158,11,0.15); color: #c9d1d9; }
+body.dark-mode .upload-error-table tr:nth-child(odd) td { background: rgba(120,83,19,0.1); }
+body.dark-mode .result-stat-total { background: rgba(55,48,163,0.3); color: #818cf8; }
+body.dark-mode .result-stat-ok { background: rgba(5,150,105,0.2); color: #34d399; }
+body.dark-mode .result-stat-fail { background: rgba(220,38,38,0.2); color: #f87171; }
 
 /* Dark mode: upload result panels */
-body.dark-mode .upload-result.success { background: rgba(16,185,129,0.12) !important; border-color: rgba(16,185,129,0.3) !important; }
-body.dark-mode .upload-result.partial { background: rgba(120,53,15,0.25) !important; border-color: rgba(245,158,11,0.35) !important; }
-body.dark-mode .upload-result.error   { background: rgba(239,68,68,0.12) !important; border-color: rgba(239,68,68,0.35) !important; }
-body.dark-mode .upload-result.success .upload-result-title { color: #34d399 !important; }
-body.dark-mode .upload-result.partial .upload-result-title { color: #fbbf24 !important; }
-body.dark-mode .upload-result.error   .upload-result-title { color: #f87171 !important; }
-body.dark-mode .upload-error-heading { color: #fbbf24 !important; }
-body.dark-mode .err-row-num { color: #f87171 !important; }
-body.dark-mode .err-row-msg { color: #c9d1d9 !important; }
+body.dark-mode .upload-result.success { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.3); }
+body.dark-mode .upload-result.partial { background: rgba(120,53,15,0.25); border-color: rgba(245,158,11,0.35); }
+body.dark-mode .upload-result.error   { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.35); }
+body.dark-mode .upload-result.success .upload-result-title { color: #34d399; }
+body.dark-mode .upload-result.partial .upload-result-title { color: #fbbf24; }
+body.dark-mode .upload-result.error   .upload-result-title { color: #f87171; }
+body.dark-mode .upload-error-heading { color: #fbbf24; }
+body.dark-mode .err-row-num { color: #f87171; }
+body.dark-mode .err-row-msg { color: #c9d1d9; }
 
 /* Duplicate row highlight */
 .err-row-duplicate td { background: rgba(245,158,11,0.13) !important; border-left: 3px solid #f59e0b; }
 .err-msg-dup { color: #b45309 !important; font-weight: 600; }
-body.dark-mode .err-row-duplicate td { background: rgba(120,53,15,0.35) !important; border-left: 3px solid #fbbf24; }
-body.dark-mode .err-msg-dup { color: #fbbf24 !important; font-weight: 600; }
+body.dark-mode .err-row-duplicate td { background: rgba(120,53,15,0.35); border-left: 3px solid #fbbf24; }
+body.dark-mode .err-msg-dup { color: #fbbf24; font-weight: 600; }
 
 /* Similar row highlight (AI similarity) */
 .err-row-similar td { background: rgba(239,68,68,0.1) !important; border-left: 3px solid #ef4444; }
 .err-msg-similar { color: #b91c1c !important; font-weight: 600; }
-body.dark-mode .err-row-similar td { background: rgba(127,29,29,0.35) !important; border-left: 3px solid #f87171; }
-body.dark-mode .err-msg-similar { color: #f87171 !important; font-weight: 600; }
+body.dark-mode .err-row-similar td { background: rgba(127,29,29,0.35); border-left: 3px solid #f87171; }
+body.dark-mode .err-msg-similar { color: #f87171; font-weight: 600; }
 
 /* ── Tech Stack Reference Card ── */
 .bu-stacks-grid {

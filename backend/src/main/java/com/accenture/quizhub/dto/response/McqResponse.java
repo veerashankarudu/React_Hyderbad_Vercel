@@ -18,6 +18,7 @@ public class McqResponse {
     private String optionC;
     private String optionD;
     private String correctAnswer;
+    private String questionType;
     private Difficulty difficulty;
     private McqStatus status;
     private Long techStackId;
@@ -35,4 +36,6 @@ public class McqResponse {
     private String aiWarning;
     private Integer aiScore;
     private String aiRisk;
+    private Boolean aiGenerated;
+    private String contentJson;
 }

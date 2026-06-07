@@ -7,35 +7,35 @@
 ═══════════════════════════════════════════ */
 
 /* ── Dark theme for Kanban Board ── */
-body.dark-mode .kanban-page { background: transparent !important; color: #e2e8f0 !important; }
-body.dark-mode .kanban-title-row h2 { color: #e2e8f0 !important; }
-body.dark-mode .kanban-subtitle { color: #8b949e !important; }
+body.dark-mode .kanban-page { background: transparent; color: #e2e8f0; }
+body.dark-mode .kanban-title-row h2 { color: #e2e8f0; }
+body.dark-mode .kanban-subtitle { color: #8b949e; }
 body.dark-mode .kanban-search,
-body.dark-mode .kanban-select { background: #1c2128 !important; border-color: #30363d !important; color: #e2e8f0 !important; }
-body.dark-mode .kanban-refresh { background: #1c2128 !important; border-color: #6366f1 !important; color: #818cf8 !important; }
-body.dark-mode .kanban-refresh:hover { background: #6366f1 !important; color: white !important; }
-body.dark-mode .kanban-stats-bar { background: var(--glass-bg) !important; border-color: var(--glass-border) !important; }
-body.dark-mode .kstat-label { color: #8b949e !important; }
-body.dark-mode .kstat-divider { background: #30363d !important; }
-body.dark-mode .kstat-bar-wrap { background: #30363d !important; }
-body.dark-mode .kstat-row-label { color: #8b949e !important; }
-body.dark-mode .kstat-row-count { color: #e2e8f0 !important; }
-body.dark-mode .kanban-error { background: #2d1a1a !important; border-color: rgba(239,68,68,0.3) !important; color: #f87171 !important; }
-body.dark-mode .kanban-loading { color: #8b949e !important; }
-body.dark-mode .kanban-col-header { background: var(--glass-bg) !important; border-color: var(--glass-border) !important; }
-body.dark-mode .kanban-col-title { color: #e2e8f0 !important; }
-body.dark-mode .kanban-cards { background: rgba(13,11,26,0.55) !important; border-color: var(--glass-border) !important; }
-body.dark-mode .kanban-empty { color: #6e7681 !important; }
-body.dark-mode .kanban-card { background: var(--glass-bg) !important; border-color: var(--glass-border) !important; }
+body.dark-mode .kanban-select { background: #1c2128; border-color: #30363d; color: #e2e8f0; }
+body.dark-mode .kanban-refresh { background: #1c2128; border-color: #6366f1; color: #818cf8; }
+body.dark-mode .kanban-refresh:hover { background: #6366f1; color: white; }
+body.dark-mode .kanban-stats-bar { background: var(--glass-bg); border-color: var(--glass-border); }
+body.dark-mode .kstat-label { color: #8b949e; }
+body.dark-mode .kstat-divider { background: #30363d; }
+body.dark-mode .kstat-bar-wrap { background: #30363d; }
+body.dark-mode .kstat-row-label { color: #8b949e; }
+body.dark-mode .kstat-row-count { color: #e2e8f0; }
+body.dark-mode .kanban-error { background: #2d1a1a; border-color: rgba(239,68,68,0.3); color: #f87171; }
+body.dark-mode .kanban-loading { color: #8b949e; }
+body.dark-mode .kanban-col-header { background: var(--glass-bg); border-color: var(--glass-border); }
+body.dark-mode .kanban-col-title { color: #e2e8f0; }
+body.dark-mode .kanban-cards { background: rgba(13,11,26,0.55); border-color: var(--glass-border); }
+body.dark-mode .kanban-empty { color: #6e7681; }
+body.dark-mode .kanban-card { background: var(--glass-bg); border-color: var(--glass-border); }
 body.dark-mode .kanban-card:hover,
-body.dark-mode .kanban-card:focus { border-color: #C4B5FD !important; box-shadow: 0 4px 18px rgba(0,0,0,0.4) !important; }
-body.dark-mode .kcard-id { color: #6e7681 !important; }
-body.dark-mode .kcard-age { background: #21262d !important; color: #8b949e !important; }
-body.dark-mode .kcard-stem { color: #c9d1d9 !important; }
-body.dark-mode .kcard-footer { border-top-color: #30363d !important; }
-body.dark-mode .kcard-person-label { color: #8b949e !important; }
-body.dark-mode .kcard-tag--tech { background: rgba(124,58,237,0.2) !important; color: #a78bfa !important; }
-body.dark-mode .kcard-tag--topic { background: rgba(3,105,161,0.2) !important; color: #38bdf8 !important; }
+body.dark-mode .kanban-card:focus { border-color: #C4B5FD; box-shadow: 0 4px 18px rgba(0,0,0,0.4); }
+body.dark-mode .kcard-id { color: #6e7681; }
+body.dark-mode .kcard-age { background: #21262d; color: #8b949e; }
+body.dark-mode .kcard-stem { color: #c9d1d9; }
+body.dark-mode .kcard-footer { border-top-color: #30363d; }
+body.dark-mode .kcard-person-label { color: #8b949e; }
+body.dark-mode .kcard-tag--tech { background: rgba(124,58,237,0.2); color: #a78bfa; }
+body.dark-mode .kcard-tag--topic { background: rgba(3,105,161,0.2); color: #38bdf8; }
 
 /* ── Page shell ── */
 .kanban-page {
@@ -446,7 +446,7 @@ body.dark-mode .kcard-tag--topic { background: rgba(3,105,161,0.2) !important; c
 }
 
 /* ── Responsive ── */
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .kanban-board {
     flex-direction: column;
     overflow-x: unset;

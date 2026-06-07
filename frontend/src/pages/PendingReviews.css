@@ -69,9 +69,8 @@
    DARK THEME OVERRIDE — AI Reviewer Workflow (Image 5 inspired)
    ═══════════════════════════════════════════════════════════════ */
 
-body.dark-mode .page-container { background: transparent !important; }
-body.dark-mode .page-header h1 { color: #e2e8f0 !important; }
-body.dark-mode .page-header p  { color: #8b949e !important; }
+body.dark-mode .page-header h1 { color: #e2e8f0; }
+body.dark-mode .page-header p  { color: #8b949e; }
 
 /* Summary stat pills */
 .review-summary-stat {
@@ -87,8 +86,8 @@ body.dark-mode .tab-filters {
   background: #161b22 !important;
   border-color: rgba(255,255,255,0.08) !important;
 }
-body.dark-mode .tab-btn { color: #94a3b8 !important; background: transparent !important; }
-body.dark-mode .tab-btn.active { color: #818cf8 !important; border-color: #6366f1 !important; }
+body.dark-mode .tab-btn { color: #94a3b8; background: transparent; }
+body.dark-mode .tab-btn.active { color: #818cf8; border-color: #6366f1; }
 
 /* Review list items / cards */
 body.dark-mode .card,
@@ -97,7 +96,7 @@ body.dark-mode .review-item {
   background: #161b22 !important;
   border-color: rgba(255,255,255,0.08) !important;
 }
-body.dark-mode .review-item:hover { background: rgba(255,255,255,0.03) !important; }
+body.dark-mode .review-item:hover { background: rgba(255,255,255,0.03); }
 
 /* Review detail panel */
 .review-panel {
@@ -153,7 +152,7 @@ body.dark-mode .review-item:hover { background: rgba(255,255,255,0.03) !importan
 
 /* Empty state */
 body.dark-mode .empty-state,
-body.dark-mode .empty { color: #8b949e !important; }
+body.dark-mode .empty { color: #8b949e; }
 
 /* Fix: empty-state white card override */
 body.dark-mode .empty-state {
@@ -161,4 +160,4 @@ body.dark-mode .empty-state {
   border-color: rgba(255,255,255,0.08) !important;
   color: #8b949e !important;
 }
-body.dark-mode .empty-state h3 { color: #e2e8f0 !important; }
+body.dark-mode .empty-state h3 { color: #e2e8f0; }

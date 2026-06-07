@@ -132,10 +132,10 @@ class DtoTest {
             CommentResponse comment = CommentResponse.builder().id(1L).build();
             McqResponse mcq = new McqResponse(
                     3L, "Stem", "A", "B", "C", "D", "B",
-                    Difficulty.MEDIUM, McqStatus.READY_FOR_REVIEW,
+                    "SINGLE", Difficulty.MEDIUM, McqStatus.READY_FOR_REVIEW,
                     7L, "Spring", 8L, "DI",
                     "cr02", "Carol", "rv02", "Dave",
-                    List.of(comment), 1, ts, ts, null, 90, "HIGH"
+                    List.of(comment), 1, ts, ts, null, 90, "HIGH", null
             );
             assertThat(mcq.getId()).isEqualTo(3L);
             assertThat(mcq.getDifficulty()).isEqualTo(Difficulty.MEDIUM);

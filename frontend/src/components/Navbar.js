@@ -15,9 +15,14 @@ const NAV_ITEMS = [
   { path: '/pending-reviews', labelKey: 'nav.pendingReviews', icon: '🔍' },
   { path: '/bulk-upload', labelKey: 'nav.bulkUpload', icon: '📤' },
   { path: '/quiz-builder', labelKey: 'nav.quizBuilder', icon: '🎯' },
+  { path: '/live', labelKey: 'nav.liveQuiz', icon: '⚡' },
   { path: '/analytics', labelKey: 'nav.analytics', icon: '📊' },
   { path: '/reviewer-dashboard', labelKey: 'nav.myStats', icon: '📈' },
   { path: '/screenshot-mcq', labelKey: 'nav.screenshotMcq', icon: '📸' },
+  { path: '/smart-interview-kit', labelKey: 'nav.resumeInterview', icon: '🧑‍💼' },
+  { path: '/ai-studio', labelKey: 'nav.aiStudio', icon: '🧠' },
+  { path: '/question-types', labelKey: 'nav.questionTypes', icon: '🎮' },
+  { path: '/rulebook', labelKey: 'nav.ruleBook', icon: '📖' },
   { path: '/leaderboard', labelKey: 'nav.leaderboard', icon: '🏆' },
 ];
 
@@ -25,7 +30,7 @@ const ADMIN_ITEMS = [
   { path: '/master-data', labelKey: 'nav.masterData', icon: '🗂️' },
   { path: '/question-bank', labelKey: 'nav.questionBank', icon: '🏛️' },
   { path: '/user-management', labelKey: 'nav.users', icon: '👥' },
-  { path: '/reviewer-metrics', labelKey: 'nav.reviewerMetrics', icon: '📊' },
+  { path: '/reviewer-metrics', labelKey: 'nav.reviewerMetrics', icon: '⭐' },
   { path: '/audit-log', labelKey: 'nav.auditLog', icon: '📑' },
 ];
 

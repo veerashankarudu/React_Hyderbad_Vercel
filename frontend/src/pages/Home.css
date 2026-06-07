@@ -1,7 +1,9 @@
 /* ─── DASHBOARD LAYOUT ───────────────────────────────── */
 .dashboard {
   min-height: 100vh;
-  padding: 1.5rem 1.75rem;
+  padding: 1.5rem 2rem;
+  max-width: 1440px;
+  margin: 0 auto;
   background: transparent;
 }
 
@@ -139,10 +141,10 @@
   color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
   padding: 0.4rem 0.5rem 0.6rem; border-bottom: 1px solid var(--border);
 }
-.act-table td { padding: 0.55rem 0.5rem; border-bottom: 1px solid #FAFAF8; vertical-align: middle; }
+.act-table td { padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
 .act-table tr:last-child td { border-bottom: none; }
 .act-table tbody tr { cursor: pointer; transition: background 0.12s; }
-.act-table tbody tr:hover td { background: #FAFAFF; }
+.act-table tbody tr:hover td { background: var(--surface-hover); }
 .act-q { max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; color: var(--text); }
 .act-stack { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
 .act-time { color: var(--text-light); font-size: 0.78rem; white-space: nowrap; }
@@ -244,7 +246,7 @@
 .ai-gen-creator-bar {
   display: flex; align-items: center; gap: 0.6rem;
   padding: 0.7rem 1.4rem;
-  background: #F5F3FF; font-size: 0.8rem; color: var(--text-muted);
+  background: var(--primary-light); font-size: 0.8rem; color: var(--text-muted);
   border-bottom: 1px solid var(--border);
 }
 .ai-gen-creator-icon { font-size: 1rem; }
@@ -304,20 +306,17 @@
 .ai-gen-success-detail { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
 
 /* ─── RESPONSIVE ─────────────────────────────────────── */
-@media (max-width: 1100px) {
+@media (max-width: 1024px) {
   .dash-grid { grid-template-columns: 1fr; }
   .dash-col-right { flex-direction: row; flex-wrap: wrap; }
   .dash-col-right > .dw { flex: 1; min-width: 240px; }
-}
-@media (max-width: 900px) {
-  .dash-grid { grid-template-columns: 1fr; }
   .dash-stats { grid-template-columns: repeat(3, 1fr); }
 }
-@media (max-width: 820px) {
+@media (max-width: 768px) {
   .dash-stats { grid-template-columns: repeat(3, 1fr); }
   .dashboard { padding: 1rem; }
 }
-@media (max-width: 540px) {
+@media (max-width: 640px) {
   .dash-stats { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -517,8 +516,8 @@ body.dark-mode .dashboard {
 }
 
 /* Header */
-body.dark-mode .dash-greeting { color: #e2e8f0 !important; }
-body.dark-mode .dash-date { color: #8b949e !important; }
+body.dark-mode .dash-greeting { color: #e2e8f0; }
+body.dark-mode .dash-date { color: #8b949e; }
 body.dark-mode .dash-btn-primary {
   background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
   box-shadow: 0 3px 12px rgba(99,102,241,0.35) !important;
@@ -528,7 +527,7 @@ body.dark-mode .dash-btn-secondary {
   border-color: rgba(99,102,241,0.4) !important;
   color: #818cf8 !important;
 }
-body.dark-mode .dash-btn-secondary:hover { background: rgba(99,102,241,0.12) !important; }
+body.dark-mode .dash-btn-secondary:hover { background: rgba(99,102,241,0.12); }
 
 /* AI Showcase Banner */
 body.dark-mode .ai-showcase-banner {
@@ -540,7 +539,7 @@ body.dark-mode .ai-showcase-cta {
   background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
   color: white !important;
 }
-body.dark-mode .ai-pill { background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.15) !important; }
+body.dark-mode .ai-pill { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.15); }
 
 /* Stat cards */
 body.dark-mode .dsc {
@@ -553,14 +552,14 @@ body.dark-mode .dsc-clickable:hover {
   box-shadow: 0 8px 32px rgba(0,0,0,0.35) !important;
   border-color: rgba(99,102,241,0.25) !important;
 }
-body.dark-mode .dsc-val { color: #e2e8f0 !important; }
-body.dark-mode .dsc-label { color: #8b949e !important; }
+body.dark-mode .dsc-val { color: #e2e8f0; }
+body.dark-mode .dsc-label { color: #8b949e; }
 /* Colored stat card accents */
-body.dark-mode .dsc:nth-child(1) { border-left: 3px solid #8b5cf6 !important; }
-body.dark-mode .dsc:nth-child(2) { border-left: 3px solid #10b981 !important; }
-body.dark-mode .dsc:nth-child(3) { border-left: 3px solid #f59e0b !important; }
-body.dark-mode .dsc:nth-child(4) { border-left: 3px solid #ef4444 !important; }
-body.dark-mode .dsc:nth-child(5) { border-left: 3px solid #6b7280 !important; }
+body.dark-mode .dsc:nth-child(1) { border-left: 3px solid #8b5cf6; }
+body.dark-mode .dsc:nth-child(2) { border-left: 3px solid #10b981; }
+body.dark-mode .dsc:nth-child(3) { border-left: 3px solid #f59e0b; }
+body.dark-mode .dsc:nth-child(4) { border-left: 3px solid #ef4444; }
+body.dark-mode .dsc:nth-child(5) { border-left: 3px solid #6b7280; }
 
 /* Dashboard widgets */
 body.dark-mode .dw {
@@ -572,31 +571,31 @@ body.dark-mode .dw-head {
   border-bottom: 1px solid rgba(255,255,255,0.07) !important;
   background: rgba(255,255,255,0.02) !important;
 }
-body.dark-mode .dw-title { color: #e2e8f0 !important; }
-body.dark-mode .dw-sub { color: #6e7681 !important; }
-body.dark-mode .dw-link { color: #818cf8 !important; }
-body.dark-mode .dw-empty, .dw-loading { color: #6e7681 !important; }
+body.dark-mode .dw-title { color: #e2e8f0; }
+body.dark-mode .dw-sub { color: #6e7681; }
+body.dark-mode .dw-link { color: #818cf8; }
+body.dark-mode .dw-empty, .dw-loading { color: #6e7681; }
 
 /* Activity table */
 body.dark-mode .act-table th {
   color: #6e7681 !important;
   border-bottom-color: rgba(255,255,255,0.07) !important;
 }
-body.dark-mode .act-table td { border-bottom-color: rgba(255,255,255,0.04) !important; }
-body.dark-mode .act-table tbody tr:hover td { background: rgba(255,255,255,0.03) !important; }
-body.dark-mode .act-q { color: #e2e8f0 !important; }
-body.dark-mode .act-stack { color: #8b949e !important; }
-body.dark-mode .act-time { color: #6e7681 !important; }
+body.dark-mode .act-table td { border-bottom-color: rgba(255,255,255,0.04); }
+body.dark-mode .act-table tbody tr:hover td { background: rgba(255,255,255,0.03); }
+body.dark-mode .act-q { color: #e2e8f0; }
+body.dark-mode .act-stack { color: #8b949e; }
+body.dark-mode .act-time { color: #6e7681; }
 
 /* Bar chart */
-body.dark-mode .bar-lbl { color: #cbd5e1 !important; }
-body.dark-mode .bar-track { background: rgba(255,255,255,0.07) !important; }
-body.dark-mode .bar-cnt { color: #8b949e !important; }
+body.dark-mode .bar-lbl { color: #cbd5e1; }
+body.dark-mode .bar-track { background: rgba(255,255,255,0.07); }
+body.dark-mode .bar-cnt { color: #8b949e; }
 
 /* Performance rings */
-body.dark-mode .ring-pct { color: #e2e8f0 !important; }
-body.dark-mode .ring-lbl { color: #8b949e !important; }
-body.dark-mode .perf-item { color: #8b949e !important; }
+body.dark-mode .ring-pct { color: #e2e8f0; }
+body.dark-mode .ring-lbl { color: #8b949e; }
+body.dark-mode .perf-item { color: #8b949e; }
 
 /* Quick actions */
 body.dark-mode .qa-btn {
@@ -611,10 +610,10 @@ body.dark-mode .qa-btn:hover {
 }
 
 /* Mini leaderboard */
-body.dark-mode .lb-mini { border-bottom-color: rgba(255,255,255,0.06) !important; }
-body.dark-mode .lb-mini-name { color: #e2e8f0 !important; }
-body.dark-mode .lb-mini-id { color: #8b949e !important; }
-body.dark-mode .lb-mini-cnt { color: #818cf8 !important; }
+body.dark-mode .lb-mini { border-bottom-color: rgba(255,255,255,0.06); }
+body.dark-mode .lb-mini-name { color: #e2e8f0; }
+body.dark-mode .lb-mini-id { color: #8b949e; }
+body.dark-mode .lb-mini-cnt { color: #818cf8; }
 
 /* AI Generator Dialog (dark) */
 body.dark-mode .ai-gen-dialog {
@@ -627,7 +626,7 @@ body.dark-mode .ai-gen-creator-bar {
   border-bottom-color: rgba(255,255,255,0.07) !important;
   color: #8b949e !important;
 }
-body.dark-mode .ai-gen-body .form-group label { color: #94a3b8 !important; }
+body.dark-mode .ai-gen-body .form-group label { color: #94a3b8; }
 body.dark-mode .ai-gen-body .form-group select,
 body.dark-mode .ai-gen-body .form-group input {
   background: rgba(255,255,255,0.06) !important;
@@ -644,8 +643,8 @@ body.dark-mode .ai-gen-body .btn-secondary {
   border-color: rgba(255,255,255,0.12) !important;
   color: #94a3b8 !important;
 }
-body.dark-mode .ai-gen-success-title { color: #34d399 !important; }
-body.dark-mode .ai-gen-success-detail { color: #8b949e !important; }
+body.dark-mode .ai-gen-success-title { color: #34d399; }
+body.dark-mode .ai-gen-success-detail { color: #8b949e; }
 
 /* ═══════════════════════════════════════════════════════════════
    LIGHT MODE — active when body does NOT have .dark-mode

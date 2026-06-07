@@ -42,11 +42,11 @@ export default function AssignReviewerModal({ mcq, onClose, onAssigned }) {
         <div className="modal-body">
           <div className="modal-mcq-info">
             <div className="modal-mcq-question">{mcq.questionStem}</div>
-            <div className="modal-mcq-meta">{mcq.techStackName} / {mcq.topicName} &bull; {mcq.difficulty} &bull; {mcq.creatorFullName}</div>
+            <div className="modal-mcq-meta"><strong>Technology Stack:</strong> {mcq.techStackName} &bull; <strong>Topic:</strong> {mcq.topicName} &bull; <strong>Creator:</strong> {mcq.creatorEnterpriseId || mcq.creatorFullName}</div>
           </div>
 
           <div className="modal-section-label">
-            {reviewers.length === 0 ? t('arm.loadingReviewers') : t('arm.eligibleReviewers', { count: reviewers.length })}
+            {reviewers.length === 0 ? t('arm.loadingReviewers') : `Choose reviewer mapped for ${mcq.techStackName}`}
           </div>
 
           <div className="reviewer-list">

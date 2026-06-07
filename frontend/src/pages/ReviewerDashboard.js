@@ -15,10 +15,7 @@ function getRateColor(rate) {
 
 function diffScore(mcq) {
   if (mcq.aiScore != null) return mcq.aiScore;
-  const id = mcq.id || 1;
-  if (mcq.difficulty === 'EASY')  return 72 + (id % 18);
-  if (mcq.difficulty === 'HARD') return 32 + (id % 20);
-  return 54 + (id % 16);
+  return null;
 }
 
 export default function ReviewerDashboard() {
@@ -48,6 +45,29 @@ export default function ReviewerDashboard() {
     }).catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  // Fetch real AI scores for unscored recent reviews
+  useEffect(() => {
+    const unscored = recentReviews.filter(m => m.aiScore == null);
+    if (unscored.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      for (const mcq of unscored) {
+        if (cancelled) break;
+        try {
+          const { data } = await API.post('/ai/score-quality', {
+            questionStem: mcq.questionStem, optionA: mcq.optionA, optionB: mcq.optionB,
+            optionC: mcq.optionC, optionD: mcq.optionD, correctOption: mcq.correctOption,
+            difficultyLevel: mcq.difficulty, techStack: mcq.techStackName, topic: mcq.topicName
+          });
+          if (!cancelled && data.available && data.qualityScore != null) {
+            setRecentReviews(prev => prev.map(m => m.id === mcq.id ? { ...m, aiScore: data.qualityScore } : m));
+          }
+        } catch (_) { /* skip */ }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [recentReviews.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return <><Navbar /><div className="page-container"><div className="loading">Loading dashboard...</div></div></>;
 
@@ -140,10 +160,10 @@ export default function ReviewerDashboard() {
                         <span className={`status-pill ${mcq.status?.toLowerCase()}`}>{mcq.status?.replaceAll('_', ' ')}</span>
                         {(() => {
                           const s = diffScore(mcq);
-                          const isMock = mcq.aiScore == null;
+                          if (s == null) return <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Scoring...</span>;
                           const bg = s >= 80 ? '#D1FAE5' : s >= 60 ? '#FEF3C7' : '#FEE2E2';
                           const cl = s >= 80 ? '#065F46' : s >= 60 ? '#92400E' : '#991B1B';
-                          return <span style={{ background: bg, color: cl, borderRadius: '4px', padding: '1px 6px', fontSize: '0.72rem', fontWeight: 700 }}>Score {s}/100{isMock ? ' *' : ''}</span>;
+                          return <span style={{ background: bg, color: cl, borderRadius: '4px', padding: '1px 6px', fontSize: '0.72rem', fontWeight: 700 }}>Score {s}/100</span>;
                         })()}
                       </div>
                     </button>

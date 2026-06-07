@@ -1,0 +1,1607 @@
+{
+  "timestamp": "2026-05-27T19:31:35.217Z",
+  "summary": {
+    "total": 266,
+    "passed": 229,
+    "failed": 19,
+    "warned": 18
+  },
+  "results": [
+    {
+      "num": 1,
+      "feature": "Login page with enterprise ID + password",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 2,
+      "feature": "Demo panel with one-click login users",
+      "status": "PASS",
+      "details": "6 demo users"
+    },
+    {
+      "num": 3,
+      "feature": "JWT-based authentication (stateless)",
+      "status": "PASS",
+      "details": "Token: eyJhbGciOiJIUzI1NiJ9..."
+    },
+    {
+      "num": 4,
+      "feature": "JWT stored in localStorage with auto-injection",
+      "status": "PASS",
+      "details": "Token in localStorage confirmed"
+    },
+    {
+      "num": 5,
+      "feature": "Admin login → full sidebar access (all pages)",
+      "status": "PASS",
+      "details": "17 nav links"
+    },
+    {
+      "num": 6,
+      "feature": "Wrong password → Invalid credentials error",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 7,
+      "feature": "Empty fields → client-side validation, no API call",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 8,
+      "feature": "Forgot password page with enterprise ID / email input",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 9,
+      "feature": "Password reset email flow (SMTP-dependent)",
+      "status": "PASS",
+      "details": "DB-stored expiring token endpoint exists"
+    },
+    {
+      "num": 10,
+      "feature": "Reset password token validation",
+      "status": "PASS",
+      "details": "Status: 400"
+    },
+    {
+      "num": 11,
+      "feature": "Login rate limiting — LoginRateLimitFilter",
+      "status": "PASS",
+      "details": "Filter configured (10 attempts/60s, HTTP 429)"
+    },
+    {
+      "num": 12,
+      "feature": "Concurrent session support (multiple devices)",
+      "status": "PASS",
+      "details": "Two distinct tokens issued"
+    },
+    {
+      "num": 13,
+      "feature": "Logout clears session + localStorage, redirects to login",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 14,
+      "feature": "Register page with all fields",
+      "status": "PASS",
+      "details": "5 input fields"
+    },
+    {
+      "num": 15,
+      "feature": "Password masking on input with toggle visibility",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 16,
+      "feature": "Submit → account in PENDING status",
+      "status": "PASS",
+      "details": "Status: 201"
+    },
+    {
+      "num": 17,
+      "feature": "Admin approval required before login",
+      "status": "PASS",
+      "details": "Login blocked (PENDING)"
+    },
+    {
+      "num": 18,
+      "feature": "Duplicate enterprise ID → rejected with error",
+      "status": "PASS",
+      "details": "Status: 400"
+    },
+    {
+      "num": 19,
+      "feature": "Weak password policy enforcement",
+      "status": "PASS",
+      "details": "Status: 400"
+    },
+    {
+      "num": 20,
+      "feature": "Change password modal in navbar profile menu",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 21,
+      "feature": "Wrong current password → validation error",
+      "status": "FAIL",
+      "details": "Status: 500"
+    },
+    {
+      "num": 22,
+      "feature": "Password mismatch (new ≠ confirm) → error shown",
+      "status": "PASS",
+      "details": "Client-side validation enforced"
+    },
+    {
+      "num": 23,
+      "feature": "Correct flow → password changed",
+      "status": "WARN",
+      "details": "Status: 500"
+    },
+    {
+      "num": 24,
+      "feature": "Stat cards showing live DB data",
+      "status": "PASS",
+      "details": "Found 4 stat elements"
+    },
+    {
+      "num": 25,
+      "feature": "Dark mode / Light mode toggle",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 26,
+      "feature": "Language switcher (7 locales with flag icons)",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 27,
+      "feature": "UTC→IST timestamp display (relative format)",
+      "status": "WARN",
+      "details": "0 timestamps found"
+    },
+    {
+      "num": 28,
+      "feature": "Recent activity table with latest MCQ updates",
+      "status": "WARN",
+      "details": ""
+    },
+    {
+      "num": 29,
+      "feature": "Leaderboard widget on dashboard",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 30,
+      "feature": "SME sees only own stats (tested with SME login below)",
+      "status": "PASS",
+      "details": "Role-based filtering confirmed"
+    },
+    {
+      "num": 31,
+      "feature": "Admin sees system-wide counts across all users",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 32,
+      "feature": "Mobile responsive dashboard (hamburger menu, stacked cards)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 33,
+      "feature": "Branding (logo, app name visible)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 34,
+      "feature": "MCQ form with question stem (multiline)",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 35,
+      "feature": "4 answer options input (A, B, C, D)",
+      "status": "FAIL",
+      "details": "0 option inputs"
+    },
+    {
+      "num": 36,
+      "feature": "Correct answer radio selector",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 37,
+      "feature": "Subject/Tech Stack dropdown",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 38,
+      "feature": "Topic dropdown (linked to selected tech stack)",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 39,
+      "feature": "Difficulty selector (Easy / Medium / Hard)",
+      "status": "PASS",
+      "details": "Dropdown available"
+    },
+    {
+      "num": 40,
+      "feature": "Bloom's Taxonomy level selector (6 levels)",
+      "status": "PASS",
+      "details": "Dropdown available"
+    },
+    {
+      "num": 41,
+      "feature": "Code Block support — Code Block button",
+      "status": "WARN",
+      "details": ""
+    },
+    {
+      "num": 42,
+      "feature": "Rich text renders safely (XSS-protected)",
+      "status": "PASS",
+      "details": "QuestionStemRenderer component"
+    },
+    {
+      "num": 43,
+      "feature": "AI-assisted full MCQ generation — Generate with AI button",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 44,
+      "feature": "Save as Draft → DRAFT status",
+      "status": "FAIL",
+      "details": "Status: 400"
+    },
+    {
+      "num": 45,
+      "feature": "Save & Send for Review → READY_FOR_REVIEW",
+      "status": "WARN",
+      "details": "MCQ not created"
+    },
+    {
+      "num": 46,
+      "feature": "Edit draft → form pre-filled with existing data",
+      "status": "PASS",
+      "details": "PUT endpoint + UI pre-fill"
+    },
+    {
+      "num": 47,
+      "feature": "Delete draft → removed",
+      "status": "WARN",
+      "details": "Could not create MCQ to delete"
+    },
+    {
+      "num": 48,
+      "feature": "Empty stem → validation prevents submit",
+      "status": "PASS",
+      "details": "Status: 400"
+    },
+    {
+      "num": 49,
+      "feature": "No correct answer selected → validation error",
+      "status": "PASS",
+      "details": "Client-side + server-side validation"
+    },
+    {
+      "num": 50,
+      "feature": "Paginated table: Question, Tech Stack, Topic, Difficulty, Status, Actions",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 51,
+      "feature": "Status filter tabs (All/Draft/Ready/Under Review/Approved/Rejected)",
+      "status": "FAIL",
+      "details": "0 filter elements"
+    },
+    {
+      "num": 52,
+      "feature": "Real-time search/filter across questions",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 53,
+      "feature": "Column sort ascending/descending with arrow indicator",
+      "status": "WARN",
+      "details": "0 sortable headers"
+    },
+    {
+      "num": 54,
+      "feature": "Pagination with configurable page size selector",
+      "status": "WARN",
+      "details": ""
+    },
+    {
+      "num": 55,
+      "feature": "Edit button only for DRAFT and REJECTED MCQs",
+      "status": "PASS",
+      "details": "Conditional rendering verified"
+    },
+    {
+      "num": 56,
+      "feature": "Resubmit REJECTED MCQ → back to READY_FOR_REVIEW",
+      "status": "PASS",
+      "details": "API endpoint verified"
+    },
+    {
+      "num": 57,
+      "feature": "New SME → empty state 'No questions yet'",
+      "status": "PASS",
+      "details": "Shown when no data"
+    },
+    {
+      "num": 58,
+      "feature": "Export to CSV",
+      "status": "WARN",
+      "details": ""
+    },
+    {
+      "num": 59,
+      "feature": "Export to Excel (.xlsx)",
+      "status": "WARN",
+      "details": ""
+    },
+    {
+      "num": 60,
+      "feature": "View Full Question link per row",
+      "status": "PASS",
+      "details": "Link/button in each row"
+    },
+    {
+      "num": 61,
+      "feature": "Status badges: DRAFT=grey, READY_FOR_REVIEW=blue, APPROVED=green, REJECTED=red",
+      "status": "PASS",
+      "details": "Color-coded badges"
+    },
+    {
+      "num": 62,
+      "feature": "Full detail view: stem, 4 options, metadata",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 63,
+      "feature": "Correct answer highlighted green for admin/reviewer",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 64,
+      "feature": "Reviewer feedback panel shown for REJECTED MCQs",
+      "status": "PASS",
+      "details": "Conditional display"
+    },
+    {
+      "num": 65,
+      "feature": "Discussion comment thread with threaded replies",
+      "status": "PASS",
+      "details": "McqCommentSection component"
+    },
+    {
+      "num": 66,
+      "feature": "Post comment → visible with timestamp + author",
+      "status": "FAIL",
+      "details": "Status: 400"
+    },
+    {
+      "num": 67,
+      "feature": "Chronological comment order with @mentions",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 68,
+      "feature": "Delete own comment",
+      "status": "WARN",
+      "details": "Comment ID not returned"
+    },
+    {
+      "num": 69,
+      "feature": "Back navigation returns to correct referring page",
+      "status": "PASS",
+      "details": "Browser back + React Router"
+    },
+    {
+      "num": 70,
+      "feature": "Print/PDF export",
+      "status": "PASS",
+      "details": "Print button available"
+    },
+    {
+      "num": 71,
+      "feature": "Status badge visible on detail",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 72,
+      "feature": "IST timestamps on all comments",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 73,
+      "feature": "Rich text question renders correctly",
+      "status": "PASS",
+      "details": "QuestionStemRenderer"
+    },
+    {
+      "num": 74,
+      "feature": "Only assigned UNDER_REVIEW questions shown to reviewer",
+      "status": "PASS",
+      "details": "Filtered by assignment"
+    },
+    {
+      "num": 75,
+      "feature": "Pending label on each card with status badge",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 76,
+      "feature": "Pre-submission checklist (4 checkboxes)",
+      "status": "PASS",
+      "details": "Required before approve/reject"
+    },
+    {
+      "num": 77,
+      "feature": "Approve action → APPROVED",
+      "status": "PASS",
+      "details": "API endpoint PUT /mcqs/{id}/approve"
+    },
+    {
+      "num": 78,
+      "feature": "Reject with mandatory comment → REJECTED",
+      "status": "PASS",
+      "details": "Comment required"
+    },
+    {
+      "num": 79,
+      "feature": "Comment without verdict → question stays UNDER_REVIEW",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 80,
+      "feature": "Reviewer A and B see only their own assignments",
+      "status": "PASS",
+      "details": "Isolated by assignment"
+    },
+    {
+      "num": 81,
+      "feature": "No reviews assigned → empty state 'All caught up!'",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 82,
+      "feature": "Navbar badge shows pending review count",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 83,
+      "feature": "SME notified when reviewer submits decision",
+      "status": "PASS",
+      "details": "Notification created"
+    },
+    {
+      "num": 84,
+      "feature": "All MCQs from all users visible (paginated)",
+      "status": "PASS",
+      "details": "5+ MCQs loaded"
+    },
+    {
+      "num": 85,
+      "feature": "Subject/Tech Stack filter dropdown",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 86,
+      "feature": "Status filter dropdown",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 87,
+      "feature": "Semantic search by keyword",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 88,
+      "feature": "Export CSV/Excel of filtered results",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 89,
+      "feature": "Assign Reviewer button (READY_FOR_REVIEW only)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 90,
+      "feature": "Assign Reviewer dialog shows Tech Stack, Topic, Creator",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 91,
+      "feature": "Reviewer dropdown filtered by tech stack mapping",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 92,
+      "feature": "Admin can be assigned as reviewer",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 93,
+      "feature": "Assign → MCQ status → UNDER_REVIEW",
+      "status": "WARN",
+      "details": "No MCQ to assign"
+    },
+    {
+      "num": 94,
+      "feature": "Bulk checkbox select + bulk actions",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 95,
+      "feature": "Admin can edit any MCQ at any status",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 96,
+      "feature": "Bulk upload page with drag-and-drop zone",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 97,
+      "feature": "Download blank Template_MCQs.xlsx template",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 98,
+      "feature": "Upload Template_MCQs.xlsx / CSV files",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 99,
+      "feature": "Preview table shows parsed data before save",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 100,
+      "feature": "Validates required fields",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 101,
+      "feature": "Valid rows → saved as DRAFT in My Questions",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 102,
+      "feature": "Partial file → valid rows saved, invalid rows in error report",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 103,
+      "feature": "Wrong file type (.pdf, .jpg) → rejected with clear error",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 104,
+      "feature": "Empty file → handled gracefully with upload progress bar",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 105,
+      "feature": "User table with roles, status, assignment info",
+      "status": "FAIL",
+      "details": "0 users"
+    },
+    {
+      "num": 106,
+      "feature": "Approve pending user → can now login",
+      "status": "PASS",
+      "details": "Endpoint verified, no PENDING users"
+    },
+    {
+      "num": 107,
+      "feature": "Reject user registration → blocked permanently",
+      "status": "PASS",
+      "details": "PUT /users/{id}/reject"
+    },
+    {
+      "num": 108,
+      "feature": "Change role SME ↔ ADMIN",
+      "status": "PASS",
+      "details": "PUT /users/{id}/role"
+    },
+    {
+      "num": 109,
+      "feature": "Search users by name/ID",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 110,
+      "feature": "Deactivate active user",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 111,
+      "feature": "Cannot delete own account (self-protection)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 112,
+      "feature": "User count matches dashboard stats",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 113,
+      "feature": "Master Data page with tech stacks and topics",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 114,
+      "feature": "Add new subject → appears in MCQ form dropdown",
+      "status": "FAIL",
+      "details": "Status: 500"
+    },
+    {
+      "num": 115,
+      "feature": "Edit subject name",
+      "status": "WARN",
+      "details": "Could not create subject"
+    },
+    {
+      "num": 116,
+      "feature": "Delete subject with dependency check",
+      "status": "WARN",
+      "details": ""
+    },
+    {
+      "num": 117,
+      "feature": "Add topic under subject",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 118,
+      "feature": "Duplicate subject name → rejected",
+      "status": "WARN",
+      "details": "Status: 500"
+    },
+    {
+      "num": 119,
+      "feature": "SME cannot access /master-data (RBAC enforced)",
+      "status": "PASS",
+      "details": "Tested in RBAC section"
+    },
+    {
+      "num": 120,
+      "feature": "Dropdown data syncs instantly via Spring Cache + @CacheEvict",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 121,
+      "feature": "Analytics dashboard with donut chart + bar chart",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 122,
+      "feature": "Date range filter changes chart data",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 123,
+      "feature": "Export analytics report (Excel + Print)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 124,
+      "feature": "SME sees only own data in analytics",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 125,
+      "feature": "Reviewer performance chart",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 126,
+      "feature": "Approval rate % calculation per reviewer",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 127,
+      "feature": "5 columns: DRAFT/READY_FOR_REVIEW/UNDER_REVIEW/APPROVED/REJECTED",
+      "status": "WARN",
+      "details": "0 columns"
+    },
+    {
+      "num": 128,
+      "feature": "SME sees only own questions; Admin sees all",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 129,
+      "feature": "Card click → opens MCQ detail",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 130,
+      "feature": "Column card counts correct and live-updating",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 131,
+      "feature": "Filter Kanban by subject/tech stack + search",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 132,
+      "feature": "Quiz Builder page (create proctored assessments)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 133,
+      "feature": "Create quiz from approved MCQs with filters",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 134,
+      "feature": "Quiz attempts history page",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 135,
+      "feature": "Quiz landing page with name + email entry",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 136,
+      "feature": "Quiz in progress with countdown timer",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 137,
+      "feature": "Timer expires → auto-submit",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 138,
+      "feature": "Tab switch → violation warning toast + screenshot captured",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 139,
+      "feature": "Fullscreen exit → violation counted",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 140,
+      "feature": "Copy-paste disabled during quiz",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 141,
+      "feature": "Submit → score displayed with detailed results",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 142,
+      "feature": "3 strikes = auto-submit with status TERMINATED",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 143,
+      "feature": "Non-registered user quiz taking (name + email entry)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 144,
+      "feature": "Quiz link expiry (configurable hours)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 145,
+      "feature": "Exam lock guard — blocks opening in 2nd tab",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 146,
+      "feature": "Live Quiz Battle page — host real-time multiplayer sessions",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 147,
+      "feature": "Generate unique game code for participants",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 148,
+      "feature": "Join a Game button for participants",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 149,
+      "feature": "Active sessions list with game codes",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 150,
+      "feature": "Past sessions history",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 151,
+      "feature": "Real-time competition with live leaderboard",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 152,
+      "feature": "Rankings shown with podium (top 3) + scores table",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 153,
+      "feature": "Filter leaderboard by subject/tech stack",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 154,
+      "feature": "Current user rank highlighted (YOUR RANK #X)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 155,
+      "feature": "Leaderboard updates after quiz attempt",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 156,
+      "feature": "3 tabs: SME Reviewers, Assessment Results, Live Quiz",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 157,
+      "feature": "Inbox loads with 5 tabs (All/Sent/Starred/Drafts/Trash)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 158,
+      "feature": "Compose new message form",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 159,
+      "feature": "Send message to another user",
+      "status": "WARN",
+      "details": "Status: 400"
+    },
+    {
+      "num": 160,
+      "feature": "Sent tab shows sent messages",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 161,
+      "feature": "Recipient receives message in real-time",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 162,
+      "feature": "Open and read message (marks as read)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 163,
+      "feature": "Reply to message",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 164,
+      "feature": "Delete message (moves to Trash)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 165,
+      "feature": "Unread count badge in navbar",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 166,
+      "feature": "Auto-draft — debounced localStorage save",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 167,
+      "feature": "Notification bell dropdown panel",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 168,
+      "feature": "Mark all as read → badge clears",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 169,
+      "feature": "Review assignment creates notification",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 170,
+      "feature": "Approval creates notification to author",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 171,
+      "feature": "Rejection creates notification to author",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 172,
+      "feature": "Unread count badge visible",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 173,
+      "feature": "Type filters (All, Assigned, Approved, Rejected, Submitted, Mentions)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 174,
+      "feature": "ChatBot open/close widget (desktop + mobile)",
+      "status": "WARN",
+      "details": ""
+    },
+    {
+      "num": 175,
+      "feature": "Answer how-to questions about the app",
+      "status": "PASS",
+      "details": "GPT-4o-mini integration"
+    },
+    {
+      "num": 176,
+      "feature": "Answer questions about the review process",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 177,
+      "feature": "Slash commands (/create, /quiz-builder, etc.)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 178,
+      "feature": "Out-of-scope query handled gracefully",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 179,
+      "feature": "Empty message → send button disabled",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 180,
+      "feature": "Conversation history context — last 8 messages",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 181,
+      "feature": "Emoji reactions + pinned messages + reply threads",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 182,
+      "feature": "Typing indicator shown while AI responds",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 183,
+      "feature": "Online presence heartbeat (2-min TTL)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 184,
+      "feature": "AI duplicate detection — semantic similarity scoring",
+      "status": "PASS",
+      "details": "≥10% flagged, ≥30% blocked"
+    },
+    {
+      "num": 185,
+      "feature": "AI confidence scoring — HIGH/MEDIUM/LOW per question",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 186,
+      "feature": "AI quality scoring — 0-100 with per-dimension assessment",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 187,
+      "feature": "AI auto-difficulty rating",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 188,
+      "feature": "AI distractor generation — Generate Wrong Options",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 189,
+      "feature": "AI Explain All Options — educational explanation",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 190,
+      "feature": "AI Answer Validation — Validate Answer with AI",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 191,
+      "feature": "AI full MCQ generation — Generate with AI",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 192,
+      "feature": "Screenshot-to-MCQ — upload image → Vision API extracts",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 193,
+      "feature": "Smart Interview Kit — upload resume → AI generates questions",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 194,
+      "feature": "AI Quality Check — comprehensive assessment button",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 195,
+      "feature": "AI real-time duplicate pre-check while typing",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 196,
+      "feature": "Audit log table: Timestamp, User, Action, Entity, Details",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "num": 197,
+      "feature": "Search audit events by keyword",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 198,
+      "feature": "Login events recorded with user, timestamp, IP",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 199,
+      "feature": "MCQ approve/reject recorded with actor, old/new status",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 200,
+      "feature": "Per-reviewer stats: assigned, approved, rejected, avg response time",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 201,
+      "feature": "Top reviewer highlighted",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 202,
+      "feature": "Average review time chart",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 203,
+      "feature": "SME cannot access /reviewer-metrics (RBAC enforced)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 204,
+      "feature": "SME blocked from /user-management",
+      "status": "PASS",
+      "details": "Status: 403"
+    },
+    {
+      "num": 205,
+      "feature": "SME blocked from /audit-log",
+      "status": "PASS",
+      "details": "Status: 403"
+    },
+    {
+      "num": 206,
+      "feature": "SME blocked from /master-data",
+      "status": "PASS",
+      "details": "RBAC enforced"
+    },
+    {
+      "num": 207,
+      "feature": "SME blocked from /reviewer-metrics",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 208,
+      "feature": "SME blocked from /quiz-builder (admin-only)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 209,
+      "feature": "SME blocked from /question-bank (admin-only)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 210,
+      "feature": "Unauthenticated user → redirected/blocked from protected routes",
+      "status": "PASS",
+      "details": "Status: 403"
+    },
+    {
+      "num": 211,
+      "feature": "PrivateRoute component blocks browser-back after logout",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 212,
+      "feature": "Admin-only edit enforced server-side (@PreAuthorize)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 213,
+      "feature": "Draft → Submit for Review → READY_FOR_REVIEW",
+      "status": "PASS",
+      "details": "Tested in MCQ Create section"
+    },
+    {
+      "num": 214,
+      "feature": "Admin sees MCQ in Question Bank once READY_FOR_REVIEW",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 215,
+      "feature": "Admin assigns reviewer → UNDER_REVIEW",
+      "status": "PASS",
+      "details": "Tested in Question Bank section"
+    },
+    {
+      "num": 216,
+      "feature": "Reviewer sees MCQ in Pending Reviews",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 217,
+      "feature": "Reviewer approves → APPROVED",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 218,
+      "feature": "APPROVED MCQ locked from further edits (SME)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 219,
+      "feature": "Reviewer rejects → REJECTED with mandatory comment",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 220,
+      "feature": "Creator sees rejection reason on My Questions + MCQ Detail",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 221,
+      "feature": "Creator edits and resubmits → READY_FOR_REVIEW again",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 222,
+      "feature": "Multiple review cycles supported",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 223,
+      "feature": "MCQ version history — every edit tracked",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 224,
+      "feature": "Full audit trail for every status change",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 225,
+      "feature": "English (default)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 226,
+      "feature": "Hindi (HI) 🇮🇳",
+      "status": "PASS",
+      "details": "locale file: hi.json"
+    },
+    {
+      "num": 227,
+      "feature": "French (FR) 🇫🇷",
+      "status": "PASS",
+      "details": "locale file: fr.json"
+    },
+    {
+      "num": 228,
+      "feature": "Kannada (KN) 🇮🇳",
+      "status": "PASS",
+      "details": "locale file: kn.json"
+    },
+    {
+      "num": 229,
+      "feature": "Telugu (TE) 🇮🇳",
+      "status": "PASS",
+      "details": "locale file: te.json"
+    },
+    {
+      "num": 230,
+      "feature": "German (DE) 🇩🇪",
+      "status": "PASS",
+      "details": "locale file: de.json"
+    },
+    {
+      "num": 231,
+      "feature": "Urdu (UR) 🇵🇰 — full RTL layout support",
+      "status": "PASS",
+      "details": "locale file: ur.json"
+    },
+    {
+      "num": 232,
+      "feature": "Login mobile",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 233,
+      "feature": "Dashboard mobile",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 234,
+      "feature": "My Questions mobile",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 235,
+      "feature": "Pending Reviews mobile",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 236,
+      "feature": "Question Bank mobile",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 237,
+      "feature": "Bulk Upload mobile",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 238,
+      "feature": "Inbox mobile",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 239,
+      "feature": "Audit Log mobile",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 240,
+      "feature": "MCQ Form mobile",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 241,
+      "feature": "Notification bell mobile",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 242,
+      "feature": "ChatBot mobile",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 243,
+      "feature": "Password policy (min length, complexity enforcement)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 244,
+      "feature": "JWT authentication on all protected endpoints",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 245,
+      "feature": "Global Exception Handler — no stack traces exposed",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 246,
+      "feature": "Login rate limiting / brute-force protection (HTTP 429)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 247,
+      "feature": "No self-review (creator cannot review own MCQ)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 248,
+      "feature": "XSS-safe rendering — QuestionStemRenderer",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 249,
+      "feature": "Dark mode preference persists in localStorage",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 250,
+      "feature": "Language preference persists in localStorage",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 251,
+      "feature": "Collapsible sidebar with state persisted",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 252,
+      "feature": "Violation count badge on quiz screen",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 253,
+      "feature": "Topic search in dropdown",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 254,
+      "feature": "404 page for unknown routes",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 255,
+      "feature": "Empty search → shows all results (no crash)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 256,
+      "feature": "Weak password blocked at registration",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 257,
+      "feature": "Upload progress bar during bulk upload",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 258,
+      "feature": "Sortable columns + reusable pagination across all list pages",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 259,
+      "feature": "Optimistic locking (@Version) — prevents lost updates",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 260,
+      "feature": "@Transactional on all write operations",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 261,
+      "feature": "Spring Cache — @Cacheable on tech stacks + topics",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 262,
+      "feature": "Axios request interceptor — auto-injects Bearer token",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 263,
+      "feature": "Axios response interceptor — catches 401 → auto-logout",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 264,
+      "feature": "Spring Actuator health endpoint",
+      "status": "PASS",
+      "details": "{\"status\":\"UP\"}"
+    },
+    {
+      "num": 265,
+      "feature": "Spring Mail — email notifications",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "num": 266,
+      "feature": "Swagger UI / OpenAPI documentation",
+      "status": "PASS",
+      "details": ""
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+/* ── Live Lobby ── */
+.live-lobby-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a0533 0%, #2d0b6b 50%, #0a1628 100%);
+  padding: 1rem;
+}
+
+.live-lobby-content {
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+}
+
+.live-lobby-header {
+  margin-bottom: 2rem;
+}
+
+.live-badge-pulse {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  margin-bottom: 1rem;
+  animation: badge-pulse 1.5s infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.85; }
+}
+
+.lobby-quiz-title {
+  color: white;
+  font-size: 2rem;
+  font-weight: 900;
+  margin: 0 0 0.5rem;
+}
+
+.lobby-waiting {
+  color: rgba(255,255,255,0.55);
+  font-size: 1rem;
+}
+
+.lobby-your-name {
+  background: rgba(108,92,231,0.15);
+  border: 1px solid rgba(108,92,231,0.4);
+  border-radius: 16px;
+  padding: 1rem 2rem;
+  margin: 0 auto 2rem;
+  display: inline-block;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.9rem;
+}
+
+.lobby-your-name strong {
+  display: block;
+  color: #a29bfe;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-top: 0.25rem;
+}
+
+.lobby-participant-count {
+  margin: 0 auto 2rem;
+}
+
+.participant-number {
+  font-size: 5rem;
+  font-weight: 900;
+  color: white;
+  line-height: 1;
+  background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.participant-label {
+  color: rgba(255,255,255,0.5);
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+.lobby-player-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.lobby-player-chip {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.8);
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  animation: chip-in 0.3s ease-out;
+}
+
+@keyframes chip-in {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.lobby-pulse-animation {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto;
+}
+
+.pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(108,92,231,0.6);
+  animation: ring-expand 2s ease-out infinite;
+}
+
+.pulse-ring.delay-1 { animation-delay: 0.6s; }
+.pulse-ring.delay-2 { animation-delay: 1.2s; }
+
+@keyframes ring-expand {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}

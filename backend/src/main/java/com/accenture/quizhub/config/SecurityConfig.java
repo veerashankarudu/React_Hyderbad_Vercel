@@ -37,8 +37,15 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/master/tech-stacks").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/quiz-sessions/take/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/quiz-sessions/take/*/submit").permitAll()
+                // Live Quiz Battle — PIN validation and join are public
+                .requestMatchers(HttpMethod.GET, "/api/v1/live/sessions/*/validate").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/live/sessions/*/join").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/live/sessions/*/reconnect").permitAll()
+                // WebSocket handshake
+                .requestMatchers("/ws/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )

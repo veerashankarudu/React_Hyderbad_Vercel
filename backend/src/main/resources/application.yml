@@ -1,7 +1,21 @@
 server:
   port: 8080
+  servlet:
+    async:
+      timeout: 300000
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain,text/css,application/javascript
+    min-response-size: 1024
 
 spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:ollama}
+
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+
   application:
     name: smart-quiz-ai-hub
 
@@ -10,6 +24,12 @@ spring:
     username: root
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
 
   jpa:
     hibernate:
@@ -23,7 +43,10 @@ spring:
         format_sql: false
 
   cache:
-    type: simple
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=300s
+    cache-names: techStacks,topics,mcqCount,analytics,reviewers
 
   sql:
     init:
@@ -34,13 +57,6 @@ spring:
       enabled: true
       max-file-size: 5MB
       max-request-size: 6MB
-
-  ai:
-    openai:
-      api-key: ${OPENAI_API_KEY:sk-placeholder-no-key-set}
-      chat:
-        options:
-          model: gpt-4o-mini
 
   mail:
     host: ${MAIL_HOST:smtp.office365.com}
@@ -54,10 +70,10 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:myS3cr3tK3yForJWTThatIsAtLeast32Chars!}
+    secret: ${JWT_SECRET:QuizHubAI-Hack-N-Stack-2026-SecretKey-Min32Chars!}
     expiration-ms: 86400000
   cors:
-    allowed-origins: http://localhost:3000
+    allowed-origins: http://localhost:3000,http://localhost:3001
   upload:
     max-rows: 500
   url: ${APP_URL:http://localhost:3000}

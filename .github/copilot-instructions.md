@@ -93,12 +93,13 @@ After completing everything, report:
 - ✅ Health check at http://localhost:8080/actuator/health
 
 Pre-seeded login credentials (no setup needed):
-| Role  | Enterprise ID         | Password   |
-|-------|-----------------------|------------|
-| Admin | `divya.madhanasekar`  | `Admin@123` |
-| SME   | `arjun.krishna`       | `Sme@123`  |
-| SME   | `priya.sharma`        | `Sme@123`  |
-| SME   | `rahul.verma`         | `Sme@123`  |
+| Role  | Enterprise ID            | Password    |
+|-------|--------------------------|-------------|
+| Admin | `divya.madhanasekar`     | `Admin@123` |
+| Admin | `gaurav.a.bhola`         | `Admin@123` |
+| SME   | `birendra.kumar.singh`   | `Sme@1234`  |
+| SME   | `swati.avinash.nikam`    | `Sme@1234`  |
+| SME   | `indugu.hari.prasad`     | `Sme@1234`  |
 
 ---
 

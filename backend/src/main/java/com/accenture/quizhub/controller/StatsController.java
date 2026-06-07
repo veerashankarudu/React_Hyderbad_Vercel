@@ -243,6 +243,7 @@ public class StatsController {
      * SLA breach: MCQs stuck in READY_FOR_REVIEW / UNDER_REVIEW for > 48 hours.
      */
     @GetMapping("/sla-breach")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getSlaBreached(@AuthenticationPrincipal String enterpriseId) {
         User user = resolveUser(enterpriseId);
         if (!"ADMIN".equals(user.getRole().name())) return ResponseEntity.status(403).build();

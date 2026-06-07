@@ -184,9 +184,9 @@ body[data-sb="collapsed"] .notif-dropdown {
 }
 
 .notif-chip:hover:not(.active) {
-  background: #F5F3FF;
+  background: var(--primary-light);
   border-color: #C4B5FD;
-  color: #7C3AED;
+  color: var(--primary);
 }
 
 .notif-mark-all {
@@ -201,7 +201,7 @@ body[data-sb="collapsed"] .notif-dropdown {
   white-space: nowrap;
 }
 
-.notif-mark-all:hover { background: #F5F3FF; }
+.notif-mark-all:hover { background: var(--primary-light); }
 
 /* ───────── Scrollable list ───────── */
 .notif-list {

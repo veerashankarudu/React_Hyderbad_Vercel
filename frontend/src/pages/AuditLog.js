@@ -104,7 +104,8 @@ export default function AuditLog() {
           <select
             value={actionFilter}
             onChange={e => setActionFilter(e.target.value)}
-            style={{ padding: '0.5rem 0.75rem', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.84rem', background: '#fff' }}
+            className="al-select"
+            style={{ padding: '0.5rem 0.75rem', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.84rem' }}
           >
             <option value="">{t('auditLog.allActions')}</option>
             {uniqueActions.map(a => <option key={a} value={a}>{a}</option>)}
@@ -124,7 +125,7 @@ export default function AuditLog() {
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
                 <thead>
-                  <tr style={{ background: 'var(--bg-light)', textAlign: 'left' }}>
+                  <tr className="al-thead-row" style={{ textAlign: 'left' }}>
                     <th style={{ padding: '0.65rem 1rem' }}>#</th>
                     {[{key:'timestamp',label:t('auditLog.colTime')},{key:'actorEnterpriseId',label:t('auditLog.colActor')},{key:'action',label:t('auditLog.colAction')},{key:'targetEnterpriseId',label:t('auditLog.colTarget')},{key:'details',label:t('auditLog.colDetails')}].map(col => (
                       <SortableTh key={col.key} colKey={col.key} label={col.label}
@@ -144,12 +145,12 @@ export default function AuditLog() {
                     const actionColor = getActionColor(log.action);
                     const icon = ACTION_ICON[log.action?.toUpperCase()] || '📋';
                     return (
-                      <tr key={log.id || i} style={{ borderTop: '1px solid var(--border)', background: i % 2 === 0 ? '#fff' : 'var(--bg-light)' }}>
-                        <td style={{ padding: '0.55rem 1rem', color: '#9ca3af', fontSize: '0.75rem' }}>{log.id}</td>
-                        <td style={{ padding: '0.55rem 1rem', whiteSpace: 'nowrap', fontSize: '0.78rem', color: '#6b7280' }}>
+                      <tr key={log.id || i} className="al-row">
+                        <td style={{ padding: '0.55rem 1rem', fontSize: '0.75rem' }} className="al-details">{log.id}</td>
+                        <td style={{ padding: '0.55rem 1rem', whiteSpace: 'nowrap', fontSize: '0.78rem' }} className="al-details">
                           {log.timestamp ? new Date(log.timestamp).toLocaleString() : '—'}
                         </td>
-                        <td style={{ padding: '0.55rem 1rem', fontFamily: 'monospace', fontSize: '0.78rem', fontWeight: 600, color: '#1d4ed8' }}>
+                        <td style={{ padding: '0.55rem 1rem', fontFamily: 'monospace', fontSize: '0.78rem', fontWeight: 600 }} className="al-actor">
                           {log.actorEnterpriseId || '—'}
                         </td>
                         <td style={{ padding: '0.55rem 1rem' }}>
@@ -161,10 +162,10 @@ export default function AuditLog() {
                             {icon} {log.action || '—'}
                           </span>
                         </td>
-                        <td style={{ padding: '0.55rem 1rem', fontFamily: 'monospace', fontSize: '0.78rem', color: '#374151' }}>
+                        <td style={{ padding: '0.55rem 1rem', fontFamily: 'monospace', fontSize: '0.78rem' }} className="al-target">
                           {log.targetEnterpriseId || '—'}
                         </td>
-                        <td style={{ padding: '0.55rem 1rem', color: '#6b7280', maxWidth: '320px', wordBreak: 'break-word' }}>
+                        <td style={{ padding: '0.55rem 1rem', maxWidth: '320px', wordBreak: 'break-word' }} className="al-details">
                           {log.details || '—'}
                         </td>
                       </tr>

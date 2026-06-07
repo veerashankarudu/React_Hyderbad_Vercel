@@ -31,3 +31,5 @@ __pycache__/
 .idea/
 *.iml
 .vscode/
+nohup.out
+backend/nohup.out

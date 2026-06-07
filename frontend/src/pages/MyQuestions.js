@@ -21,14 +21,9 @@ const STATUS_TABS = [
 ];
 const DIFFICULTY_OPTIONS = ['EASY', 'MEDIUM', 'HARD'];
 
-// Mock difficulty score until AI API key is configured.
-// Uses mcq.aiScore if already set; otherwise derives a stable score from difficulty + id.
 function diffScore(mcq) {
   if (mcq.aiScore != null) return mcq.aiScore;
-  const id = mcq.id || 1;
-  if (mcq.difficulty === 'EASY')   return 72 + (id % 18);  // 72-89
-  if (mcq.difficulty === 'HARD')  return 32 + (id % 20);  // 32-51
-  return 54 + (id % 16);                                   // 54-69 MEDIUM
+  return null;
 }
 
 function scoreStyle(s) {
@@ -43,9 +38,11 @@ const MQ_COLUMNS = [
   { key: 'topicName', labelKey: 'common.topic' },
   { key: 'difficulty', labelKey: 'common.difficulty' },
   { key: 'status', labelKey: 'common.status' },
+  { key: 'updatedAt', labelKey: 'common.lastModified' },
 ];
 
 function getMqVal(m, key) {
+  if (key === 'updatedAt') return m[key] || m['createdAt'] || '';
   return (m[key] || '').toString().toLowerCase();
 }
 
@@ -56,17 +53,18 @@ export default function MyQuestions() {
   const [activeTab, setActiveTab] = useState(searchParams.get('status') || '');
   const [difficulty, setDifficulty] = useState('');
   const [search, setSearch] = useState('');
-  const [sortCol, setSortCol] = useState('questionStem');
-  const [sortDir, setSortDir] = useState('asc');
+  const [sortCol, setSortCol] = useState('updatedAt');
+  const [sortDir, setSortDir] = useState('desc');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [scoringIds, setScoringIds] = useState(new Set());
 
   // AI Generator state
   const [showAiGen, setShowAiGen] = useState(false);
   const [techStacks, setTechStacks] = useState([]);
   const [topics, setTopics] = useState([]);
-  const [aiForm, setAiForm] = useState({ techStackId: '', topicId: '', count: 3, difficulty: 'MEDIUM' });
+  const [aiForm, setAiForm] = useState({ techStackId: '', topicId: '', count: 3, difficulty: 'MEDIUM', questionType: 'SINGLE' });
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState(null);
   const [aiError, setAiError] = useState('');
@@ -86,6 +84,32 @@ export default function MyQuestions() {
 
   useEffect(() => { fetchMcqs(); }, [fetchMcqs]);
   useEffect(() => { setPage(0); }, [activeTab, difficulty, search, sortCol, sortDir, pageSize]);
+
+  // Fetch real AI scores for MCQs that don't have one yet
+  useEffect(() => {
+    const unscored = allMcqs.filter(m => m.aiScore == null);
+    if (unscored.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      for (const mcq of unscored) {
+        if (cancelled) break;
+        setScoringIds(prev => new Set([...prev, mcq.id]));
+        try {
+          const { data } = await API.post('/ai/score-quality', {
+            mcqId: mcq.id,
+            questionStem: mcq.questionStem, optionA: mcq.optionA, optionB: mcq.optionB,
+            optionC: mcq.optionC, optionD: mcq.optionD, correctOption: mcq.correctOption,
+            difficultyLevel: mcq.difficulty, techStack: mcq.techStackName, topic: mcq.topicName
+          });
+          if (!cancelled && data.available && data.qualityScore != null) {
+            setAllMcqs(prev => prev.map(m => m.id === mcq.id ? { ...m, aiScore: data.qualityScore } : m));
+          }
+        } catch (_) { /* skip */ }
+        setScoringIds(prev => { const n = new Set(prev); n.delete(mcq.id); return n; });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [allMcqs.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load tech stacks when AI generator opens
   useEffect(() => {
@@ -110,7 +134,8 @@ export default function MyQuestions() {
         topicId: Number(aiForm.topicId),
         count: Number(aiForm.count),
         difficulty: aiForm.difficulty,
-      });
+        questionType: aiForm.questionType,
+      }, { timeout: 300000 });
       setAiResult(data);
       fetchMcqs(); // refresh list
     } catch (err) {
@@ -176,7 +201,10 @@ export default function MyQuestions() {
       <Navbar />
       <div className="page-container mq-page">
         <div className="page-header">
-          <h2>{t('myQ.title')}</h2>
+          <div>
+            <h2>{t('myQ.title')}</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: '0.2rem 0 0' }}>Questions created by logged-in user</p>
+          </div>
           <button className="btn-primary" onClick={() => setShowAddDialog(true)}>{t('myQ.addQuestion')}</button>
         </div>
 
@@ -184,7 +212,7 @@ export default function MyQuestions() {
         {showAddDialog && (
           <div className="dialog-overlay" onClick={() => setShowAddDialog(false)} onKeyDown={e => { if (e.key === 'Escape') setShowAddDialog(false); }} aria-hidden="true">
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
-            <dialog open className="add-dialog" onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>
+            <dialog open className="add-dialog add-dialog-wide" onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>
               <button className="add-dialog-close" onClick={() => setShowAddDialog(false)} type="button">✕</button>
               <div className="add-dialog-title">{t('myQ.addDialogTitle')}</div>
               <div className="add-dialog-options">
@@ -198,11 +226,41 @@ export default function MyQuestions() {
                   <span className="add-option-label">{t('nav.bulkUpload')}</span>
                   <span className="add-option-desc">{t('myQ.bulkUploadDesc')}</span>
                 </button>
-                <button type="button" className="add-option-btn" style={{ '--hover-c': '#7C3AED' }} onClick={() => { setShowAddDialog(false); setAiResult(null); setAiError(''); setAiForm({ techStackId: '', topicId: '', count: 3, difficulty: 'MEDIUM' }); setShowAiGen(true); }}>
+                <button type="button" className="add-option-btn" style={{ '--hover-c': '#7C3AED' }} onClick={() => { setShowAddDialog(false); setAiResult(null); setAiError(''); setAiForm({ techStackId: '', topicId: '', count: 3, difficulty: 'MEDIUM', questionType: 'SINGLE' }); setShowAiGen(true); }}>
                   <span className="add-option-icon">🤖</span>
                   <span className="add-option-label">{t('ai.generatorTitle')}</span>
                   <span className="add-option-desc">{t('myQ.aiGeneratorDesc')}</span>
                 </button>
+                <button type="button" className="add-option-btn" style={{ '--hover-c': '#059669' }} onClick={() => { setShowAddDialog(false); navigate('/coding/create'); }}>
+                  <span className="add-option-icon">💻</span>
+                  <span className="add-option-label">{t('myQ.codingQuestion')}</span>
+                  <span className="add-option-desc">{t('myQ.codingQuestionDesc')}</span>
+                </button>
+              </div>
+              <div className="add-dialog-divider">── Advanced Question Types ──</div>
+              <div className="add-dialog-grid">
+                {[
+                  { id: 'DRAG_ORDER', icon: '↕️', title: 'Drag & Drop Ordering' },
+                  { id: 'MATCH_PAIRS', icon: '🔗', title: 'Match Pairs' },
+                  { id: 'CODE_OUTPUT', icon: '➡️', title: 'Code → Output' },
+                  { id: 'FILL_BLANK', icon: '✏️', title: 'Fill in the Blank' },
+                  { id: 'PREDICT_OUTPUT', icon: '🔮', title: 'Predict Output' },
+                  { id: 'DEBUG_CODE', icon: '🐛', title: 'Debug the Code' },
+                  { id: 'CODE_REARRANGE', icon: '🧩', title: 'Code Rearrange' },
+                  { id: 'SQL_BUILDER', icon: '🗃️', title: 'SQL Builder' },
+                  { id: 'ARCH_LAYERS', icon: '🏗️', title: 'Architecture Layers' },
+                  { id: 'CODE_REVIEW', icon: '👁️', title: 'Code Review' },
+                  { id: 'PIPELINE_BUILD', icon: '🔧', title: 'Pipeline Builder' },
+                  { id: 'FLOWCHART', icon: '📊', title: 'Flowchart' },
+                  { id: 'DEVOPS_PIPE', icon: '🚀', title: 'DevOps Pipeline' },
+                  { id: 'SECURE_CODE', icon: '🛡️', title: 'Secure Coding' },
+                  { id: 'RIDDLE', icon: '🧩', title: 'Tech Riddles' },
+                ].map(qt => (
+                  <button key={qt.id} type="button" className="add-grid-btn" onClick={() => { setShowAddDialog(false); navigate(`/question-type-create/${qt.id}`); }}>
+                    <span className="add-grid-icon">{qt.icon}</span>
+                    <span className="add-grid-label">{qt.title}</span>
+                  </button>
+                ))}
               </div>
             </dialog>
           </div>
@@ -242,6 +300,9 @@ export default function MyQuestions() {
                       <strong>{aiResult.techStack}</strong> → <strong>{aiResult.topic}</strong><br />
                       {t('ai.createdBy')}: <strong>{aiResult.creatorFullName}</strong> + 🤖 AI<br />
                       <span style={{ color: '#6B7280', fontSize: '0.8rem' }}>{t('ai.savedAsDraft')}</span>
+                      {aiResult.replacedDuplicates > 0 && (
+                        <><br /><span style={{ color: '#D97706', fontSize: '0.8rem', fontWeight: 600 }}>🔄 {aiResult.replacedDuplicates} duplicate(s) auto-replaced with new questions</span></>
+                      )}
                     </div>
                   </div>
                   <div className="ai-gen-actions">
@@ -282,6 +343,28 @@ export default function MyQuestions() {
                           <option value="HARD">{t('common.hard')}</option>
                         </select>
                       </div>
+                    </div>
+                    <div className="form-group">
+                      <label>Question Type</label>
+                      <select value={aiForm.questionType} onChange={e => setAiForm(f => ({ ...f, questionType: e.target.value }))} disabled={aiLoading}>
+                        <option value="SINGLE">🔘 Single Choice MCQ</option>
+                        <option value="MULTI">☑️ Multiple Choice</option>
+                        <option value="DRAG_ORDER">↕️ Drag & Drop Ordering</option>
+                        <option value="MATCH_PAIRS">🔗 Match Pairs</option>
+                        <option value="CODE_OUTPUT">➡️ Code → Output</option>
+                        <option value="FILL_BLANK">✏️ Fill in the Blank</option>
+                        <option value="PREDICT_OUTPUT">🔮 Predict Output</option>
+                        <option value="DEBUG_CODE">🐛 Debug the Code</option>
+                        <option value="CODE_REARRANGE">🧩 Code Rearrange</option>
+                        <option value="SQL_BUILDER">🗃️ SQL Builder</option>
+                        <option value="ARCH_LAYERS">🏗️ Architecture Layers</option>
+                        <option value="CODE_REVIEW">👁️ Code Review</option>
+                        <option value="PIPELINE_BUILD">🔧 Pipeline Builder</option>
+                        <option value="FLOWCHART">📊 Flowchart</option>
+                        <option value="DEVOPS_PIPE">🚀 DevOps Pipeline</option>
+                        <option value="SECURE_CODE">🛡️ Secure Coding</option>
+                        <option value="RIDDLE">🧩 Tech Riddles</option>
+                      </select>
                     </div>
                     {aiError && <div className="error-msg">{aiError}</div>}
                   </div>
@@ -338,7 +421,6 @@ export default function MyQuestions() {
               <p>{activeTab ? t('mq.noQuestionsYet', { status: activeTab.replaceAll('_', ' ') }) : t('mq.getStarted')}</p>
             </div>
           );
-          const plural = filtered.length === 1 ? '' : 's';
           return (
             <>
               <div className="results-count">
@@ -366,6 +448,7 @@ export default function MyQuestions() {
                       <td>{txMyPagedTopics[idx] || mcq.topicName}</td>
                       <td><span className={`diff-badge ${mcq.difficulty?.toLowerCase()}`}>{mcq.difficulty}</span></td>
                       <td><StatusBadge status={mcq.status} /></td>
+                      <td className="date-cell">{mcq.updatedAt ? new Date(mcq.updatedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}</td>
                       <td className="action-cell">
                         <button className="btn-sm btn-outline" onClick={() => navigate(`/mcq/${mcq.id}`)}>{t('common.view')}</button>
                         {['DRAFT', 'REJECTED'].includes(mcq.status) && (
@@ -380,11 +463,13 @@ export default function MyQuestions() {
                       </td>
                       <td>{(() => {
                         const score = diffScore(mcq);
+                        if (score == null) return scoringIds.has(mcq.id)
+                          ? <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Scoring…</span>
+                          : <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>—</span>;
                         const { bg, clr } = scoreStyle(score);
-                        const isMock = mcq.aiScore == null;
                         return (
                           <span style={{ background: bg, color: clr, borderRadius: '4px', padding: '2px 8px', fontSize: '0.75rem', fontWeight: 700 }}>
-                            {score}/100{isMock ? ' *' : ''}
+                            {score}/100
                           </span>
                         );
                       })()}</td>
@@ -393,9 +478,6 @@ export default function MyQuestions() {
                 </tbody>
               </table>
             </div>
-            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.4rem', paddingLeft: '0.25rem' }}>
-              * Estimated score — will be replaced by real AI analysis once the API key is configured.
-            </p>
             <TablePagination
               page={page + 1}
               totalPages={totalPages}

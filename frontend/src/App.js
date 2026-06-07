@@ -1,42 +1,60 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { AuthProvider, useAuth } from './AuthContext';
 import PrivateRoute from './PrivateRoute';
+import ErrorBoundary from './components/ErrorBoundary';
+import ChatBot from './components/ChatBot';
 
+// Critical pages — loaded eagerly (login flow)
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import MasterData from './pages/MasterData';
-import MyQuestions from './pages/MyQuestions';
-import McqForm from './pages/McqForm';
-import McqDetail from './pages/McqDetail';
-import PendingReviews from './pages/PendingReviews';
-import QuestionBank from './pages/QuestionBank';
-import BulkUpload from './pages/BulkUpload';
 import Home from './pages/Home';
-import ScreenshotMcq from './pages/ScreenshotMcq';
-import Leaderboard from './pages/Leaderboard';
-import UserManagement from './pages/UserManagement';
-import ReviewerDashboard from './pages/ReviewerDashboard';
-import ReviewerMetrics from './pages/ReviewerMetrics';
-import AuditLog from './pages/AuditLog';
-import KanbanBoard from './pages/KanbanBoard';
-import Quiz from './pages/Quiz';
-import Analytics from './pages/Analytics';
-import QuizBuilder from './pages/QuizBuilder';
-import TakeQuiz from './pages/TakeQuiz';
-import QuizAttempts from './pages/QuizAttempts';
-import Inbox from './pages/Inbox';
-import ChatBot from './components/ChatBot';
+
+// Lazy-loaded pages — loaded on demand for faster initial load
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const MasterData = lazy(() => import('./pages/MasterData'));
+const MyQuestions = lazy(() => import('./pages/MyQuestions'));
+const McqForm = lazy(() => import('./pages/McqForm'));
+const McqDetail = lazy(() => import('./pages/McqDetail'));
+const PendingReviews = lazy(() => import('./pages/PendingReviews'));
+const QuestionBank = lazy(() => import('./pages/QuestionBank'));
+const BulkUpload = lazy(() => import('./pages/BulkUpload'));
+const ScreenshotMcq = lazy(() => import('./pages/ScreenshotMcq'));
+const Leaderboard = lazy(() => import('./pages/Leaderboard'));
+const UserManagement = lazy(() => import('./pages/UserManagement'));
+const ReviewerDashboard = lazy(() => import('./pages/ReviewerDashboard'));
+const ReviewerMetrics = lazy(() => import('./pages/ReviewerMetrics'));
+const AuditLog = lazy(() => import('./pages/AuditLog'));
+const KanbanBoard = lazy(() => import('./pages/KanbanBoard'));
+const Quiz = lazy(() => import('./pages/Quiz'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const QuizBuilder = lazy(() => import('./pages/QuizBuilder'));
+const TakeQuiz = lazy(() => import('./pages/TakeQuiz'));
+const QuizAttempts = lazy(() => import('./pages/QuizAttempts'));
+const Inbox = lazy(() => import('./pages/Inbox'));
+const LiveJoin = lazy(() => import('./pages/LiveJoin'));
+const LiveLobby = lazy(() => import('./pages/LiveLobby'));
+const LiveHost = lazy(() => import('./pages/LiveHost'));
+const LivePlay = lazy(() => import('./pages/LivePlay'));
+const LiveResults = lazy(() => import('./pages/LiveResults'));
+const LiveQuiz = lazy(() => import('./pages/LiveQuiz'));
+const LiveSessionDetail = lazy(() => import('./pages/LiveSessionDetail'));
+const ResumeInterview = lazy(() => import('./pages/ResumeInterview'));
+const CodingQuestion = lazy(() => import('./pages/CodingQuestion'));
+const AIStudio = lazy(() => import('./pages/AIStudio'));
+const QuestionTypes = lazy(() => import('./pages/QuestionTypes'));
+const QuestionTypeCreator = lazy(() => import('./pages/QuestionTypeCreator'));
+const RuleBook = lazy(() => import('./pages/RuleBook'));
 
 // Hide the chatbot while a quiz is in progress so it cannot be used to cheat
 function ChatBotGuard() {
   const { pathname } = useLocation();
   if (pathname.startsWith('/quiz/take/')) return null;
+  if (pathname.startsWith('/live/')) return null;
   return <ChatBot />;
 }
 
@@ -65,8 +83,10 @@ export default function App() {
   }, []);
 
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <BrowserRouter>
+        <Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh'}}><div className="spinner" style={{width:40,height:40,border:'4px solid rgba(255,255,255,0.2)',borderTop:'4px solid #6366f1',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}></div></div>}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -75,6 +95,7 @@ export default function App() {
           <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/my-questions" element={<PrivateRoute><MyQuestions /></PrivateRoute>} />
           <Route path="/mcq/create" element={<PrivateRoute><McqForm mode="create" /></PrivateRoute>} />
+          <Route path="/coding/create" element={<PrivateRoute><CodingQuestion /></PrivateRoute>} />
           <Route path="/mcq/:id" element={<PrivateRoute><McqDetail /></PrivateRoute>} />
           <Route path="/mcq/:id/edit" element={<PrivateRoute><McqForm mode="edit" /></PrivateRoute>} />
           <Route path="/pending-reviews" element={<PrivateRoute><PendingReviews /></PrivateRoute>} />
@@ -94,12 +115,28 @@ export default function App() {
           <Route path="/quiz/take/:token" element={<TakeQuiz />} />
           <Route path="/quiz-sessions/:id/attempts" element={<PrivateRoute><QuizAttempts /></PrivateRoute>} />
           <Route path="/inbox" element={<PrivateRoute><Inbox /></PrivateRoute>} />
+          <Route path="/smart-interview-kit" element={<PrivateRoute><ResumeInterview /></PrivateRoute>} />
+          <Route path="/ai-studio" element={<PrivateRoute><AIStudio /></PrivateRoute>} />
+          <Route path="/question-types" element={<PrivateRoute><QuestionTypes /></PrivateRoute>} />
+          <Route path="/question-type-create/:typeId" element={<PrivateRoute><QuestionTypeCreator /></PrivateRoute>} />
+          <Route path="/rulebook" element={<PrivateRoute><RuleBook /></PrivateRoute>} />
+          {/* Live Quiz Battle routes */}
+          <Route path="/live" element={<PrivateRoute><LiveQuiz /></PrivateRoute>} />
+          <Route path="/live/join" element={<LiveJoin />} />
+          <Route path="/live/join/:pin" element={<LiveJoin />} />
+          <Route path="/live/lobby/:sessionId" element={<LiveLobby />} />
+          <Route path="/live/host/:sessionId" element={<PrivateRoute><LiveHost /></PrivateRoute>} />
+          <Route path="/live/play/:sessionId" element={<LivePlay />} />
+          <Route path="/live/results/:sessionId" element={<LiveResults />} />
+          <Route path="/live/sessions/:sessionId" element={<PrivateRoute><LiveSessionDetail /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
         <ToastContainer position="top-right" autoClose={30000} />
         <ChatBotGuard />
         <ExamLockGuard />
       </BrowserRouter>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }

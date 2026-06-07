@@ -1,5 +1,6 @@
 package com.accenture.quizhub.controller;
 
+import com.accenture.quizhub.ai.QuizHubTools;
 import com.accenture.quizhub.entity.Mcq;
 import com.accenture.quizhub.entity.TechStack;
 import com.accenture.quizhub.entity.Topic;
@@ -12,12 +13,15 @@ import com.accenture.quizhub.repository.TechStackRepository;
 import com.accenture.quizhub.repository.TopicRepository;
 import com.accenture.quizhub.repository.UserRepository;
 import com.accenture.quizhub.service.AIService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +34,12 @@ import java.util.stream.Collectors;
 public class AIController {
 
     private final AIService aiService;
+    private final QuizHubTools quizHubTools;
     private final McqRepository mcqRepository;
     private final TechStackRepository techStackRepository;
     private final TopicRepository topicRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     private User resolveUser(String enterpriseId) {
         return userRepository.findByEnterpriseId(enterpriseId)
@@ -73,13 +79,12 @@ public class AIController {
             return ResponseEntity.badRequest().body(Map.of("error", "questionStem is required"));
         }
 
-        // Fetch existing approved/draft/in-review MCQs in same tech stack + topic
+        // Fetch existing approved/draft/in-review MCQs — search broadly for duplicates
+        // Note: topicId filter is optional — we search ALL topics in the tech stack for better coverage
         List<Mcq> pool = mcqRepository.findAll().stream()
             .filter(m -> m.getStatus() != McqStatus.REJECTED)
             .filter(m -> techStackId == null || (m.getTechStack() != null && m.getTechStack().getId().equals(techStackId)))
-            .filter(m -> topicId == null || (m.getTopic() != null && m.getTopic().getId().equals(topicId)))
             .filter(m -> excludeId == null || !m.getId().equals(excludeId))
-            .limit(50) // cap for prompt size
             .collect(Collectors.toList());
 
         List<Map<String, Object>> similar = aiService.checkDuplicateAgainstDb(questionStem, pool);
@@ -144,11 +149,11 @@ public class AIController {
     }
 
     /**
-     * AI MCQ Generator: generates N MCQs for a given tech stack + topic and saves them
-     * as DRAFT MCQs owned by the authenticated user. Returns the list of saved MCQ IDs.
+     * AI MCQ Generator PREVIEW: generates N MCQs and returns them with duplicate info (no saving).
+     * Frontend shows each question with matching existing questions so user can keep/remove.
      */
-    @PostMapping("/generate-mcqs")
-    public ResponseEntity<Map<String, Object>> generateAndSaveMcqs(
+    @PostMapping("/generate-mcqs-preview")
+    public ResponseEntity<Map<String, Object>> generateMcqsPreview(
             @RequestBody Map<String, Object> body,
             @AuthenticationPrincipal String enterpriseId) {
 
@@ -169,16 +174,12 @@ public class AIController {
         List<Map<String, Object>> generated = aiService.generateMcqs(
                 techStack.getName(), topic.getName(), count, diff);
 
-        // Check if AI returned an error
         if (generated.size() == 1 && generated.get(0).containsKey("error")) {
             return ResponseEntity.status(500)
                     .body(Map.of("error", generated.get(0).get("error").toString()));
         }
 
-        List<Long> savedIds = new ArrayList<>();
-        List<String> skippedDuplicates = new ArrayList<>();
-
-        // Pre-fetch existing MCQs for duplicate checking (same tech stack + topic, non-rejected)
+        // Pre-fetch existing MCQs for duplicate checking
         List<Mcq> existingMcqs = mcqRepository.findAll().stream()
             .filter(m -> m.getStatus() != McqStatus.REJECTED)
             .filter(m -> m.getTechStack() != null && m.getTechStack().getId().equals(techStackId))
@@ -186,29 +187,70 @@ public class AIController {
             .limit(50)
             .collect(Collectors.toList());
 
+        // Build preview list with duplicate match info
+        List<Map<String, Object>> previewQuestions = new ArrayList<>();
         for (Map<String, Object> q : generated) {
+            Map<String, Object> preview = new java.util.LinkedHashMap<>(q);
+            String stem = q.getOrDefault("questionStem", "").toString();
             try {
-                String stem = q.get("questionStem").toString();
-
-                // Duplicate check against DB — skip if >= 30% similar
                 List<Map<String, Object>> simResults = aiService.checkDuplicateAgainstDb(stem, existingMcqs);
-                boolean isDuplicate = simResults.stream().anyMatch(r -> {
+                boolean hasDuplicate = simResults.stream().anyMatch(r -> {
                     Object pct = r.get("similarityPercent");
                     return pct != null && ((Number) pct).intValue() >= 30;
                 });
-                if (isDuplicate) {
-                    skippedDuplicates.add(stem.length() > 80 ? stem.substring(0, 80) + "..." : stem);
-                    continue;
-                }
+                preview.put("duplicateMatches", simResults);
+                preview.put("isDuplicate", hasDuplicate);
+            } catch (Exception e) {
+                preview.put("duplicateMatches", List.of());
+                preview.put("isDuplicate", false);
+            }
+            previewQuestions.add(preview);
+        }
 
+        Map<String, Object> response = new java.util.LinkedHashMap<>();
+        response.put("questions", previewQuestions);
+        response.put("techStack", techStack.getName());
+        response.put("techStackId", techStackId);
+        response.put("topic", topic.getName());
+        response.put("topicId", topicId);
+        response.put("difficulty", diff);
+        response.put("creatorFullName", creator.getFullName());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Save selected AI-generated MCQs (from preview). Accepts array of questions to save.
+     */
+    @PostMapping("/save-generated-mcqs")
+    @Transactional
+    public ResponseEntity<Map<String, Object>> saveGeneratedMcqs(
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal String enterpriseId) {
+
+        User creator = resolveUser(enterpriseId);
+        Long techStackId = Long.valueOf(body.get("techStackId").toString());
+        Long topicId     = Long.valueOf(body.get("topicId").toString());
+        String diff      = body.getOrDefault("difficulty", "MEDIUM").toString().toUpperCase();
+
+        TechStack techStack = techStackRepository.findById(techStackId)
+                .orElseThrow(() -> new ResourceNotFoundException("Tech stack not found"));
+        Topic topic = topicRepository.findById(topicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Topic not found"));
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> questions = (List<Map<String, Object>>) body.get("questions");
+        List<Long> savedIds = new ArrayList<>();
+
+        for (Map<String, Object> q : questions) {
+            try {
                 Mcq mcq = new Mcq();
-                mcq.setQuestionStem(stem);
+                mcq.setQuestionStem(q.get("questionStem").toString());
                 mcq.setOptionA(q.get("optionA").toString());
                 mcq.setOptionB(q.get("optionB").toString());
                 mcq.setOptionC(q.get("optionC").toString());
                 mcq.setOptionD(q.get("optionD").toString());
                 String ca = q.getOrDefault("correctAnswer", "A").toString().trim().toUpperCase();
-                mcq.setCorrectAnswer(ca.substring(0, 1));
+                mcq.setCorrectAnswer(ca.length() > 0 ? ca.substring(0, 1) : "A");
                 String qDiff = q.getOrDefault("difficulty", diff).toString().toUpperCase();
                 try { mcq.setDifficulty(Difficulty.valueOf(qDiff)); }
                 catch (Exception e) { mcq.setDifficulty(Difficulty.valueOf(diff)); }
@@ -217,21 +259,181 @@ public class AIController {
                 mcq.setCreator(creator);
                 mcq.setStatus(McqStatus.DRAFT);
                 mcq.setAiRisk("AI");
+                mcq.setAiGenerated(true);
                 Mcq saved = mcqRepository.save(mcq);
                 savedIds.add(saved.getId());
-            } catch (Exception ignored) { /* skip malformed question */ }
+            } catch (Exception ignored) { /* skip malformed */ }
         }
 
-        return ResponseEntity.ok(Map.of(
-                "generated", savedIds.size(),
-                "ids", savedIds,
-                "skippedDuplicates", skippedDuplicates.size(),
-                "skippedStems", skippedDuplicates,
-                "creatorEnterpriseId", creator.getEnterpriseId(),
-                "creatorFullName", creator.getFullName(),
-                "techStack", techStack.getName(),
-                "topic", topic.getName()
-        ));
+        Map<String, Object> response = new java.util.LinkedHashMap<>();
+        response.put("saved", savedIds.size());
+        response.put("ids", savedIds);
+        response.put("techStack", techStack.getName());
+        response.put("topic", topic.getName());
+        response.put("creatorFullName", creator.getFullName());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * AI MCQ Generator: generates N MCQs for a given tech stack + topic and saves them
+     * as DRAFT MCQs owned by the authenticated user. Returns the list of saved MCQ IDs.
+     */
+    @PostMapping("/generate-mcqs")
+    public ResponseEntity<Map<String, Object>> generateAndSaveMcqs(
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal String enterpriseId) {
+
+        User creator = resolveUser(enterpriseId);
+
+        Long techStackId = Long.valueOf(body.get("techStackId").toString());
+        Long topicId     = Long.valueOf(body.get("topicId").toString());
+        int  count       = Integer.parseInt(body.getOrDefault("count", "3").toString());
+        String diff      = body.getOrDefault("difficulty", "MEDIUM").toString().toUpperCase();
+        String questionType = body.getOrDefault("questionType", "SINGLE").toString().toUpperCase();
+        if (count < 1) count = 1;
+        if (count > 10) count = 10;
+
+        TechStack techStack = techStackRepository.findById(techStackId)
+                .orElseThrow(() -> new ResourceNotFoundException("Tech stack not found"));
+        Topic topic = topicRepository.findById(topicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Topic not found"));
+
+        boolean isAdvancedType = !questionType.equals("SINGLE") && !questionType.equals("MULTI");
+
+        List<Map<String, Object>> generated = aiService.generateMcqs(
+                techStack.getName(), topic.getName(), count, diff, questionType);
+
+        // Check if AI returned an error
+        if (generated != null && generated.size() == 1 && generated.get(0) != null && generated.get(0).containsKey("error")) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", generated.get(0).get("error").toString()));
+        }
+        if (generated == null || generated.isEmpty()) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "AI returned no questions. Please try again."));
+        }
+
+        List<Long> savedIds = new ArrayList<>();
+        List<String> replacedDuplicates = new ArrayList<>();
+
+        // Fetch existing MCQs in same tech stack + topic for duplicate screening (PPT Level 2 Slide 6)
+        List<Mcq> existingPool = mcqRepository.findAll().stream()
+            .filter(m -> m.getStatus() != McqStatus.REJECTED)
+            .filter(m -> m.getTechStack() != null && m.getTechStack().getId().equals(techStackId))
+            .filter(m -> m.getTopic() != null && m.getTopic().getId().equals(topicId))
+            .limit(50)
+            .collect(Collectors.toList());
+
+        // Process each generated question with duplicate screening
+        for (Object rawItem : generated) {
+            if (savedIds.size() >= count) break;
+            if (!(rawItem instanceof Map)) continue;
+            @SuppressWarnings("unchecked")
+            Map<String, Object> q = (Map<String, Object>) rawItem;
+            try {
+                String stem = q.getOrDefault("questionStem", "").toString();
+                if (stem.isEmpty()) stem = q.getOrDefault("question", "Generated Question").toString();
+
+                // --- Duplicate screening: if ≥30% similar, attempt replacement ---
+                boolean wasDuplicate = false;
+                try {
+                    List<Map<String, Object>> simResults = aiService.checkDuplicateAgainstDb(stem, existingPool);
+                    boolean isDup = simResults.stream().anyMatch(r -> {
+                        Object pct = r.get("similarityPercent");
+                        return pct != null && ((Number) pct).intValue() >= 30;
+                    });
+                    if (isDup) {
+                        wasDuplicate = true;
+                        replacedDuplicates.add(stem);
+                        // Try to regenerate ONE replacement question
+                        List<Map<String, Object>> replacement = aiService.generateMcqs(
+                                techStack.getName(), topic.getName(), 1, diff, questionType);
+                        if (replacement != null && !replacement.isEmpty() && replacement.get(0) instanceof Map
+                                && !replacement.get(0).containsKey("error")) {
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> repQ = replacement.get(0);
+                            String repStem = repQ.getOrDefault("questionStem", "").toString();
+                            if (repStem.isEmpty()) repStem = repQ.getOrDefault("question", "").toString();
+                            if (!repStem.isEmpty()) {
+                                // Use the replacement instead
+                                q = repQ;
+                                stem = repStem;
+                            }
+                        }
+                    }
+                } catch (Exception dupEx) {
+                    // Duplicate check failed (AI unavailable) — proceed with saving anyway
+                    System.err.println("[AI-GEN] Duplicate check skipped (AI unavailable): " + dupEx.getMessage());
+                }
+
+                Mcq mcq = new Mcq();
+                mcq.setQuestionStem(stem);
+
+                // Set questionType for ALL questions
+                try { mcq.setQuestionType(com.accenture.quizhub.enums.QuestionType.valueOf(questionType)); }
+                catch (Exception e) { mcq.setQuestionType(com.accenture.quizhub.enums.QuestionType.SINGLE); }
+
+                if (isAdvancedType) {
+                    // Advanced question types: store full content as JSON, set placeholder options
+                    mcq.setOptionA("N/A");
+                    mcq.setOptionB("N/A");
+                    mcq.setOptionC("N/A");
+                    mcq.setOptionD("N/A");
+                    String ca = q.getOrDefault("correctAnswer", "See content").toString();
+                    mcq.setCorrectAnswer(ca.length() > 500 ? ca.substring(0, 500) : ca);
+                    // Remove questionStem from contentJson (it's already in the stem field)
+                    Map<String, Object> contentMap = new java.util.LinkedHashMap<>(q);
+                    contentMap.remove("questionStem");
+                    contentMap.remove("question");
+                    mcq.setContentJson(objectMapper.writeValueAsString(contentMap));
+                } else {
+                    // SINGLE or MULTI: standard A/B/C/D format
+                    mcq.setOptionA(q.getOrDefault("optionA", "N/A").toString());
+                    mcq.setOptionB(q.getOrDefault("optionB", "N/A").toString());
+                    mcq.setOptionC(q.getOrDefault("optionC", "N/A").toString());
+                    mcq.setOptionD(q.getOrDefault("optionD", "N/A").toString());
+                    String ca = q.getOrDefault("correctAnswer", "A").toString().trim().toUpperCase();
+                    // For MULTI, keep full answer like "A,C" instead of truncating to single char
+                    if (questionType.equals("MULTI")) {
+                        mcq.setCorrectAnswer(ca);
+                    } else {
+                        mcq.setCorrectAnswer(ca.length() > 0 ? ca.substring(0, 1) : "A");
+                    }
+                }
+
+                String qDiff = q.getOrDefault("difficulty", diff).toString().toUpperCase();
+                try { mcq.setDifficulty(Difficulty.valueOf(qDiff)); }
+                catch (Exception e) { mcq.setDifficulty(Difficulty.valueOf(diff)); }
+                mcq.setTechStack(techStack);
+                mcq.setTopic(topic);
+                mcq.setCreator(creator);
+                mcq.setStatus(McqStatus.DRAFT);
+                mcq.setAiRisk(wasDuplicate ? "AI-REPLACED" : "AI");
+                mcq.setAiGenerated(true);
+                Mcq saved = mcqRepository.save(mcq);
+                savedIds.add(saved.getId());
+
+                // Add newly saved MCQ to the pool so subsequent questions are checked against it too
+                existingPool.add(saved);
+            } catch (Exception ex) {
+                System.err.println("[AI-GEN] Skipped malformed question: " + ex.getMessage() + " | data=" + q);
+            }
+        }
+
+        // Build response with both new and legacy field names for backward compat
+        Map<String, Object> response = new java.util.LinkedHashMap<>();
+        response.put("generated", savedIds.size());
+        response.put("ids", savedIds);
+        response.put("replacedDuplicates", replacedDuplicates.size());
+        response.put("replacedStems", replacedDuplicates);
+        response.put("skippedDuplicates", replacedDuplicates.size());
+        response.put("skippedStems", replacedDuplicates);
+        response.put("requestedCount", count);
+        response.put("creatorEnterpriseId", creator.getEnterpriseId());
+        response.put("creatorFullName", creator.getFullName());
+        response.put("techStack", techStack.getName());
+        response.put("topic", topic.getName());
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -239,6 +441,7 @@ public class AIController {
      * Called on-demand from McqDetail or McqForm.
      */
     @PostMapping("/score-quality")
+    @Transactional
     public ResponseEntity<Map<String, Object>> scoreQuality(@RequestBody Map<String, Object> body) {
         String stem = (String) body.getOrDefault("questionStem", "");
         String optA = (String) body.getOrDefault("optionA", "");
@@ -248,7 +451,19 @@ public class AIController {
         String correct = (String) body.getOrDefault("correctAnswer", "");
         String difficulty = (String) body.getOrDefault("difficulty", "MEDIUM");
         if (stem.isBlank()) return ResponseEntity.badRequest().body(Map.of("error", "questionStem required"));
-        return ResponseEntity.ok(aiService.scoreQuality(stem, optA, optB, optC, optD, correct, difficulty));
+        Map<String, Object> result = aiService.scoreQuality(stem, optA, optB, optC, optD, correct, difficulty);
+
+        // Persist quality score to MCQ if mcqId provided
+        Object mcqIdObj = body.get("mcqId");
+        if (mcqIdObj != null) {
+            Long mcqId = ((Number) mcqIdObj).longValue();
+            mcqRepository.findById(mcqId).ifPresent(mcq -> {
+                Object qs = result.get("qualityScore");
+                if (qs != null) mcq.setAiScore(((Number) qs).intValue());
+                mcqRepository.save(mcq);
+            });
+        }
+        return ResponseEntity.ok(result);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -372,5 +587,207 @@ public class AIController {
                 "total", results.size(),
                 "results", results
         ));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FEATURE: AI Personalized Learning Path
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * POST /api/v1/ai/learning-path
+     * Analyzes user's wrong answers and generates a personalized study plan.
+     */
+    @PostMapping("/learning-path")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Map<String, Object>> generateLearningPath(
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal String enterpriseId) {
+        User user = resolveUser(enterpriseId);
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> wrongAnswers = (List<Map<String, Object>>) body.getOrDefault("wrongAnswers", List.of());
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> correctAnswers = (List<Map<String, Object>>) body.getOrDefault("correctAnswers", List.of());
+
+        if (wrongAnswers.isEmpty() && correctAnswers.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Provide wrongAnswers and/or correctAnswers arrays"));
+        }
+
+        Map<String, Object> result = aiService.generateLearningPath(
+            user.getFullName() != null ? user.getFullName() : user.getEnterpriseId(),
+            wrongAnswers, correctAnswers);
+        result.put("userId", user.getId());
+        result.put("userName", user.getFullName());
+        return ResponseEntity.ok(result);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FEATURE: AI Code-to-MCQ Generator
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * POST /api/v1/ai/generate-from-code
+     * Takes a code snippet and generates MCQs testing understanding of that code.
+     */
+    @PostMapping("/generate-from-code")
+    @Transactional
+    public ResponseEntity<Map<String, Object>> generateFromCode(
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal String enterpriseId) {
+        User creator = resolveUser(enterpriseId);
+
+        String code = (String) body.getOrDefault("code", "");
+        String language = (String) body.getOrDefault("language", "Java");
+        int count = body.containsKey("count") ? ((Number) body.get("count")).intValue() : 3;
+        String difficulty = (String) body.getOrDefault("difficulty", "MEDIUM");
+        Long techStackId = body.containsKey("techStackId") ? ((Number) body.get("techStackId")).longValue() : null;
+        Long topicId = body.containsKey("topicId") ? ((Number) body.get("topicId")).longValue() : null;
+
+        if (code.isBlank()) return ResponseEntity.badRequest().body(Map.of("error", "code is required"));
+
+        List<Map<String, Object>> generated = aiService.generateMcqsFromCode(code, language, count, difficulty.toUpperCase());
+
+        if (generated.size() == 1 && generated.get(0).containsKey("error")) {
+            return ResponseEntity.status(500).body(Map.of("error", generated.get(0).get("error").toString()));
+        }
+
+        // Optionally save as DRAFT MCQs
+        boolean save = Boolean.parseBoolean(body.getOrDefault("save", "false").toString());
+        List<Long> savedIds = new ArrayList<>();
+
+        if (save && techStackId != null && topicId != null) {
+            TechStack techStack = techStackRepository.findById(techStackId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Tech stack not found"));
+            Topic topic = topicRepository.findById(topicId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Topic not found"));
+
+            for (Map<String, Object> q : generated) {
+                try {
+                    Mcq mcq = new Mcq();
+                    mcq.setQuestionStem(q.get("questionStem").toString());
+                    mcq.setOptionA(q.get("optionA").toString());
+                    mcq.setOptionB(q.get("optionB").toString());
+                    mcq.setOptionC(q.get("optionC").toString());
+                    mcq.setOptionD(q.get("optionD").toString());
+                    String ca = q.getOrDefault("correctAnswer", "A").toString().trim().toUpperCase();
+                    mcq.setCorrectAnswer(ca.substring(0, 1));
+                    try { mcq.setDifficulty(Difficulty.valueOf(difficulty.toUpperCase())); }
+                    catch (Exception e) { mcq.setDifficulty(Difficulty.MEDIUM); }
+                    mcq.setTechStack(techStack);
+                    mcq.setTopic(topic);
+                    mcq.setCreator(creator);
+                    mcq.setStatus(McqStatus.DRAFT);
+                    mcq.setAiRisk("AI-CODE");
+                    Mcq saved2 = mcqRepository.save(mcq);
+                    savedIds.add(saved2.getId());
+                } catch (Exception ignored) {}
+            }
+        }
+
+        Map<String, Object> response = new java.util.LinkedHashMap<>();
+        response.put("generated", generated.size());
+        response.put("questions", generated);
+        response.put("savedIds", savedIds);
+        response.put("language", language);
+        response.put("codeSnippet", code.length() > 200 ? code.substring(0, 200) + "..." : code);
+        return ResponseEntity.ok(response);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FEATURE: AI MCQ Rewrite / Improve
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * POST /api/v1/ai/rewrite-mcq
+     * AI rewrites a weak MCQ to improve quality. Returns original vs improved side-by-side.
+     */
+    @PostMapping("/rewrite-mcq")
+    public ResponseEntity<Map<String, Object>> rewriteMcq(@RequestBody Map<String, Object> body) {
+        String stem = (String) body.getOrDefault("questionStem", "");
+        String optA = (String) body.getOrDefault("optionA", "");
+        String optB = (String) body.getOrDefault("optionB", "");
+        String optC = (String) body.getOrDefault("optionC", "");
+        String optD = (String) body.getOrDefault("optionD", "");
+        String correct = (String) body.getOrDefault("correctAnswer", "A");
+        String difficulty = (String) body.getOrDefault("difficulty", "MEDIUM");
+
+        if (stem.isBlank()) return ResponseEntity.badRequest().body(Map.of("error", "questionStem required"));
+
+        Map<String, Object> result = aiService.rewriteMcq(stem, optA, optB, optC, optD, correct, difficulty);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * POST /api/v1/ai/rewrite-mcq/{id}
+     * AI rewrites an existing MCQ by ID. Does NOT overwrite — returns the suggestion.
+     */
+    @PostMapping("/rewrite-mcq/{id}")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Map<String, Object>> rewriteMcqById(@PathVariable Long id) {
+        Mcq mcq = mcqRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("MCQ not found: " + id));
+
+        Map<String, Object> result = aiService.rewriteMcq(
+            mcq.getQuestionStem(),
+            mcq.getOptionA(), mcq.getOptionB(), mcq.getOptionC(), mcq.getOptionD(),
+            String.valueOf(mcq.getCorrectAnswer()),
+            mcq.getDifficulty() != null ? mcq.getDifficulty().name() : "MEDIUM"
+        );
+        result.put("mcqId", id);
+        return ResponseEntity.ok(result);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STREAMING CHAT (SSE) — Spring AI Pattern #2
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @PostMapping(value = "/stream-chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> streamChat(@RequestBody Map<String, String> body) {
+        String message = body.getOrDefault("message", "Hello");
+        return aiService.streamChat(message);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // RAG — Retrieval-Augmented Generation — Spring AI Pattern #3
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @PostMapping("/rag-query")
+    public ResponseEntity<Map<String, Object>> ragQuery(@RequestBody Map<String, String> body) {
+        String question = body.getOrDefault("question", "What is QuizHub?");
+        return ResponseEntity.ok(aiService.ragQuery(question));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TOOL CALLING — Spring AI Pattern #4
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @PostMapping("/tool-chat")
+    public ResponseEntity<Map<String, String>> toolChat(@RequestBody Map<String, String> body) {
+        String message = body.getOrDefault("message", "How many MCQs are in QuizHub?");
+        String response = aiService.toolChat(message, quizHubTools);
+        return ResponseEntity.ok(Map.of("response", response != null ? response : "No response"));
+    }
+
+    /**
+     * POST /api/v1/ai/generate-interactive
+     * Free-form prompt-based interactive question generation.
+     * Takes a natural language prompt (e.g., "5 Angular interactive questions")
+     * and returns diverse question types (MCQ, multi-select, drag-order, fill-blank, predict-output, debug-code).
+     */
+    @PostMapping("/generate-interactive")
+    public ResponseEntity<Map<String, Object>> generateInteractive(@RequestBody Map<String, String> body) {
+        String prompt = body.getOrDefault("prompt", "");
+        if (prompt.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "prompt is required"));
+        }
+        try {
+            List<Map<String, Object>> questions = aiService.generateInteractiveQuestions(prompt);
+            if (questions.size() == 1 && questions.get(0).containsKey("error")) {
+                return ResponseEntity.status(500).body(Map.of("error", questions.get(0).get("error").toString()));
+            }
+            return ResponseEntity.ok(Map.of("questions", questions, "count", questions.size()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Generation failed: " + e.getMessage()));
+        }
     }
 }

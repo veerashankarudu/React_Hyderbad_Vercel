@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* Font loaded via <link> in public/index.html for faster rendering */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+  /* ── Colors ── */
   --primary: #7C3AED;
   --primary-dark: #5B21B6;
   --primary-light: #EDE9FE;
@@ -17,16 +18,37 @@
   --info-light: #DBEAFE;
   --bg: #F5F3FF;
   --surface: #FFFFFF;
+  --surface-hover: #FAFAFF;
+  --surface-alt: #F9FAFB;
   --border: #E5E7EB;
+  --border-light: #F5F3FF;
   --text: #1F2937;
   --text-muted: #6B7280;
   --text-light: #9CA3AF;
+
+  /* ── Shadows ── */
   --shadow: 0 4px 24px rgba(124,58,237,0.08);
   --shadow-md: 0 8px 32px rgba(124,58,237,0.14);
+
+  /* ── Spacing Scale (4px base) ── */
+  --space-xs: 0.25rem;   /* 4px */
+  --space-sm: 0.5rem;    /* 8px */
+  --space-md: 0.75rem;   /* 12px */
+  --space-lg: 1rem;      /* 16px */
+  --space-xl: 1.5rem;    /* 24px */
+  --space-2xl: 2rem;     /* 32px */
+  --space-3xl: 3rem;     /* 48px */
+
+  /* ── Radii ── */
   --radius: 12px;
   --radius-sm: 8px;
   --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* ── Transitions ── */
   --transition: all 0.2s ease;
+  --transition-fast: all 0.15s ease;
+  --transition-slow: all 0.3s ease;
 
   /* ── Shared app background pattern (light) ──────────────────
      Use var(--app-bg-color), var(--app-bg-image), var(--app-bg-size)
@@ -61,7 +83,10 @@ body.dark-mode {
   --text-muted: #9ca3af;
   --text-light: #6b7280;
   --border: #2d2b45;
+  --border-light: rgba(255,255,255,0.07);
   --surface: #1c1a2e;
+  --surface-hover: rgba(99,102,241,0.08);
+  --surface-alt: #161b22;
   --bg: #0d0b1a;
   --primary-light: rgba(124,58,237,0.15);
   --success-light: rgba(16,185,129,0.13);
@@ -127,3 +152,173 @@ body.dark-mode {
 body.dark-mode .page-btn            { border-color: #6366f1; color: #818cf8; }
 body.dark-mode .page-btn:hover:not(:disabled) { background: #6366f1; color: white; }
 body.dark-mode .page-btn:disabled   { border-color: #30363d; color: #4b5563; }
+
+/* ══════════════════════════════════════════════════════════════
+   ACCESSIBILITY — Focus visible ring for keyboard navigation
+   ══════════════════════════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REDUCED MOTION — Respect user motion preferences
+   ══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GLOBAL APP LAYOUT — consistent page structure across all views
+   Pattern 1: <><Navbar/><div class="page-container">...</div></>
+   Pattern 2: <div class="app-layout"><Navbar/><main class="app-main">...</main></div>
+   The sidebar is position:fixed; body[data-sb] adds padding-left.
+   ══════════════════════════════════════════════════════════════ */
+.app-layout {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.app-main {
+  min-width: 0;
+  padding: 1.5rem 2rem;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Standardize page-container used inside app-main (base, can be overridden per page) */
+.page-container {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1.5rem 2rem;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+body.dark-mode .page-container {
+  background: transparent;
+  color: #e2e8f0;
+}
+
+/* Consistent page headers */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.page-header h1,
+.page-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+/* Cards should be uniformly styled */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--glass-shadow);
+  padding: 1.25rem;
+}
+
+/* Consistent form inputs globally */
+input, select, textarea {
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.85rem;
+  background: var(--surface);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  box-sizing: border-box;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background: #1c2128;
+  border-color: #30363d;
+  color: #e2e8f0;
+}
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Consistent button base reset */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Consistent table alignment */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Responsive app-main ──────────────────────────────── */
+@media (max-width: 1024px) {
+  .app-main {
+    padding: 1.25rem 1.25rem;
+  }
+  .page-container {
+    padding: 1.25rem 1rem;
+  }
+}
+@media (max-width: 768px) {
+  .app-main {
+    padding: 1rem 0.75rem;
+  }
+  .page-container {
+    padding: 1rem 0.75rem;
+  }
+  .page-header h1,
+  .page-header h2 {
+    font-size: 1.2rem;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STANDARDIZED BREAKPOINTS (for reference / documentation)
+   sm: 640px | md: 768px | lg: 1024px | xl: 1280px
+   ══════════════════════════════════════════════════════════════ */

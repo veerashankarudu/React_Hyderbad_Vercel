@@ -59,7 +59,7 @@ function fmtTime(secs) {
 }
 
 export default function Leaderboard() {
-  // ── Mode: 'reviewers' | 'assessment' ──────────────────────────────────────
+  // ── Mode: 'reviewers' | 'assessment' | 'live' ─────────────────────────────
   const [mode, setMode] = useState('reviewers');
 
   // ── Reviewer leaderboard state ────────────────────────────────────────────
@@ -84,6 +84,16 @@ export default function Leaderboard() {
   const [assPage, setAssPage] = useState(1);
   const [assPageSize, setAssPageSize] = useState(10);
   const [topN, setTopN] = useState('');
+
+  // ── Live Quiz leaderboard state ───────────────────────────────────────────
+  const [liveSessions, setLiveSessions] = useState([]);
+  const [selectedLiveSession, setSelectedLiveSession] = useState('');
+  const [liveData, setLiveData] = useState([]);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [liveError, setLiveError] = useState('');
+  const [liveSearch, setLiveSearch] = useState('');
+  const [livePage, setLivePage] = useState(1);
+  const [livePageSize, setLivePageSize] = useState(10);
 
   const { t } = useTranslation();
 
@@ -162,6 +172,26 @@ export default function Leaderboard() {
     if (mode === 'assessment' && sessions.length === 0) loadAssessment();
   }, [mode]);
 
+  // Load live quiz leaderboard
+  const loadLive = useCallback(() => {
+    setLiveLoading(true);
+    setLiveError('');
+    const params = new URLSearchParams();
+    if (selectedLiveSession) params.set('sessionId', selectedLiveSession);
+    API.get(`/live/sessions/leaderboard?${params}`)
+      .then(({ data }) => {
+        setLiveSessions(data.sessions || []);
+        setLiveData(data.leaderboard || []);
+        setLivePage(1);
+      })
+      .catch(() => setLiveError('Failed to load live quiz leaderboard.'))
+      .finally(() => setLiveLoading(false));
+  }, [selectedLiveSession]);
+
+  useEffect(() => {
+    if (mode === 'live') loadLive();
+  }, [mode, loadLive]);
+
   const top3 = data.slice(0, 3);
   const myRankIdx = data.findIndex(r => r.enterpriseId === user?.enterpriseId);
   const myEntry   = myRankIdx >= 0 ? data[myRankIdx] : null;
@@ -189,6 +219,12 @@ export default function Leaderboard() {
             onClick={() => setMode('assessment')}
           >
             🎯 Assessment Results
+          </button>
+          <button
+            className={`lb-mode-tab${mode === 'live' ? ' active' : ''}`}
+            onClick={() => setMode('live')}
+          >
+            ⚡ Live Quiz
           </button>
         </div>
 
@@ -598,6 +634,175 @@ export default function Leaderboard() {
                             <td colSpan={8} style={{ padding: '0.75rem 1rem', textAlign: 'center', borderTop: '1px solid var(--border)' }}>
                               <TablePagination page={assPage} totalPages={totalPages} pageSize={assPageSize}
                                 onPageChange={setAssPage} onSizeChange={n => { setAssPageSize(n); setAssPage(1); }} totalItems={rows.length} />
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              );
+            })()}
+          </>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {/* LIVE QUIZ LEADERBOARD                                             */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {mode === 'live' && (
+          <>
+            <div className="lb-header">
+              <div className="lb-header-content">
+                <h1>⚡ Live Quiz Leaderboard</h1>
+                <p>Top performers across all live quiz sessions</p>
+              </div>
+            </div>
+
+            {/* Session filter */}
+            <div className="lb-ass-filters" style={{ marginBottom: '1rem' }}>
+              <label className="lb-ass-filter-label">Session</label>
+              <select
+                className="lb-ass-select"
+                value={selectedLiveSession}
+                onChange={e => { setSelectedLiveSession(e.target.value); setLivePage(1); }}
+              >
+                <option value="">All Sessions (Combined)</option>
+                {liveSessions.map(s => (
+                  <option key={s.id} value={s.id}>
+                    #{s.pin} — {s.title} ({s.participantCount} players)
+                    {s.startedAt ? ` · ${new Date(s.startedAt).toLocaleDateString()}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {liveLoading && <div className="lb-loading">Loading...</div>}
+            {liveError && <div className="lb-error">{liveError}</div>}
+            {!liveLoading && !liveError && liveData.length === 0 && (
+              <div className="lb-empty">
+                <div className="lb-empty-icon">⚡</div>
+                <p>No live quiz sessions completed yet. Host a live quiz to see results here!</p>
+              </div>
+            )}
+
+            {/* Podium for top 3 */}
+            {!liveLoading && liveData.length > 0 && (() => {
+              const top3 = liveData.slice(0, 3);
+              return (
+                <div className="lb-podium">
+                  {([top3[1], top3[0], top3[2]]).map((r, podiumIdx) => {
+                    const rankIndices = [1, 0, 2];
+                    const actualRank = rankIndices[podiumIdx];
+                    if (!r) return <div key={`live-podium-empty-${actualRank}`} className="podium-empty" />;
+                    const heights = ['podium-2nd', 'podium-1st', 'podium-3rd'];
+                    const isFirst = actualRank === 0;
+                    return (
+                      <div key={r.participantId} className={`podium-item ${heights[podiumIdx]}${isFirst ? ' podium-item-first' : ''}`}>
+                        <div className="podium-avatar-wrap">
+                          {isFirst && <div className="podium-crown">👑</div>}
+                          <div className={`podium-avatar${isFirst ? ' podium-avatar-glow' : ''}`}
+                            style={{ background: AVATAR_COLORS[actualRank % AVATAR_COLORS.length] }}>
+                            {buildInitials(r.displayName)}
+                          </div>
+                        </div>
+                        <div className="podium-medal">{MEDALS[actualRank]}</div>
+                        <div className="podium-name">{r.displayName}</div>
+                        {!selectedLiveSession && (
+                          <div className="podium-id" style={{ fontSize: '0.72rem' }}>{r.sessionTitle}</div>
+                        )}
+                        <div className="podium-count">{r.totalScore.toLocaleString()} <span>pts</span></div>
+                        <div className="podium-base" />
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* Full leaderboard table */}
+            {!liveLoading && liveData.length > 0 && (() => {
+              let rows = [...liveData];
+              if (liveSearch) {
+                const q = liveSearch.toLowerCase();
+                rows = rows.filter(r =>
+                  (r.displayName || '').toLowerCase().includes(q) ||
+                  (r.sessionTitle || '').toLowerCase().includes(q)
+                );
+              }
+              const totalPages = Math.ceil(rows.length / livePageSize);
+              const paged = rows.slice((livePage - 1) * livePageSize, livePage * livePageSize);
+              return (
+                <>
+                  <div style={{ margin: '1rem 0 0.75rem', display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input
+                      type="text"
+                      className="lb-search-input"
+                      placeholder="Search by player name..."
+                      value={liveSearch}
+                      onChange={e => { setLiveSearch(e.target.value); setLivePage(1); }}
+                    />
+                    <span className="lb-ass-count">{rows.length} player{rows.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="lb-table-wrap">
+                    <table className="lb-table">
+                      <thead>
+                        <tr>
+                          <th>Rank</th>
+                          <th>Player</th>
+                          {!selectedLiveSession && <th>Session</th>}
+                          <th>Score</th>
+                          {!selectedLiveSession && <th>Date</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paged.map(r => (
+                          <tr key={`${r.participantId}-${r.sessionId}`} className={r.rank <= 3 ? 'lb-top3-row' : ''}>
+                            <td className="lb-rank-cell">
+                              {r.rank <= 3 ? MEDALS[r.rank - 1] : <span className="lb-rank-num">#{r.rank}</span>}
+                            </td>
+                            <td>
+                              <div className="lb-reviewer">
+                                <div className="lb-avatar-sm"
+                                  style={{ background: AVATAR_COLORS[(r.rank - 1) % AVATAR_COLORS.length] }}>
+                                  {buildInitials(r.displayName)}
+                                </div>
+                                <span className="lb-reviewer-name">{r.displayName}</span>
+                              </div>
+                            </td>
+                            {!selectedLiveSession && (
+                              <td className="lb-eid" style={{ maxWidth: 160, whiteSpace: 'normal' }}>
+                                {r.sessionTitle}
+                                <span style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                                  PIN: {r.sessionPin}
+                                </span>
+                              </td>
+                            )}
+                            <td>
+                              <div className="lb-reviews-cell">
+                                <span className="lb-count-num" style={{ fontWeight: 700, color: 'var(--primary)' }}>
+                                  {r.totalScore.toLocaleString()}
+                                </span>
+                                <span style={{ marginLeft: '0.25rem', fontSize: '0.78rem', color: 'var(--text-muted)' }}>pts</span>
+                              </div>
+                            </td>
+                            {!selectedLiveSession && (
+                              <td style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                                {r.startedAt ? new Date(r.startedAt).toLocaleDateString() : '—'}
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                        {totalPages > 1 && (
+                          <tr>
+                            <td colSpan={selectedLiveSession ? 3 : 5} style={{ padding: '0.75rem 1rem', textAlign: 'center', borderTop: '1px solid var(--border)' }}>
+                              <TablePagination
+                                page={livePage}
+                                totalPages={totalPages}
+                                pageSize={livePageSize}
+                                onPageChange={setLivePage}
+                                onSizeChange={n => { setLivePageSize(n); setLivePage(1); }}
+                                totalItems={rows.length}
+                              />
                             </td>
                           </tr>
                         )}

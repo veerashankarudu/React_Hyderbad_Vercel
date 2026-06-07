@@ -147,7 +147,7 @@ export default function Home() {
         topicId: Number(aiForm.topicId),
         count: Number(aiForm.count),
         difficulty: aiForm.difficulty,
-      });
+      }, { timeout: 300000 });
       setAiResult(data);
       // Refresh summary counts
       API.get('/stats/summary').then(r => setSummary(r.data)).catch(() => {});

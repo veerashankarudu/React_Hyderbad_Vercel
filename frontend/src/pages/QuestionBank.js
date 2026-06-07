@@ -312,7 +312,7 @@ export default function QuestionBank() {
           <div className="qb-overlay" onClick={closeMenu} />
           <div className="qb-dropdown" style={{ position: 'fixed', top: menuPos.top, right: menuPos.right, zIndex: 9999 }}>
             <button onClick={() => { navigate(`/mcq/${menuPos.mcq.id}`); closeMenu(); }}>👁 {t('common.view')}</button>
-            {menuPos.mcq.status !== 'DRAFT' && <button onClick={() => { navigate(`/mcq/${menuPos.mcq.id}/edit`); closeMenu(); }}>✏️ {t('common.edit')}</button>}
+            <button onClick={() => { navigate(`/mcq/${menuPos.mcq.id}/edit`); closeMenu(); }}>✏️ {t('common.edit')}</button>
             {menuPos.mcq.status === 'READY_FOR_REVIEW' && <button onClick={() => { setAssignModal(menuPos.mcq); closeMenu(); }}>👤 {t('qb.assign')}</button>}
             <button className="qb-dropdown-delete" onClick={() => { closeMenu(); handleDelete(menuPos.mcq); }} disabled={deleting === menuPos.mcq.id}>🗑 {t('common.delete')}</button>
           </div>

@@ -5,6 +5,7 @@ import { useContentTranslation } from '../hooks/useContentTranslation';
 import { toast } from 'react-toastify';
 import html2canvas from 'html2canvas';
 import { useAuth } from '../AuthContext';
+import { generateCertificate } from '../utils/generateCertificate';
 import QuestionStemRenderer from '../components/QuestionStemRenderer';
 import './TakeQuiz.css';
 
@@ -337,7 +338,17 @@ export default function TakeQuiz() {
 
   // ── Handle answer selection ──────────────────────────────────────────────
   const selectAnswer = (mcqId, label) => {
-    setAnswers(a => ({ ...a, [String(mcqId)]: label }));
+    const mcq = questions.find(q => q.id === mcqId);
+    if (mcq && mcq.questionType === 'MULTI') {
+      // Toggle multi-select: store as comma-separated sorted string
+      setAnswers(a => {
+        const current = (a[String(mcqId)] || '').split(',').filter(Boolean);
+        const updated = current.includes(label) ? current.filter(k => k !== label) : [...current, label].sort();
+        return { ...a, [String(mcqId)]: updated.join(',') };
+      });
+    } else {
+      setAnswers(a => ({ ...a, [String(mcqId)]: label }));
+    }
   };
 
   // ── Re-enter fullscreen prompt ───────────────────────────────────────────
@@ -602,9 +613,12 @@ export default function TakeQuiz() {
                 </div>
 
                 <div className="tq-options">
+                  {q.questionType === 'MULTI' && <p style={{fontSize:'0.85rem',color:'#6b7280',marginBottom:'0.5rem'}}>Select all correct answers:</p>}
                   {['A', 'B', 'C', 'D'].map(label => {
                     const text = txTQOptions[label] || q[`option${label}`];
-                    const selected = answers[String(q.id)] === label;
+                    const isMulti = q.questionType === 'MULTI';
+                    const answerStr = answers[String(q.id)] || '';
+                    const selected = isMulti ? answerStr.split(',').includes(label) : answerStr === label;
                     return (
                       <button
                         key={label}
@@ -612,7 +626,7 @@ export default function TakeQuiz() {
                         onClick={() => selectAnswer(q.id, label)}
                         onCopy={blockCopy}
                       >
-                        <span className="tq-opt-label">{label}</span>
+                        <span className="tq-opt-label">{isMulti ? (selected ? '☑' : '☐') : label}</span>
                         <span className="tq-opt-text">{text}</span>
                         {selected && <span className="tq-opt-check">✓</span>}
                       </button>
@@ -794,6 +808,20 @@ export default function TakeQuiz() {
               <p>{t('tq.thankYou', { name: candidateName })}</p>
               <button className="tq-btn-pdf no-print" onClick={downloadPDF} disabled={downloading}>
                 {downloading ? t('tq.preparing') : t('tq.downloadPdf')}
+              </button>
+              <button className="tq-btn-cert no-print" onClick={() => {
+                const rank = pct >= 90 ? 1 : pct >= 80 ? 2 : pct >= 70 ? 3 : null;
+                generateCertificate({
+                  name: candidateName || 'Participant',
+                  score: results.score,
+                  total: results.total,
+                  percentage: pct,
+                  rank,
+                  techStack: session?.title || '',
+                  date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                });
+              }}>
+                🎓 {t('quiz.downloadCert', 'Download Certificate')}
               </button>
             </div>
           </div>

@@ -9,12 +9,6 @@ import { useTranslation } from 'react-i18next';
 import './MyQuestions.css';
 import './McqForm.css';
 
-function getSaveDraftLabel(loading, isEdit) {
-  if (loading) return 'Saving...';
-  if (isEdit) return 'Save';
-  return 'Save as Draft';
-}
-
 export default function McqForm({ mode }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -25,7 +19,7 @@ export default function McqForm({ mode }) {
 
   const [techStacks, setTechStacks] = useState([]);
   const [topics, setTopics] = useState([]);
-  const [form, setForm] = useState({ techStackId: '', topicId: '', questionStem: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: '', difficulty: 'MEDIUM' });
+  const [form, setForm] = useState({ techStackId: '', topicId: '', questionStem: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: '', difficulty: 'MEDIUM', imageUrl: '', videoUrl: '', mediaType: 'TEXT', questionType: 'SINGLE' });
   const questionStemRef = useRef(null);
 
   // Wraps selected text (or inserts a template) in ```java ... ``` fences for coloured code blocks
@@ -82,7 +76,7 @@ export default function McqForm({ mode }) {
   useEffect(() => {
     if (isEdit && id) {
       API.get(`/mcqs/${id}`).then(({ data }) => {
-        setForm({ techStackId: data.techStackId, topicId: data.topicId, questionStem: data.questionStem, optionA: data.optionA, optionB: data.optionB, optionC: data.optionC, optionD: data.optionD, correctAnswer: data.correctAnswer, difficulty: data.difficulty });
+        setForm({ techStackId: data.techStackId, topicId: data.topicId, questionStem: data.questionStem, optionA: data.optionA, optionB: data.optionB, optionC: data.optionC, optionD: data.optionD, correctAnswer: data.correctAnswer, difficulty: data.difficulty, imageUrl: data.imageUrl || '', videoUrl: data.videoUrl || '', mediaType: data.mediaType || 'TEXT', questionType: data.questionType || 'SINGLE' });
         setMcqStatus(data.status || '');
         setReviewComments(data.comments || []);
       });
@@ -97,6 +91,39 @@ export default function McqForm({ mode }) {
   const handleChange = (e) => { const { name, value, type, checked } = e.target; setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value })); setValidateResult(null); setExplanations(null); if (name === 'questionStem') { setDuplicateWarning(''); setDuplicateMatches([]); setDuplicateBlocked(false); } };
   const handleTechStackChange = (e) => { setForm((f) => ({ ...f, techStackId: e.target.value, topicId: '' })); };
 
+  // ── Auto-trigger AI duplicate check while typing (debounced 2s) ──
+  const dupCheckTimerRef = useRef(null);
+  useEffect(() => {
+    if (dupCheckTimerRef.current) clearTimeout(dupCheckTimerRef.current);
+    const stem = form.questionStem.trim();
+    // Only auto-check if question has at least 8 chars (meaningful query)
+    if (stem.length < 8) return;
+    dupCheckTimerRef.current = setTimeout(async () => {
+      setAiCheckLoading(true); setDuplicateWarning(''); setDuplicateMatches([]); setDuplicateBlocked(false);
+      try {
+        const payload = { questionStem: form.questionStem };
+        if (form.techStackId) payload.techStackId = Number(form.techStackId);
+        if (form.topicId) payload.topicId = Number(form.topicId);
+        if (isEdit && id) payload.excludeId = Number(id);
+        const { data } = await API.post('/ai/check-duplicate-db', payload);
+        if (data.aiError) {
+          setDuplicateWarning('');
+        } else {
+          const matches = data.similarQuestions || [];
+          setDuplicateMatches(matches);
+          setDuplicateBlocked(data.blocked === true);
+          if (matches.length === 0) {
+            setDuplicateWarning('no-duplicates');
+          } else {
+            setDuplicateWarning(data.blocked ? 'blocked' : 'has-similar');
+          }
+        }
+      } catch { /* AI unavailable — silent fail for auto-check */ }
+      finally { setAiCheckLoading(false); }
+    }, 2000);
+    return () => { if (dupCheckTimerRef.current) clearTimeout(dupCheckTimerRef.current); };
+  }, [form.questionStem, form.techStackId, form.topicId, isEdit, id]);
+
   // AI Generator: load topics when ai tech stack changes
   useEffect(() => {
     if (!aiForm.techStackId) { setAiTopics([]); setAiForm(f => ({ ...f, topicId: '' })); return; }
@@ -105,20 +132,52 @@ export default function McqForm({ mode }) {
       .catch(() => setAiTopics([]));
   }, [aiForm.techStackId]);
 
+  // AI Generator: two-step flow (preview → keep/remove → save)
+  const [aiPreview, setAiPreview] = useState(null); // preview data with questions + dup info
+  const [aiKeep, setAiKeep] = useState({}); // { index: true/false } — which questions to keep
+  const [aiSaving, setAiSaving] = useState(false);
+
   const handleAiGenerate = async () => {
     if (!aiForm.techStackId || !aiForm.topicId) { setAiError('Please select a tech stack and topic.'); return; }
-    setAiLoading(true); setAiResult(null); setAiError('');
+    setAiLoading(true); setAiResult(null); setAiPreview(null); setAiError('');
     try {
-      const { data } = await API.post('/ai/generate-mcqs', {
+      const { data } = await API.post('/ai/generate-mcqs-preview', {
         techStackId: Number(aiForm.techStackId),
         topicId: Number(aiForm.topicId),
         count: Number(aiForm.count),
         difficulty: aiForm.difficulty,
-      });
-      setAiResult(data);
+      }, { timeout: 300000 });
+      // Initialize keep state: all kept by default (even duplicates — user decides)
+      const keepMap = {};
+      (data.questions || []).forEach((_, i) => { keepMap[i] = true; });
+      setAiKeep(keepMap);
+      setAiPreview(data);
     } catch (err) {
       setAiError(err.response?.data?.error || 'AI generation failed. Please try again.');
     } finally { setAiLoading(false); }
+  };
+
+  const handleAiSaveSelected = async () => {
+    if (!aiPreview) return;
+    const selectedQuestions = aiPreview.questions.filter((_, i) => aiKeep[i]);
+    if (selectedQuestions.length === 0) { setAiError('Please keep at least one question to save.'); return; }
+    setAiSaving(true); setAiError('');
+    try {
+      const { data } = await API.post('/ai/save-generated-mcqs', {
+        techStackId: Number(aiForm.techStackId),
+        topicId: Number(aiForm.topicId),
+        difficulty: aiForm.difficulty,
+        questions: selectedQuestions.map(q => ({
+          questionStem: q.questionStem,
+          optionA: q.optionA, optionB: q.optionB, optionC: q.optionC, optionD: q.optionD,
+          correctAnswer: q.correctAnswer, difficulty: q.difficulty,
+        })),
+      });
+      setAiResult({ ...data, generated: data.saved, techStack: aiPreview.techStack, topic: aiPreview.topic, creatorFullName: aiPreview.creatorFullName });
+      setAiPreview(null);
+    } catch (err) {
+      setAiError(err.response?.data?.error || 'Failed to save questions.');
+    } finally { setAiSaving(false); }
   };
 
   const handleDuplicateCheck = async () => {
@@ -222,18 +281,53 @@ export default function McqForm({ mode }) {
     e.preventDefault();
     if (!form.correctAnswer) { setError({ text: 'Please select the correct answer.', dupId: null }); return; }
     if (sendForReview && duplicateBlocked) {
-      setError({ text: 'This question is too similar to existing questions (≥30% similarity). Please revise the question before sending for review.', dupId: null });
+      setError({ text: 'This question is ≥30% similar to existing questions. You must revise the question before sending for review.', dupId: null });
       return;
+    }
+    // Auto-trigger duplicate check on "Save & Send for Review" (PPT Slide 8 requirement)
+    if (sendForReview && form.questionStem.trim()) {
+      setLoading(true); setError({ text: '', dupId: null });
+      try {
+        const dupPayload = { questionStem: form.questionStem };
+        if (form.techStackId) dupPayload.techStackId = Number(form.techStackId);
+        if (form.topicId) dupPayload.topicId = Number(form.topicId);
+        if (isEdit && id) dupPayload.excludeId = Number(id);
+        const { data: dupData } = await API.post('/ai/check-duplicate-db', dupPayload);
+        if (!dupData.aiError) {
+          const matches = dupData.similarQuestions || [];
+          setDuplicateMatches(matches);
+          setDuplicateBlocked(dupData.blocked === true);
+          if (dupData.blocked) {
+            setDuplicateWarning('blocked');
+            setError({ text: 'AI detected ≥30% similarity with existing questions. Please revise the question before sending for review.', dupId: null });
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // AI unavailable — allow submit to proceed (backend will also check)
+      }
     }
     setLoading(true); setError({ text: '', dupId: null });
     try {
-      const payload = { questionStem: form.questionStem, optionA: form.optionA, optionB: form.optionB, optionC: form.optionC, optionD: form.optionD, correctAnswer: form.correctAnswer, difficulty: form.difficulty, techStackId: Number(form.techStackId), topicId: Number(form.topicId) };
+      const payload = { questionStem: form.questionStem, optionA: form.optionA, optionB: form.optionB, optionC: form.optionC, optionD: form.optionD, correctAnswer: form.correctAnswer, difficulty: form.difficulty, techStackId: Number(form.techStackId), topicId: Number(form.topicId), imageUrl: form.imageUrl || null, videoUrl: form.videoUrl || null, mediaType: form.mediaType || 'TEXT', questionType: form.questionType || 'SINGLE' };
       let res;
       if (isEdit) { res = await API.put(`/mcqs/${id}`, payload); }
       else { res = await API.post('/mcqs', payload); }
       if (sendForReview) {
         const mcqId = isEdit ? id : res.data.id;
-        try { await API.post(`/mcqs/${mcqId}/submit`); } catch {}
+        try { await API.post(`/mcqs/${mcqId}/submit`); } catch (submitErr) {
+          const submitMsg = submitErr.response?.data?.message || '';
+          if (submitMsg.startsWith('DUPLICATE:')) {
+            const parts = submitMsg.split(':');
+            const dupId = parts[1];
+            const msg = parts.slice(2).join(':');
+            setError({ text: msg, dupId });
+            toast.error(`Duplicate detected! ${msg}`, { autoClose: 8000 });
+            setLoading(false);
+            return;
+          }
+        }
       }
       navigate('/my-questions');
     } catch (err) {
@@ -293,21 +387,69 @@ export default function McqForm({ mode }) {
                 <div className="ai-gen-body">
                   <div className="ai-gen-success">
                     <div className="ai-gen-success-icon">✅</div>
-                    <div className="ai-gen-success-title">{aiResult.generated} {t('ai.mcqsGenerated')}</div>
+                    <div className="ai-gen-success-title">{aiResult.generated || aiResult.saved} {t('ai.mcqsGenerated')}</div>
                     <div className="ai-gen-success-detail">
                       <strong>{aiResult.techStack}</strong> → <strong>{aiResult.topic}</strong><br />
                       {t('ai.createdBy')}: <strong>{aiResult.creatorFullName}</strong> + 🤖 AI<br />
                       <span style={{ color: '#6B7280', fontSize: '0.8rem' }}>{t('ai.savedAsDraft')}</span>
-                      {aiResult.skippedDuplicates > 0 && (
-                        <div style={{ marginTop: '0.5rem', color: '#d97706', fontSize: '0.8rem', fontWeight: 600 }}>
-                          ⚠️ {aiResult.skippedDuplicates} question{aiResult.skippedDuplicates > 1 ? 's' : ''} skipped — too similar to existing questions (≥30%).
-                        </div>
-                      )}
                     </div>
                   </div>
                   <div className="ai-gen-actions">
-                    <button type="button" className="btn-secondary" onClick={() => { setAiResult(null); setAiError(''); }}>{t('ai.generateMore')}</button>
+                    <button type="button" className="btn-secondary" onClick={() => { setAiResult(null); setAiError(''); setAiPreview(null); }}>{t('ai.generateMore')}</button>
                     <button type="button" className="btn-primary" onClick={() => { setShowAiGen(false); navigate('/my-questions'); }}>{t('ai.viewMyQuestions')}</button>
+                  </div>
+                </div>
+              ) : aiPreview ? (
+                /* ── PREVIEW STEP: Show generated questions with duplicate matches ── */
+                <div className="ai-gen-body" style={{ maxHeight: '60vh', overflow: 'auto' }}>
+                  <div style={{ marginBottom: '0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    <strong>{aiPreview.questions.length}</strong> questions generated for <strong>{aiPreview.techStack}</strong> → <strong>{aiPreview.topic}</strong>.
+                    Review below — toggle off any you don't want to save.
+                  </div>
+                  {aiPreview.questions.map((q, idx) => {
+                    const kept = aiKeep[idx] !== false;
+                    const hasDup = q.isDuplicate;
+                    const matches = q.duplicateMatches || [];
+                    return (
+                      <div key={idx} style={{ border: `1px solid ${hasDup ? '#fbbf24' : 'var(--border)'}`, borderRadius: '10px', padding: '0.75rem', marginBottom: '0.6rem', background: kept ? (hasDup ? 'rgba(251,191,36,0.08)' : 'var(--card-bg)') : 'rgba(100,100,100,0.1)', opacity: kept ? 1 : 0.5, transition: 'all 0.2s' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '0.3rem' }}>
+                              {hasDup && <span style={{ color: '#d97706', marginRight: '0.3rem' }}>⚠️ Duplicate</span>}
+                              Q{idx + 1}: {q.questionStem?.length > 100 ? q.questionStem.substring(0, 100) + '…' : q.questionStem}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              A: {q.optionA} | B: {q.optionB} | C: {q.optionC} | D: {q.optionD} | ✓ {q.correctAnswer}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setAiKeep(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                            style={{ padding: '0.3rem 0.7rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', background: kept ? '#dc2626' : '#059669', color: '#fff', whiteSpace: 'nowrap' }}
+                          >
+                            {kept ? '✕ Remove' : '✓ Keep'}
+                          </button>
+                        </div>
+                        {hasDup && matches.length > 0 && kept && (
+                          <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.6rem', background: 'rgba(217,119,6,0.1)', borderRadius: '6px', fontSize: '0.75rem' }}>
+                            <div style={{ fontWeight: 600, color: '#92400e', marginBottom: '0.2rem' }}>Matching existing questions:</div>
+                            {matches.map((m, mi) => (
+                              <div key={mi} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.15rem' }}>
+                                <span style={{ background: m.similarityPercent >= 30 ? '#dc2626' : '#d97706', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>{m.similarityPercent}%</span>
+                                <span style={{ color: '#78350f' }}>Q#{m.id}: {(m.questionStem || '').length > 80 ? (m.questionStem || '').substring(0, 80) + '…' : m.questionStem}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {aiError && <div className="error-msg">{aiError}</div>}
+                  <div className="ai-gen-actions" style={{ marginTop: '0.75rem' }}>
+                    <button type="button" className="btn-secondary" onClick={() => { setAiPreview(null); setAiError(''); }}>{t('common.cancel')}</button>
+                    <button type="button" className="ai-gen-btn" onClick={handleAiSaveSelected} disabled={aiSaving || Object.values(aiKeep).every(v => !v)}>
+                      {aiSaving ? '💾 Saving...' : `💾 Save ${Object.values(aiKeep).filter(Boolean).length} Selected`}
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -401,6 +543,26 @@ export default function McqForm({ mode }) {
                     <option value="HARD">{t('common.hard')}</option>
                   </select>
                 </div>
+                <div className="form-group">
+                  <label htmlFor="mediaType">Media Type</label>
+                  <select id="mediaType" name="mediaType" value={form.mediaType} onChange={handleChange}>
+                    <option value="TEXT">Text Only</option>
+                    <option value="IMAGE">Image</option>
+                    <option value="VIDEO">Video</option>
+                  </select>
+                </div>
+                {form.mediaType === 'IMAGE' && (
+                  <div className="form-group">
+                    <label htmlFor="imageUrl">Image URL</label>
+                    <input type="url" id="imageUrl" name="imageUrl" value={form.imageUrl} onChange={handleChange} placeholder="https://example.com/image.png" />
+                  </div>
+                )}
+                {form.mediaType === 'VIDEO' && (
+                  <div className="form-group">
+                    <label htmlFor="videoUrl">Video URL</label>
+                    <input type="url" id="videoUrl" name="videoUrl" value={form.videoUrl} onChange={handleChange} placeholder="https://example.com/video.mp4" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -419,7 +581,7 @@ export default function McqForm({ mode }) {
                 <div className="ai-check-wrap">
                   <textarea ref={questionStemRef} id="questionStem" name="questionStem" value={form.questionStem} onChange={handleChange} placeholder="Enter the MCQ question..." required rows={4} />
                   <button type="button" className="ai-btn" onClick={handleDuplicateCheck} disabled={aiCheckLoading || !form.questionStem.trim()}>
-                    {aiCheckLoading ? '🤖 Checking...' : '🤖 AI Check'}
+                    {aiCheckLoading ? '🔍 Checking...' : '🔍 Duplicate Check'}
                   </button>
                 </div>
               </div>
@@ -432,7 +594,7 @@ export default function McqForm({ mode }) {
                 <div className={duplicateBlocked ? 'warning-msg duplicate-match-box blocked' : 'warning-msg duplicate-match-box'} style={{ marginBottom: '0.75rem' }}>
                   <p style={{ marginBottom: '0.4rem', fontWeight: 600 }}>
                     {duplicateBlocked
-                      ? '🚫 Duplicate detected — this question is ≥30% similar to existing questions. Revise before sending for review.'
+                      ? '🚫 Duplicate detected — this question is ≥30% similar to existing questions. Please revise before submitting:'
                       : '⚠️ Similar questions found (below 30% threshold — review recommended):'}
                   </p>
                   <ul className="duplicate-match-list">
@@ -448,6 +610,11 @@ export default function McqForm({ mode }) {
                       );
                     })}
                   </ul>
+                  {duplicateBlocked && (
+                    <div style={{ marginTop: '0.5rem', padding: '0.4rem 1rem', borderRadius: '6px', border: '1px solid #dc2626', background: 'rgba(220,38,38,0.08)', color: '#991b1b', fontWeight: 600, fontSize: '0.8rem' }}>
+                      ✏️ You must edit the question to reduce similarity below 30% before sending for review.
+                    </div>
+                  )}
                 </div>
               )}
               {duplicateWarning && duplicateWarning !== 'no-duplicates' && duplicateWarning !== 'blocked' && duplicateWarning !== 'has-similar' && (
@@ -486,14 +653,46 @@ export default function McqForm({ mode }) {
               </div>
 
                 <div className="form-group">
-                <label htmlFor="correctAnswerGroup">{t('form.correctAnswer')} *</label>
+                <label>{t('form.questionType') || 'Answer Type'} *</label>
                 <div className="radio-options">
-                  {OPTIONS.map((key) => (
-                    <label key={key} className="radio-label">
-                      <input type="radio" name="correctAnswer" value={key} checked={form.correctAnswer === key} onChange={handleChange} />
-                      {t('form.option')} {key}
-                    </label>
-                  ))}
+                  <label className={`radio-label${form.questionType === 'SINGLE' ? ' radio-label--active' : ''}`}>
+                    <input type="radio" name="questionType" value="SINGLE" checked={form.questionType === 'SINGLE'} onChange={handleChange} />
+                    🔘 Single Selection (Radio)
+                  </label>
+                  <label className={`radio-label${form.questionType === 'MULTI' ? ' radio-label--active' : ''}`}>
+                    <input type="radio" name="questionType" value="MULTI" checked={form.questionType === 'MULTI'} onChange={(e) => { setForm(f => ({ ...f, questionType: 'MULTI', correctAnswer: '' })); }} />
+                    ☑️ Multiple Selection (Checkbox)
+                  </label>
+                </div>
+                {form.questionType === 'MULTI' && <span style={{fontSize:'0.8rem', color:'#6b7280', marginTop:'0.3rem'}}>Select 2 or more correct answers below</span>}
+              </div>
+
+                <div className="form-group">
+                <label htmlFor="correctAnswerGroup">{t('form.correctAnswer')} * {form.questionType === 'MULTI' && <span style={{fontWeight:'normal', color:'#6b7280'}}>({(form.correctAnswer || '').split(',').filter(Boolean).length} selected)</span>}</label>
+                <div className="radio-options">
+                  {form.questionType === 'MULTI' ? (
+                    OPTIONS.map((key) => {
+                      const selected = (form.correctAnswer || '').split(',').filter(Boolean);
+                      const isChecked = selected.includes(key);
+                      return (
+                        <label key={key} className={`radio-label${isChecked ? ' radio-label--active' : ''}`}>
+                          <input type="checkbox" name="correctAnswer" value={key} checked={isChecked} onChange={() => {
+                            const current = (form.correctAnswer || '').split(',').filter(Boolean);
+                            const updated = isChecked ? current.filter(k => k !== key) : [...current, key].sort();
+                            setForm(f => ({ ...f, correctAnswer: updated.join(',') }));
+                          }} />
+                          {t('form.option')} {key}
+                        </label>
+                      );
+                    })
+                  ) : (
+                    OPTIONS.map((key) => (
+                      <label key={key} className={`radio-label${form.correctAnswer === key ? ' radio-label--active' : ''}`}>
+                        <input type="radio" name="correctAnswer" value={key} checked={form.correctAnswer === key} onChange={handleChange} />
+                        {t('form.option')} {key}
+                      </label>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -520,12 +719,19 @@ export default function McqForm({ mode }) {
                 </button>
                 <button
                   type="button"
-                  className="validate-btn"
+                  className="validate-btn quality-check-btn"
                   onClick={handleQualityCheck}
                   disabled={qualityLoading || !canValidate}
-                  style={{ marginLeft: '0.5rem', background: '#fef3c7', color: '#92400e', borderColor: '#d97706' }}
                 >
                   {qualityLoading ? '⏳ Scoring...' : '🏅 AI Quality Check'}
+                </button>
+                <button
+                  type="button"
+                  className="explain-btn"
+                  onClick={handleGenerateExplanations}
+                  disabled={explanationLoading || !canGenerateExplanations}
+                >
+                  {explanationLoading ? '🤖 Generating...' : '🤖 AI: Explain All Options'}
                 </button>
                 {!canValidate && (
                   <span className="validate-hint">Fill all options + select correct answer to validate</span>
@@ -604,17 +810,6 @@ export default function McqForm({ mode }) {
             })()}
 
               {/* AI Explanation Generator */}
-              <div className="validate-section">
-                <button
-                  type="button"
-                  className="explain-btn"
-                  onClick={handleGenerateExplanations}
-                  disabled={explanationLoading || !canGenerateExplanations}
-                >
-                  {explanationLoading ? '🤖 Generating...' : '🤖 AI: Explain All Options'}
-                </button>
-                {!canGenerateExplanations && <span className="validate-hint">Fill all options + correct answer first</span>}
-              </div>
 
               {explanations && (
                 <div className="explanation-card">
@@ -642,9 +837,9 @@ export default function McqForm({ mode }) {
               <div className="form-actions">
                 <button type="button" className="btn-secondary" onClick={() => navigate(-1)}>{t('common.cancel')}</button>
                 <button type="button" className="btn-secondary" disabled={loading} onClick={(e) => handleSubmit(e, false)}>
-                  {loading ? t('common.saving') : (isEdit ? t('common.save') : t('form.saveAsDraft'))}
+                  {loading ? t('common.saving') : t('common.save')}
                 </button>
-                {(!isEdit || mcqStatus === 'REJECTED') && (
+                {(!isEdit || mcqStatus === 'DRAFT' || mcqStatus === 'REJECTED') && (
                   <button type="button" className="btn-primary" disabled={loading || duplicateBlocked} title={duplicateBlocked ? 'Duplicate detected — revise the question first' : ''} onClick={(e) => handleSubmit(e, true)}>
                     {loading ? t('common.saving') : duplicateBlocked ? '🚫 Duplicate — Revise First' : t('form.saveAndSend')}
                   </button>

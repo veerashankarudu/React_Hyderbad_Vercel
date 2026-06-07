@@ -69,7 +69,7 @@
 }
 
 /* ── UserManagement mobile ── */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .um-form-grid { grid-template-columns: 1fr; }
   .um-modal { padding: 1.25rem; }
   .um-modal-actions { flex-direction: column-reverse; }

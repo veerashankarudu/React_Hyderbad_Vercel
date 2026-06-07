@@ -2,6 +2,7 @@ package com.accenture.quizhub.entity;
 
 import com.accenture.quizhub.enums.Difficulty;
 import com.accenture.quizhub.enums.McqStatus;
+import com.accenture.quizhub.enums.QuestionType;
 import com.accenture.quizhub.enums.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -52,9 +53,10 @@ class EntityGroup8Test {
             Mcq mcq = new Mcq(
                     99L, "AllArgs question?",
                     "Opt A", "Opt B", "Opt C", "Opt D",
-                    "C", Difficulty.HARD, McqStatus.APPROVED,
+                    "C", QuestionType.SINGLE, Difficulty.HARD, McqStatus.APPROVED,
                     ts, topic, creator, reviewer, comments,
                     3, 88, "MEDIUM", "minor warning",
+                    null, null, null, "TEXT",
                     now, now.plusMinutes(10)
             );
 
@@ -87,8 +89,9 @@ class EntityGroup8Test {
                 Mcq mcq = new Mcq(
                         4L, "Null-optional Q",
                         "A", "B", "C", "D",
-                        "A", Difficulty.EASY, McqStatus.DRAFT,
+                        "A", null, Difficulty.EASY, McqStatus.DRAFT,
                         null, null, buildUser(7L, "CR8_NL"), null, null,
+                        null, null, null, null,
                         null, null, null, null,
                         null, null
                 );
@@ -126,11 +129,11 @@ class EntityGroup8Test {
             LocalDateTime now = LocalDateTime.of(2025, 1, 1, 0, 0);
 
             Mcq a = new Mcq(1L, "Q", "A", "B", "C", "D", "A",
-                    Difficulty.EASY, McqStatus.DRAFT, ts, null, creator, null,
-                    new ArrayList<>(), 1, null, null, null, now, now);
+                    QuestionType.SINGLE, Difficulty.EASY, McqStatus.DRAFT, ts, null, creator, null,
+                    new ArrayList<>(), 1, null, null, null, null, null, null, "TEXT", now, now);
             Mcq b = new Mcq(1L, "Q", "A", "B", "C", "D", "A",
-                    Difficulty.EASY, McqStatus.DRAFT, ts, null, creator, null,
-                    new ArrayList<>(), 1, null, null, null, now, now);
+                    QuestionType.SINGLE, Difficulty.EASY, McqStatus.DRAFT, ts, null, creator, null,
+                    new ArrayList<>(), 1, null, null, null, null, null, null, "TEXT", now, now);
 
             assertThat(a).isEqualTo(b);
             assertThat(a.hashCode()).isEqualTo(b.hashCode());
@@ -144,8 +147,8 @@ class EntityGroup8Test {
             LocalDateTime ts1 = LocalDateTime.of(2025, 2, 1, 0, 0);
 
             Mcq allArgs = new Mcq(2L, "MixQ", "1", "2", "3", "4", "B",
-                    Difficulty.MEDIUM, McqStatus.APPROVED, ts, null, creator, null,
-                    new ArrayList<>(), 0, 70, "LOW", null, ts1, ts1);
+                    QuestionType.SINGLE, Difficulty.MEDIUM, McqStatus.APPROVED, ts, null, creator, null,
+                    new ArrayList<>(), 0, 70, "LOW", null, null, null, null, "TEXT", ts1, ts1);
             Mcq built = Mcq.builder()
                     .id(2L).questionStem("MixQ")
                     .optionA("1").optionB("2").optionC("3").optionD("4")
@@ -161,8 +164,9 @@ class EntityGroup8Test {
         @DisplayName("toString: allArgs instance does not throw and contains key content")
         void toString_allArgsInstance_doesNotThrow() {
             Mcq mcq = new Mcq(3L, "ToStr_Unique_MCQ_8", "A", "B", "C", "D", "D",
-                    Difficulty.HARD, McqStatus.REJECTED, null, null,
+                    QuestionType.SINGLE, Difficulty.HARD, McqStatus.REJECTED, null, null,
                     buildUser(6L, "CR8_TS"), null, null, null, null, null, null,
+                    null, null, null, "TEXT",
                     LocalDateTime.now(), LocalDateTime.now());
 
             assertThatCode(mcq::toString).doesNotThrowAnyException();

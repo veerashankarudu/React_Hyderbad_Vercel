@@ -2,6 +2,7 @@ package com.accenture.quizhub.entity;
 
 import com.accenture.quizhub.enums.Difficulty;
 import com.accenture.quizhub.enums.McqStatus;
+import com.accenture.quizhub.enums.QuestionType;
 import com.accenture.quizhub.enums.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -54,6 +55,7 @@ class EntityGroup4Test {
                     "Inheritance",
                     "Encapsulation",
                     "B",
+                    QuestionType.SINGLE,
                     Difficulty.HARD,
                     McqStatus.APPROVED,
                     ts,
@@ -65,6 +67,10 @@ class EntityGroup4Test {
                     95,
                     "LOW",
                     "Reviewed",
+                    null,
+                    null,
+                    null,
+                    "TEXT",
                     now,
                     now
             );

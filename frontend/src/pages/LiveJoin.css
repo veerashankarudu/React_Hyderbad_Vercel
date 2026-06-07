@@ -1,0 +1,205 @@
+/* ── Live Join ── */
+.live-join-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a0533 0%, #2d0b6b 50%, #0a1628 100%);
+  padding: 1rem;
+}
+
+.live-join-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 3rem 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.live-join-logo {
+  margin-bottom: 2rem;
+}
+
+.live-badge {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.live-join-logo h1 {
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin: 0 0 0.5rem;
+  background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.live-join-subtitle {
+  color: rgba(255,255,255,0.6);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.live-join-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pin-input-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.pin-input {
+  width: 100%;
+  max-width: 280px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.4em;
+  padding: 1rem;
+  background: rgba(255,255,255,0.08);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 16px;
+  color: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.pin-input:focus {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.2);
+}
+
+.pin-input::placeholder {
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 0.3em;
+}
+
+.name-input {
+  width: 100%;
+  font-size: 1.1rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255,255,255,0.08);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  color: white;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.name-input:focus {
+  border-color: #6c5ce7;
+}
+
+.name-input::placeholder {
+  color: rgba(255,255,255,0.35);
+}
+
+.live-join-btn {
+  width: 100%;
+  padding: 0.9rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.live-join-btn.primary {
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: white;
+}
+
+.live-join-btn.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(108, 92, 231, 0.4);
+}
+
+.live-join-btn.primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.live-join-btn.secondary {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.live-join-btn.secondary:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+.live-join-error {
+  color: #ff7675;
+  font-size: 0.9rem;
+  margin: 0;
+  background: rgba(255, 118, 117, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+
+.session-preview {
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.session-quiz-title {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+
+.session-participants {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.live-join-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 0;
+  color: rgba(255,255,255,0.6);
+}
+
+.live-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255,255,255,0.15);
+  border-top-color: #6c5ce7;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

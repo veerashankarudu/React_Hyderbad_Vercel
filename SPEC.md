@@ -1995,3 +1995,664 @@ Keyword search within own MCQs by question stem content.
 ---
 
 *Document Version: 2.0 | Updated: May 18, 2026 | Hack-N-Stack Level 1*
+
+---
+
+---
+
+# SECTION 20: Live Quiz Battle Mode (Kahoot-style)
+## Spec-Driven Development Document — Phase 2 Feature
+
+> **Version:** 1.0 | **Date:** May 22, 2026 | **Author:** Team Bumblebee
+
+---
+
+## 20.1 Problem Statement
+
+QuizHub AI currently supports self-paced individual assessments. There is no way for a host to run a **real-time competitive quiz** where all participants answer simultaneously, see live scores, and compete on a leaderboard. Platforms like Kahoot! and Mentimeter have proven that live quiz competitions drive engagement, learning retention, and participation in corporate and classroom settings.
+
+**Gap:** QuizHub needs a Live Quiz Battle mode — host-controlled, PIN-joined, real-time, gamified.
+
+---
+
+## 20.2 Goals & Non-Goals
+
+### Goals
+- Allow any Admin or SME to host a live quiz session from any approved quiz
+- Participants join using a 6-digit PIN — no login required for guests
+- All participants answer the same question at the same time
+- Difficulty-based scoring with time bonus
+- Live leaderboard after every question
+- Host controls: start, next, pause, extend timer, kick, end
+- Reconnect recovery: participants can rejoin after disconnect without losing score
+- Anti-cheat: no duplicate answers, no joins after session starts, no answer after timer
+
+### Non-Goals (Phase 2)
+- Team battle mode (group vs group)
+- Video/image questions
+- Anonymous polls (no scoring)
+- Mobile native app
+- Slack/Teams invite links
+- Session recording/replay
+- Adaptive difficulty
+
+---
+
+## 20.3 What Already Exists (Reuse, Do Not Rebuild)
+
+| Existing Asset | How It Is Reused |
+|---|---|
+| `QuizController.java` — `Collections.shuffle()` | Question randomization — already works |
+| `LoginRateLimitFilter.java` | Rate limiting — already applied |
+| `StatsController.java` + `Analytics.js` | Post-session analytics — already works |
+| `AIController.java` + `ChatBot.js` | AI hints/explanations after reveal |
+| `NotificationController.java` | Session invite notifications |
+| `Leaderboard.js` | Final results page |
+| `QuizSession` entity | Referenced by new `LiveSession` |
+| `QuizAttempt` entity | Final scores saved here for logged-in participants |
+| `/actuator/health` | Monitoring — already configured |
+| Approved MCQs in `mcq` table | Question pool for live sessions |
+| JWT Auth | Host authentication; participants optional |
+
+---
+
+## 20.4 Actors & Roles
+
+| Actor | Description |
+|---|---|
+| **Host** | Admin or SME. Creates session, controls pace, sees host dashboard |
+| **Participant (logged-in)** | Joins by PIN, score saved to profile and `QuizAttempt` |
+| **Participant (guest)** | Joins by PIN + display name only, score not persisted |
+
+---
+
+## 20.5 User Stories
+
+### Host Stories
+| ID | Story | Acceptance Criteria |
+|---|---|---|
+| LQ-H1 | As a Host, I want to start a live session from an existing quiz so participants can join | Session created, unique PIN shown, status = WAITING |
+| LQ-H2 | As a Host, I want to see who has joined before I start | Lobby shows participant list updating in real time |
+| LQ-H3 | As a Host, I want to advance to the next question | All participants see the same question simultaneously |
+| LQ-H4 | As a Host, I want to pause the timer | Timer freezes for all participants |
+| LQ-H5 | As a Host, I want to extend the timer by 15 seconds | Countdown increases for all participants |
+| LQ-H6 | As a Host, I want to kick a disruptive participant | Participant is removed and cannot rejoin this session |
+| LQ-H7 | As a Host, I want to end the session early | Session ends, final leaderboard shown to all |
+| LQ-H8 | As a Host, I want to see a final results dashboard | Leaderboard with accuracy, avg score, most missed question |
+
+### Participant Stories
+| ID | Story | Acceptance Criteria |
+|---|---|---|
+| LQ-P1 | As a Participant, I want to join by entering a PIN | Valid PIN → lobby; invalid/expired PIN → error message |
+| LQ-P2 | As a Participant, I want to see a countdown timer on each question | Timer visible and synced with all other players |
+| LQ-P3 | As a Participant, I want instant feedback after answering | Green = correct + points earned; Red = wrong + 0 points |
+| LQ-P4 | As a Participant, I want to see the leaderboard between questions | Top 5 shown with my rank highlighted |
+| LQ-P5 | As a Participant, I want to rejoin if I disconnect | Rejoin token restores my score and active state |
+| LQ-P6 | As a Guest, I want to join without creating an account | Display name + PIN only, no password required |
+
+---
+
+## 20.6 PIN Lifecycle
+
+```
+Host starts → Fresh 6-digit PIN generated (e.g. 483921) → status: WAITING
+Players join by PIN → status: WAITING (joins still accepted)
+Host clicks Start → status: ACTIVE (no new joins accepted)
+Quiz ends (all questions done OR host ends early) → status: ENDED → PIN INVALID
+Same quiz started again → new session → new PIN (e.g. 752104)
+Auto-expire: sessions in WAITING for >2h with no start → auto-mark ENDED
+```
+
+**PIN generation rules:**
+- Always 6 digits, zero-padded (`000001` → `999999`)
+- Unique among all non-`ENDED` sessions at time of creation
+- On collision, regenerate (max 10 attempts, then throw error)
+- Multiple simultaneous live sessions allowed (different hosts, different PINs)
+
+---
+
+## 20.7 Scoring Formula
+
+$$\text{points} = \text{base} \times \left(1 - \frac{t_{\text{answer}}}{t_{\text{limit}}} \times 0.5\right)$$
+
+| Difficulty | Base Score | Instant Answer | Answer at Time Limit | Wrong / Timeout |
+|---|---|---|---|---|
+| EASY | 1,000 | 1,000 | 500 | 0 |
+| MEDIUM | 1,500 | 1,500 | 750 | 0 |
+| HARD | 2,000 | 2,000 | 1,000 | 0 |
+
+- `t_answer` = milliseconds from question display to answer click
+- `t_limit` = question time limit in milliseconds (default 30,000ms)
+- Score rounded to nearest integer
+
+---
+
+## 20.8 Database Schema — New Tables
+
+### Table: `live_session`
+```sql
+CREATE TABLE live_session (
+  id                    BIGINT AUTO_INCREMENT PRIMARY KEY,
+  quiz_id               BIGINT NOT NULL,
+  host_user_id          BIGINT NOT NULL,
+  pin                   CHAR(6) NOT NULL,
+  status                ENUM('WAITING','ACTIVE','ENDED') NOT NULL DEFAULT 'WAITING',
+  current_question_index INT NOT NULL DEFAULT 0,
+  time_limit_seconds    INT NOT NULL DEFAULT 30,
+  created_at            DATETIME NOT NULL,
+  started_at            DATETIME,
+  ended_at              DATETIME,
+  UNIQUE KEY uq_pin_active (pin, status),
+  FOREIGN KEY (quiz_id) REFERENCES quiz_session(id),
+  FOREIGN KEY (host_user_id) REFERENCES user(id)
+);
+```
+
+### Table: `live_participant`
+```sql
+CREATE TABLE live_participant (
+  id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+  session_id     BIGINT NOT NULL,
+  user_id        BIGINT,                          -- NULL for guests
+  display_name   VARCHAR(50) NOT NULL,
+  rejoin_token   CHAR(36) NOT NULL,               -- UUID
+  total_score    INT NOT NULL DEFAULT 0,
+  rank           INT,
+  is_active      BOOLEAN NOT NULL DEFAULT TRUE,   -- FALSE = kicked
+  joined_at      DATETIME NOT NULL,
+  UNIQUE KEY uq_session_name (session_id, display_name),
+  FOREIGN KEY (session_id) REFERENCES live_session(id),
+  FOREIGN KEY (user_id) REFERENCES user(id)
+);
+```
+
+### Table: `live_answer`
+```sql
+CREATE TABLE live_answer (
+  id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+  session_id        BIGINT NOT NULL,
+  participant_id    BIGINT NOT NULL,
+  question_id       BIGINT NOT NULL,
+  selected_option   CHAR(1) NOT NULL,             -- A | B | C | D
+  is_correct        BOOLEAN NOT NULL,
+  points_earned     INT NOT NULL DEFAULT 0,
+  response_time_ms  BIGINT NOT NULL,
+  answered_at       DATETIME NOT NULL,
+  UNIQUE KEY uq_one_answer (session_id, participant_id, question_id),
+  FOREIGN KEY (session_id) REFERENCES live_session(id),
+  FOREIGN KEY (participant_id) REFERENCES live_participant(id),
+  FOREIGN KEY (question_id) REFERENCES mcq(id)
+);
+```
+
+---
+
+## 20.9 REST API Contracts
+
+### POST `/api/v1/live/sessions`
+**Auth:** SME or Admin (JWT required)
+**Request:**
+```json
+{ "quizId": 5, "timeLimitSeconds": 30 }
+```
+**Response 201:**
+```json
+{ "sessionId": 42, "pin": "483921", "status": "WAITING", "quizTitle": "Spring Boot Basics" }
+```
+
+### GET `/api/v1/live/sessions/{pin}/validate`
+**Auth:** None
+**Response 200:**
+```json
+{ "sessionId": 42, "status": "WAITING", "quizTitle": "Spring Boot Basics", "participantCount": 7 }
+```
+**Response 404:** `{ "error": "Invalid or expired PIN" }`
+
+### POST `/api/v1/live/sessions/{pin}/join`
+**Auth:** Optional (JWT if logged in)
+**Request:**
+```json
+{ "displayName": "Veera" }
+```
+**Response 200:**
+```json
+{ "participantId": 101, "rejoinToken": "uuid-here", "sessionId": 42 }
+```
+**Response 409:** `{ "error": "Display name already taken in this session" }`
+**Response 400:** `{ "error": "Session has already started" }`
+
+### POST `/api/v1/live/sessions/{id}/start`
+**Auth:** Host only
+**Response 200:** `{ "status": "ACTIVE", "firstQuestion": { ... } }`
+
+### POST `/api/v1/live/sessions/{id}/next`
+**Auth:** Host only
+**Response 200:** `{ "questionIndex": 2, "question": { ... } }` or `{ "status": "ENDED" }` if last question
+
+### POST `/api/v1/live/sessions/{id}/pause`
+**Auth:** Host only
+**Response 200:** `{ "paused": true, "secondsRemaining": 17 }`
+
+### POST `/api/v1/live/sessions/{id}/extend`
+**Auth:** Host only
+**Request:** `{ "addSeconds": 15 }`
+**Response 200:** `{ "secondsRemaining": 32 }`
+
+### POST `/api/v1/live/sessions/{id}/kick/{participantId}`
+**Auth:** Host only
+**Response 200:** `{ "kicked": true }`
+
+### POST `/api/v1/live/sessions/{id}/end`
+**Auth:** Host only
+**Response 200:** `{ "status": "ENDED", "finalLeaderboard": [ ... ] }`
+
+### GET `/api/v1/live/sessions/{id}/leaderboard`
+**Auth:** None
+**Response 200:**
+```json
+[
+  { "rank": 1, "displayName": "Veera", "totalScore": 12500, "lastGain": 1800 },
+  { "rank": 2, "displayName": "Dilip", "totalScore": 11200, "lastGain": 1400 }
+]
+```
+
+### POST `/api/v1/live/sessions/{id}/reconnect`
+**Auth:** None
+**Request:** `{ "participantId": 101, "rejoinToken": "uuid-here" }`
+**Response 200:**
+```json
+{
+  "restored": true,
+  "currentQuestionIndex": 3,
+  "totalScore": 4500,
+  "currentQuestion": { ... }
+}
+```
+**Response 403:** `{ "error": "Invalid rejoin token" }`
+**Response 400:** `{ "error": "Participant has been kicked" }`
+
+---
+
+## 20.10 WebSocket Spec (STOMP over SockJS)
+
+**Dependency to add to `pom.xml`:**
+```xml
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-websocket</artifactId>
+</dependency>
+```
+
+**Endpoint:** `ws://localhost:8080/ws` (SockJS fallback enabled)
+
+### Server → All Players (Broadcast)
+
+| Topic | Triggered By | Payload |
+|---|---|---|
+| `/topic/session/{id}/joined` | Any participant joins | `{ displayName, participantCount }` |
+| `/topic/session/{id}/question` | Host clicks Next/Start | `{ questionIndex, stem, optA, optB, optC, optD, timeLimitSeconds, difficulty }` |
+| `/topic/session/{id}/timer` | Every second server-side | `{ secondsRemaining }` |
+| `/topic/session/{id}/reveal` | Timer ends or host advances | `{ correctOption, explanation, questionStats }` |
+| `/topic/session/{id}/leaderboard` | After every reveal | `[{ rank, displayName, totalScore, lastGain }]` |
+| `/topic/session/{id}/host-control` | Pause/extend/kick | `{ action: "PAUSE"|"EXTEND"|"KICK", payload }` |
+| `/topic/session/{id}/end` | Host ends session | `{ finalLeaderboard[], sessionStats }` |
+
+### Client → Server (App Destinations)
+
+| Destination | Who | Payload |
+|---|---|---|
+| `/app/session/{id}/answer` | Participant | `{ participantId, selectedOption, responseTimeMs }` |
+| `/app/session/{id}/rejoin` | Reconnecting participant | `{ participantId, rejoinToken }` |
+
+---
+
+## 20.11 Frontend Pages & Components
+
+### Pages
+
+| Route | Component | Description |
+|---|---|---|
+| `/live/join` | `LiveJoin.js` | PIN input field + display name; validates PIN via REST before proceeding |
+| `/live/lobby/:sessionId` | `LiveLobby.js` | "Waiting for host..." + live participant list via WebSocket |
+| `/live/host/:sessionId` | `LiveHost.js` | PIN display, participant count, Start/Next/Pause/Extend/Kick/End controls |
+| `/live/play/:sessionId` | `LivePlay.js` | Full-screen question + circular countdown timer + 4 colored answer buttons |
+| `/live/results/:sessionId` | `LiveResults.js` | Final leaderboard + confetti + "Play Again" / "Back to Dashboard" |
+
+### Components
+
+| Component | Props | Description |
+|---|---|---|
+| `PinDisplay` | `pin` | Large animated 6-digit PIN with copy-to-clipboard button |
+| `WaitingLobby` | `participants[]` | Live-updating list of joined players |
+| `QuestionCard` | `question, secondsRemaining, totalSeconds` | Full-screen question text + circular progress timer |
+| `AnswerButton` | `label, option, onClick, disabled` | A=🔴 B=🔵 C=🟡 D=🟢; disabled after answer submitted |
+| `ScoreReveal` | `isCorrect, pointsEarned, correctOption` | "✅ Correct! +1200 pts" or "❌ Wrong! +0 pts" overlay |
+| `LiveLeaderboard` | `entries[], myParticipantId` | Top-5 animated list; highlights current player's row |
+| `HostControls` | `onPause, onExtend, onNext, onEnd, onKick` | Host action buttons with confirmation dialogs for destructive actions |
+| `ConfettiResults` | `leaderboard[], myRank` | Final screen with canvas confetti animation |
+
+### WebSocket Client Setup (React)
+```javascript
+// Install: npm install @stomp/stompjs sockjs-client
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+
+const client = new Client({
+  webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+  reconnectDelay: 3000,   // auto-reconnect after 3s
+  onConnect: () => {
+    client.subscribe(`/topic/session/${sessionId}/question`, onQuestion);
+    client.subscribe(`/topic/session/${sessionId}/reveal`, onReveal);
+    client.subscribe(`/topic/session/${sessionId}/leaderboard`, onLeaderboard);
+    client.subscribe(`/topic/session/${sessionId}/end`, onEnd);
+    client.subscribe(`/topic/session/${sessionId}/host-control`, onHostControl);
+  },
+  onDisconnect: () => attemptRejoin(sessionId, participantId, rejoinToken),
+});
+client.activate();
+```
+
+---
+
+## 20.12 Anti-Cheat Rules
+
+| Rule | Enforcement |
+|---|---|
+| No duplicate answers per question | DB unique constraint `(session_id, participant_id, question_id)` |
+| No join after session starts | REST `/join` returns 400 if status = `ACTIVE` or `ENDED` |
+| No duplicate display names per session | DB unique constraint `(session_id, display_name)` |
+| No answer after timer expires | Server validates `answeredAt ≤ questionStartedAt + timeLimitSeconds` |
+| Kicked participant cannot rejoin | `/reconnect` returns 400 if `is_active = false` |
+| Tab-switch detection | `document.addEventListener('visibilitychange')` — log event, warn participant |
+
+---
+
+## 20.13 Business Rules
+
+1. A session PIN is always exactly 6 digits, zero-padded
+2. A PIN is unique among all sessions with status `WAITING` or `ACTIVE`
+3. Sessions in `WAITING` status for more than 2 hours are auto-expired to `ENDED`
+4. Once a session moves to `ACTIVE`, no new participants can join
+5. A host can only have one `ACTIVE` session at a time
+6. Guest participants (no JWT) are identified solely by `rejoinToken`
+7. Logged-in participants' final scores are saved to `QuizAttempt` table on session end
+8. The host is never counted as a participant in the leaderboard
+9. Questions are shuffled once at session creation (`Collections.shuffle`) — same order for all participants
+10. Options (A/B/C/D) are NOT shuffled — option text stays fixed to maintain correct answer integrity
+
+---
+
+## 20.14 Error Handling
+
+| Scenario | HTTP Code | Message |
+|---|---|---|
+| Invalid PIN | 404 | `"Invalid or expired PIN"` |
+| Session already active (late join) | 400 | `"Session has already started"` |
+| Display name taken | 409 | `"Display name already taken in this session"` |
+| Invalid rejoin token | 403 | `"Invalid rejoin token"` |
+| Participant kicked | 400 | `"You have been removed from this session"` |
+| Non-host tries host action | 403 | `"Only the session host can perform this action"` |
+| Answer after timer | 400 | `"Question timer has expired"` |
+| Duplicate answer | 409 | `"You have already answered this question"` |
+| No approved MCQs in quiz | 400 | `"Quiz has no approved questions available"` |
+
+---
+
+## 20.15 Non-Functional Requirements
+
+| Requirement | Target |
+|---|---|
+| Max participants per session | 200 (Phase 1), 1,000+ with Redis (Phase 2) |
+| Question broadcast latency | < 200ms for all connected clients |
+| WebSocket reconnect time | < 3 seconds (SockJS built-in retry) |
+| PIN generation collision handling | Max 10 retries before error |
+| Session auto-expiry check | Background job runs every 15 minutes |
+| Timer accuracy | ±500ms tolerance (server is source of truth) |
+
+---
+
+## 20.16 Test Scenarios
+
+### Backend Unit Tests
+| ID | Scenario | Expected |
+|---|---|---|
+| LQ-T1 | Generate PIN when no active sessions exist | Valid 6-digit PIN returned |
+| LQ-T2 | Generate PIN when collision occurs | Regenerated until unique |
+| LQ-T3 | Score calculation: EASY, answered at t=0ms | 1000 pts |
+| LQ-T4 | Score calculation: MEDIUM, answered at t=15000ms of 30000ms limit | 1125 pts |
+| LQ-T5 | Score calculation: wrong answer | 0 pts |
+| LQ-T6 | Score calculation: answer at exactly time limit | 750 pts (MEDIUM) |
+| LQ-T7 | Join with duplicate display name | 409 Conflict |
+| LQ-T8 | Join after session ACTIVE | 400 Bad Request |
+| LQ-T9 | Reconnect with valid token | Score restored, current state returned |
+| LQ-T10 | Reconnect with invalid token | 403 Forbidden |
+| LQ-T11 | Kicked participant tries to reconnect | 400 Bad Request |
+| LQ-T12 | Submit answer twice for same question | 409 Conflict |
+| LQ-T13 | Submit answer after timer expired | 400 Bad Request |
+| LQ-T14 | Non-host calls `/start` | 403 Forbidden |
+| LQ-T15 | Auto-expire session after 2h in WAITING | Status = ENDED |
+
+### Frontend Tests
+| ID | Scenario | Expected |
+|---|---|---|
+| LQ-F1 | Enter invalid PIN | Error message shown, no navigation |
+| LQ-F2 | Enter valid PIN | Navigate to lobby page |
+| LQ-F3 | Answer button clicked | Button disabled, score reveal shown |
+| LQ-F4 | Timer reaches zero | Buttons disabled automatically |
+| LQ-F5 | WebSocket disconnect | Auto-reconnect attempt shown |
+| LQ-F6 | Host clicks Kick | Confirmation dialog shown |
+| LQ-F7 | Final results page | Leaderboard displayed, confetti fired |
+
+---
+
+## 20.17 Implementation Order
+
+| Step | Task | Files Created/Modified |
+|---|---|---|
+| 1 | Backend entities + repositories | `LiveSession.java`, `LiveParticipant.java`, `LiveAnswer.java`, 3 repos |
+| 2 | PIN generation service | `LiveSessionService.java` |
+| 3 | REST controller | `LiveSessionController.java` |
+| 4 | WebSocket config + STOMP handlers | `WebSocketConfig.java`, `LiveSessionMessageHandler.java` |
+| 5 | Host control endpoints + broadcast | Added to `LiveSessionController.java` |
+| 6 | Session auto-expiry scheduler | `LiveSessionScheduler.java` |
+| 7 | Frontend `/live/join` | `LiveJoin.js` + `LiveJoin.test.js` |
+| 8 | Frontend `/live/lobby/:id` | `LiveLobby.js` + `LiveLobby.test.js` |
+| 9 | Frontend `/live/host/:id` | `LiveHost.js` + `LiveHost.test.js` |
+| 10 | Frontend `/live/play/:id` | `LivePlay.js` + `LivePlay.test.js` |
+| 11 | Frontend `/live/results/:id` | `LiveResults.js` + `LiveResults.test.js` |
+| 12 | Shared components | `PinDisplay`, `AnswerButton`, `LiveLeaderboard`, `ScoreReveal`, `HostControls`, `ConfettiResults` |
+| 13 | Integration tests | `LiveSessionControllerIntegrationTest.java` |
+| 14 | Redis pub/sub (scale) | `RedisConfig.java`, update `application.yml` |
+
+---
+
+## 20.18 Production Gaps & Resolutions
+
+### 20.18.1 DB Constraint Fix — PIN Uniqueness
+
+**Problem:** `UNIQUE KEY uq_pin_active (pin, status)` allows the same PIN to exist once with `WAITING` and once with `ACTIVE` simultaneously.
+
+**Fix:** Drop the composite unique key. Enforce uniqueness in the service layer instead:
+```java
+// LiveSessionService.java — PIN generation
+private String generateUniquePin() {
+    for (int i = 0; i < 10; i++) {
+        String pin = String.format("%06d", new Random().nextInt(1_000_000));
+        boolean taken = liveSessionRepository.existsByPinAndStatusIn(
+            pin, List.of(LiveSessionStatus.WAITING, LiveSessionStatus.ACTIVE)
+        );
+        if (!taken) return pin;
+    }
+    throw new RuntimeException("Could not generate unique PIN after 10 attempts");
+}
+```
+**Updated schema:** Remove `UNIQUE KEY uq_pin_active`. Add index only:
+```sql
+CREATE INDEX idx_live_session_pin ON live_session (pin);
+```
+
+---
+
+### 20.18.2 Timer Authority — Server is Source of Truth
+
+> **Rule (explicit):** The server timer is authoritative. Client-side countdown is **visual only** — purely for UX smoothness. The server decides when a question ends, not the client.
+
+**Implementation:**
+- Server starts a `ScheduledFuture` per question on `/start` and `/next`
+- Every second, broadcasts `{ secondsRemaining }` to `/topic/session/{id}/timer`
+- When server timer hits 0, it triggers reveal regardless of client state
+- Client cannot submit an answer after server timer has ended (validated by `answeredAt` timestamp)
+- Client clock drift is irrelevant — server `answeredAt` is stamped when message arrives at server
+
+---
+
+### 20.18.3 Host Disconnect Handling
+
+**Scenario:** Host's browser crashes or network drops during an `ACTIVE` session.
+
+**Business rules added:**
+1. Host disconnect detected via WebSocket `SessionDisconnectEvent`
+2. Session auto-pauses immediately — broadcast `{ action: "PAUSE" }` to all participants
+3. Participants see: *"Host disconnected — session paused. Waiting for host to reconnect..."*
+4. Host has **5 minutes** to reconnect (identified by JWT + sessionId)
+5. On host reconnect → session resumes from current question state (already persisted in DB)
+6. If host does not reconnect within 5 minutes → session auto-ends, final leaderboard computed from answers received so far
+
+**New field on `live_session`:**
+```sql
+host_disconnected_at DATETIME,   -- NULL = host connected
+```
+
+**New scheduled check:** Every 30 seconds, check sessions where `host_disconnected_at < NOW() - 5 minutes` → auto-end them.
+
+---
+
+### 20.18.4 Server Restart Recovery
+
+**Problem:** If the backend pod restarts mid-session, all in-memory timer state and WebSocket connections are lost.
+
+**Phase 1 solution (no Redis required):** Persist enough state to DB that sessions can be resumed:
+- `current_question_index` already on `live_session` ✅
+- Add `question_started_at DATETIME` to `live_session` — set each time host advances
+- Add `is_paused BOOLEAN DEFAULT FALSE` to `live_session`
+- On restart, `LiveSessionScheduler` checks for `ACTIVE` sessions and auto-ends them with a grace message
+
+**Phase 2 solution (Redis):** Store timer state in Redis with TTL. On reconnect, restore from Redis before falling back to DB.
+
+**New field on `live_session`:**
+```sql
+question_started_at  DATETIME,
+is_paused            BOOLEAN NOT NULL DEFAULT FALSE
+```
+
+---
+
+### 20.18.5 Rate Limiting — Public Join Endpoint
+
+**Problem:** `/api/v1/live/sessions/{pin}/join` is public — vulnerable to PIN brute force and bot floods.
+
+**Solution:** Extend existing `LoginRateLimitFilter` pattern to cover the join endpoint:
+
+| Endpoint | Limit | Window | Block Duration |
+|---|---|---|---|
+| `POST /live/sessions/{pin}/join` | 10 requests | per IP per minute | 15 minutes |
+| `GET /live/sessions/{pin}/validate` | 20 requests | per IP per minute | 5 minutes |
+
+**Implementation:**
+```java
+// Extend LoginRateLimitFilter to also cover /live paths
+private static final Map<String, RateLimitEntry> JOIN_RATE_MAP = new ConcurrentHashMap<>();
+// Apply: if (request.getRequestURI().contains("/live/sessions/") && request.getMethod().equals("POST"))
+```
+
+**Response when rate limited:**
+```json
+HTTP 429 Too Many Requests
+{ "error": "Too many join attempts. Please wait before trying again." }
+```
+
+---
+
+### 20.18.6 Host Disconnect — Co-host / Transfer (Phase 2)
+
+Out of scope for Phase 1. Add to Phase 2 backlog:
+- Admin can designate a co-host before session starts
+- On host disconnect, co-host auto-promoted to host role
+- Original host demoted to participant on rejoin
+
+---
+
+### 20.18.7 Question Preloading
+
+**Optimization:** Silently preload the next question on the client side immediately after the current question is broadcast, so the transition appears instant.
+
+**Implementation:**
+- After `/next` call returns, server includes `nextQuestionPreview: { stem only, no options }` in response (so participants can't see options early)
+- Full question (with options) only revealed via `/topic/session/{id}/question` broadcast
+- Client pre-renders the question card hidden, then animates it in on broadcast
+
+---
+
+### 20.18.8 Observability & Metrics
+
+**Add to Actuator:**
+```java
+// LiveSessionMetrics.java — Micrometer gauges
+registry.gauge("live.sessions.active", activeSessions);
+registry.gauge("live.sessions.waiting", waitingSessions);
+registry.counter("live.answers.submitted");
+registry.timer("live.answer.latency");
+registry.gauge("live.websocket.connections", wsConnectionCount);
+```
+
+**Accessible at:** `GET /actuator/metrics/live.sessions.active`
+
+---
+
+### 20.18.9 Audit Logging
+
+Extend existing audit log pattern for live session events:
+
+| Event | Level | Message |
+|---|---|---|
+| Session created | INFO | `LiveSession [pin=483921] created by [veera.k] for quiz [id=5]` |
+| Session started | INFO | `LiveSession [id=42] STARTED by [veera.k] — 14 participants` |
+| Participant kicked | WARN | `Participant [displayName=Dilip] KICKED from session [id=42] by host [veera.k]` |
+| Session ended | INFO | `LiveSession [id=42] ENDED — duration 18m, 14 participants, avg score 8420` |
+| Host disconnected | WARN | `Host [veera.k] disconnected from ACTIVE session [id=42] — auto-paused` |
+| PIN brute-forced | WARN | `Rate limit triggered on /join from IP [x.x.x.x]` |
+
+---
+
+### 20.18.10 Memory & Resource Cleanup
+
+**Cleanup rules:**
+
+| Resource | When Cleaned | How |
+|---|---|---|
+| WebSocket subscriptions | On session `ENDED` | `messagingTemplate.convertAndSend` final end message; clients unsubscribe on receipt |
+| In-memory timer (`ScheduledFuture`) | When timer fires or host calls `/next`/`/end` | `future.cancel(false)` |
+| `ENDED` sessions older than 30 days | Nightly batch | `LiveSessionScheduler` — `DELETE FROM live_session WHERE status='ENDED' AND ended_at < NOW() - INTERVAL 30 DAY` |
+| Expired reconnect tokens | On session end | `is_active = false` for all participants; token no longer validated |
+| Orphaned `WAITING` sessions (>2h) | Every 15 min | Existing auto-expiry rule in `LiveSessionScheduler` |
+
+---
+
+### 20.18.11 Accessibility
+
+| Requirement | Implementation |
+|---|---|
+| Keyboard answering | `AnswerButton` responds to keys `1`/`2`/`3`/`4` or `A`/`B`/`C`/`D` |
+| Screen reader labels | All `AnswerButton` components have `aria-label="Option A: {text}"` |
+| Timer announcement | Timer broadcasts `aria-live="polite"` on 10s, 5s, 3s, 2s, 1s |
+| Color independence | Answer buttons use both color AND shape icon (🔴🔷🟡🟢) + letter label — not color alone |
+| High contrast | CSS `prefers-color-scheme` + `prefers-contrast` media queries applied to `QuestionCard` and `AnswerButton` |
+| Focus management | On question load, focus moves to first `AnswerButton` automatically |
+
+---
+
+*Section 20.18 added: May 22, 2026 | Production Gap Resolutions | Team Bumblebee*
+
+---
+
+*Section 20 added: May 22, 2026 | Live Quiz Battle Mode | Team Bumblebee*

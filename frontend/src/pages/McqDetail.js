@@ -11,6 +11,72 @@ import { useAuth } from '../AuthContext';
 import './MyQuestions.css';
 import './McqDetail.css';
 
+// ─── Renderer for advanced question types ──────────────────────────────────
+function ContentJsonRenderer({ contentJson, questionType }) {
+  let data;
+  try { data = JSON.parse(contentJson); } catch { return <div className="options-list"><em>Invalid content data</em></div>; }
+
+  const boxStyle = { background: 'var(--bg-card, #f9fafb)', border: '1px solid var(--border, #e5e7eb)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.5rem' };
+  const codeStyle = { fontFamily: 'monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap', background: '#1e293b', color: '#e2e8f0', padding: '1rem', borderRadius: '8px', marginBottom: '0.75rem' };
+  const badgeStyle = { display: 'inline-block', background: '#6366f1', color: '#fff', borderRadius: '12px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: 600, marginRight: '0.4rem' };
+
+  switch (questionType) {
+    case 'DRAG_ORDER':
+    case 'DEVOPS_PIPE':
+      return (<div className="options-list"><label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>✅ Correct Order:</label>
+        {(data.items || data.stages || []).map((item, i) => <div key={i} style={boxStyle}><span style={badgeStyle}>{i + 1}</span> {item}</div>)}</div>);
+    case 'MATCH_PAIRS':
+      return (<div className="options-list"><label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>🔗 Matching Pairs:</label>
+        {(data.pairs || []).map((p, i) => <div key={i} style={boxStyle}><strong>{p.left}</strong> → {p.right}</div>)}</div>);
+    case 'CODE_OUTPUT':
+      return (<div className="options-list"><label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>➡️ Code → Output:</label>
+        {(data.pairs || []).map((p, i) => <div key={i} style={boxStyle}><pre style={codeStyle}>{p.code}</pre><span style={badgeStyle}>Output</span> {p.output}</div>)}</div>);
+    case 'FILL_BLANK':
+      return (<div className="options-list"><pre style={codeStyle}>{data.codeTemplate}</pre><div style={boxStyle}><strong>Answers:</strong> {data.answers}</div></div>);
+    case 'PREDICT_OUTPUT':
+      return (<div className="options-list"><pre style={codeStyle}>{data.code}</pre><div style={boxStyle}><span style={badgeStyle}>✓ Output</span> {data.correctOutput}</div>
+        {data.distractors && <div style={{ ...boxStyle, opacity: 0.7 }}><strong>Distractors:</strong> {data.distractors}</div>}</div>);
+    case 'DEBUG_CODE':
+      return (<div className="options-list"><label style={{ fontWeight: 600 }}>🐛 Buggy Code:</label><pre style={codeStyle}>{data.buggyCode}</pre>
+        <div style={boxStyle}><strong>Bug:</strong> {data.bugDescription}</div>
+        <label style={{ fontWeight: 600, marginTop: '0.5rem', display: 'block' }}>✅ Fix:</label><pre style={codeStyle}>{data.fixedCode}</pre></div>);
+    case 'CODE_REARRANGE':
+      return (<div className="options-list"><label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>🧩 Correct Arrangement:</label>
+        {(data.blocks || []).map((b, i) => <div key={i} style={{ ...boxStyle, fontFamily: 'monospace' }}><span style={badgeStyle}>{i + 1}</span> {b}</div>)}</div>);
+    case 'SQL_BUILDER':
+      return (<div className="options-list"><label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>🗃️ SQL Clauses (correct order):</label>
+        {(data.clauses || []).map((c, i) => <div key={i} style={{ ...boxStyle, fontFamily: 'monospace' }}><span style={badgeStyle}>{i + 1}</span> {c}</div>)}
+        {data.expectedResult && <div style={boxStyle}><strong>Expected:</strong> {data.expectedResult}</div>}</div>);
+    case 'ARCH_LAYERS':
+      return (<div className="options-list"><label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>🏗️ Architecture Layers:</label>
+        {(data.layers || []).map((l, i) => <div key={i} style={boxStyle}><strong>{l.name}:</strong> {l.components}</div>)}</div>);
+    case 'CODE_REVIEW':
+      return (<div className="options-list"><label style={{ fontWeight: 600 }}>👁️ Code to Review:</label><pre style={codeStyle}>{data.code}</pre>
+        <div style={boxStyle}><strong>Issues:</strong><br/>{data.issues}</div>
+        {data.fixedCode && <><label style={{ fontWeight: 600, display: 'block', marginTop: '0.5rem' }}>✅ Fixed:</label><pre style={codeStyle}>{data.fixedCode}</pre></>}</div>);
+    case 'PIPELINE_BUILD':
+      return (<div className="options-list"><div style={boxStyle}><strong>Source:</strong> {data.source}</div>
+        <label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>🔧 Pipeline Steps:</label>
+        {(data.operators || []).map((op, i) => <div key={i} style={{ ...boxStyle, fontFamily: 'monospace' }}><span style={badgeStyle}>{i + 1}</span> {op}</div>)}
+        <div style={boxStyle}><strong>Output:</strong> {data.expectedOutput}</div></div>);
+    case 'FLOWCHART':
+      return (<div className="options-list"><pre style={{ ...codeStyle, background: '#f1f5f9', color: '#1e293b' }}>{data.diagram}</pre>
+        <div style={boxStyle}><strong>Q:</strong> {data.question}</div>
+        <div style={boxStyle}><span style={badgeStyle}>✓</span> {data.correctAnswer}</div>
+        {data.distractors && <div style={{ ...boxStyle, opacity: 0.7 }}><strong>Distractors:</strong> {data.distractors}</div>}</div>);
+    case 'SECURE_CODE':
+      return (<div className="options-list"><label style={{ fontWeight: 600 }}>🛡️ Vulnerable Code:</label><pre style={codeStyle}>{data.vulnerableCode}</pre>
+        <div style={boxStyle}><strong>Vulnerability:</strong> {data.vulnerabilityType}</div>
+        <label style={{ fontWeight: 600, display: 'block', marginTop: '0.5rem' }}>✅ Secure Fix:</label><pre style={codeStyle}>{data.secureFix}</pre></div>);
+    case 'RIDDLE':
+      return (<div className="options-list"><div style={{ ...boxStyle, fontSize: '1.1rem', fontStyle: 'italic' }}>🧩 {data.riddle}</div>
+        <div style={boxStyle}><span style={badgeStyle}>✓ Answer</span> {data.answer}</div>
+        {data.hint && <div style={{ ...boxStyle, opacity: 0.7 }}>💡 Hint: {data.hint}</div>}</div>);
+    default:
+      return <div className="options-list"><pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.85rem' }}>{contentJson}</pre></div>;
+  }
+}
+
 export default function McqDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -38,7 +104,15 @@ export default function McqDetail() {
   const [txStem, txA, txB, txC, txD] = useContentTranslation(contentTexts);
 
   useEffect(() => {
-    API.get(`/mcqs/${id}`).then(({ data }) => { setMcq(data); setLoading(false); }).catch(() => setLoading(false));
+    API.get(`/mcqs/${id}`).then(({ data }) => {
+      setMcq(data);
+      // Pre-populate AI scores from persisted data — avoids redundant AI calls
+      if (data.aiScore != null) {
+        setDifficultyResult({ difficulty: data.difficulty, score: data.aiScore, reasoning: 'Previously computed', source: 'cached', available: true });
+        setQualityScore({ qualityScore: data.aiScore, summary: 'Previously scored', available: true, source: 'cached' });
+      }
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, [id]);
 
   const handleSubmitForReview = async () => {
@@ -65,20 +139,27 @@ export default function McqDetail() {
   };
 
   const handleScoreQuality = async () => {
+    // Skip if already scored — no need to call AI again
+    if (qualityScore && qualityScore.available !== false) return;
     setQualityLoading(true); setQualityScore(null);
     try {
       const { data } = await API.post('/ai/score-quality', {
+        mcqId: mcq.id,
         questionStem: mcq.questionStem,
         optionA: mcq.optionA, optionB: mcq.optionB, optionC: mcq.optionC, optionD: mcq.optionD,
         correctAnswer: mcq.correctAnswer,
         difficulty: mcq.difficulty,
       });
       setQualityScore(data);
+      // Update local MCQ state with persisted score
+      if (data.qualityScore) setMcq(prev => ({ ...prev, aiScore: data.qualityScore }));
     } catch { setQualityScore({ available: false, summary: t('mcd2.aiScoringUnavailable') }); }
     finally { setQualityLoading(false); }
   };
 
   const handleAutoDifficulty = async () => {
+    // Skip if already scored — no need to call AI again
+    if (difficultyResult && difficultyResult.available !== false) return;
     setDifficultyLoading(true); setDifficultyResult(null);
     try {
       const { data } = await API.post('/ai/auto-difficulty', { mcqId: mcq.id });
@@ -128,16 +209,16 @@ export default function McqDetail() {
               <button className="btn-primary" onClick={() => navigate(`/mcq/${id}/edit`)}>{t('detail.editMcq')}</button>
             )}
             <button className="btn-sm btn-outline" onClick={handleExplain} disabled={explainLoading}>
-              {explainLoading ? `🤖 ${t('detail.explaining')}` : `🤖 ${t('detail.aiExplain')}`}
+              {explainLoading ? t('detail.explaining') : t('detail.aiExplain')}
             </button>
             <button className="btn-sm btn-outline" onClick={handleScoreQuality} disabled={qualityLoading} style={{ background: '#fef3c7', borderColor: '#d97706', color: '#92400e' }}>
-              {qualityLoading ? `⏳ ${t('mcd2.aiScoring')}` : `🏅 ${t('mcd2.aiScoringBtn')}`}
+              {qualityLoading ? t('mcd2.aiScoring') : t('mcd2.aiScoringBtn')}
             </button>
             <button className="btn-sm btn-outline" onClick={handleAutoDifficulty} disabled={difficultyLoading} style={{ background: '#f0fdf4', borderColor: '#16a34a', color: '#14532d' }}>
-              {difficultyLoading ? `⏳ ${t('mcd2.aiRating')}` : `🎯 ${t('mcd2.aiRateBtn')}`}
+              {difficultyLoading ? t('mcd2.aiRating') : t('mcd2.aiRateBtn')}
             </button>
             <button className="btn-sm btn-outline" onClick={handleLoadHistory} disabled={historyLoading} style={{ background: '#eff6ff', borderColor: '#3b82f6', color: '#1d4ed8' }}>
-              {historyLoading ? `⏳ ${t('mcd2.versionLoading')}` : `🕒 ${t('mcd2.versionHistoryBtn')}`}
+              {historyLoading ? t('mcd2.versionLoading') : t('mcd2.versionHistoryBtn')}
             </button>
           </div>
         </div>
@@ -225,6 +306,11 @@ export default function McqDetail() {
 
           <div className="detail-body">
             <div className="question-stem"><QuestionStemRenderer text={txStem || mcq.questionStem} /></div>
+
+            {/* Advanced question type renderer */}
+            {mcq.contentJson && mcq.questionType && !['SINGLE','MULTI'].includes(mcq.questionType) ? (
+              <ContentJsonRenderer contentJson={mcq.contentJson} questionType={mcq.questionType} />
+            ) : (
             <div className="options-list">
               {options.map((opt) => (
                 <div key={opt.key} className={`option-row${mcq.correctAnswer === opt.key ? ' correct' : ''}`}>
@@ -234,9 +320,10 @@ export default function McqDetail() {
                 </div>
               ))}
             </div>
+            )}
 
             <div className="detail-meta-grid">
-              <div className="meta-item"><label>{t('detail.creator')}</label><span>{mcq.creatorFullName}</span></div>
+              <div className="meta-item"><label>{t('detail.creator')}</label><span>{mcq.creatorFullName}{(mcq.aiGenerated || mcq.aiRisk === 'AI') && <span className="ai-generated-badge">🤖 AI Generated</span>}</span></div>
               <div className="meta-item"><label>{t('detail.reviewer')}</label><span>{mcq.reviewerFullName || t('detail.notAssigned')}</span></div>
               <div className="meta-item"><label>{t('detail.version')}</label><span>v{mcq.version}</span></div>
               <div className="meta-item"><label>{t('detail.created')}</label><span>{new Date(mcq.createdAt).toLocaleDateString()}</span></div>
@@ -271,12 +358,12 @@ export default function McqDetail() {
                       <span className="exp-text">{explanations.whyCorrect}</span>
                     </div>
                     {['A','B','C','D'].filter(k => k !== mcq.correctAnswer).map(k =>
-                      explanations[`why${k}Wrong`] ? (
+                      (
                         <div key={k} className="exp-row" style={{ marginBottom: '0.3rem' }}>
                           <span className="exp-label">❌ Why {k} is wrong:</span>
-                          <span className="exp-text">{explanations[`why${k}Wrong`]}</span>
+                          <span className="exp-text">{explanations[`why${k}Wrong`] || 'Explanation not available for this option.'}</span>
                         </div>
-                      ) : null
+                      )
                     )}
                   </>
                 )}

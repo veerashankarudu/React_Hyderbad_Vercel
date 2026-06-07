@@ -1,0 +1,685 @@
+/* ═══════════════════════════════════════════════════════════════
+   RULE BOOK — Creative Animated Version
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Scroll-in Animation Base ── */
+.rb-animate {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rb-animate.rb-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Hero Banner ── */
+.rb-hero {
+  position: relative;
+  background: linear-gradient(135deg, #1E1B4B 0%, #312E81 40%, #4F46E5 100%);
+  border-radius: 20px;
+  padding: 3rem 2.5rem;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+.rb-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+  animation: rb-pulse 4s ease-in-out infinite;
+}
+@keyframes rb-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+.rb-hero-content { position: relative; z-index: 2; }
+.rb-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+.rb-title-icon {
+  font-size: 2.5rem;
+  animation: rb-bounce 2s ease-in-out infinite;
+}
+@keyframes rb-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.rb-subtitle {
+  color: rgba(255,255,255,0.7);
+  font-size: 1rem;
+  margin: 8px 0 0 0;
+}
+
+.rb-hero-stats {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+.rb-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 12px 20px;
+  min-width: 80px;
+}
+.rb-stat-num {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+}
+.rb-stat-label {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* ── Particles ── */
+.rb-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.rb-particle {
+  position: absolute;
+  bottom: -10px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 50%;
+  animation: rb-float linear infinite;
+}
+@keyframes rb-float {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-400px) rotate(360deg); opacity: 0; }
+}
+
+/* ── Tab Bar ── */
+.rb-tab-bar {
+  display: flex;
+  gap: 4px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 6px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+.rb-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #6B7280;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  position: relative;
+}
+.rb-tab:hover { background: #F3F4F6; color: #374151; }
+.rb-tab.active {
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+  transform: scale(1.02);
+}
+.rb-tab-icon { font-size: 1.1rem; }
+
+/* ── Panel ── */
+.rb-panel {
+  animation: rb-fadeIn 0.4s ease;
+}
+@keyframes rb-fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rb-panel-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0 0 1.5rem 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIFECYCLE — Pipeline Flow
+   ═══════════════════════════════════════════════════════════════ */
+.rb-lifecycle-panel { padding: 1rem 0; }
+.rb-pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+.rb-pipe-node {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  padding: 8px 0;
+}
+.rb-pipe-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  animation: rb-glow 2s ease-in-out infinite alternate;
+  position: relative;
+  z-index: 2;
+}
+@keyframes rb-glow {
+  from { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  to { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3); }
+}
+
+.rb-pipe-connector {
+  position: absolute;
+  left: 23px;
+  top: 56px;
+  width: 2px;
+  height: calc(100% - 24px);
+  background: #E5E7EB;
+  z-index: 1;
+}
+.rb-pipe-connector-pulse {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #6366F1, transparent);
+  animation: rb-pipe-flow 2s ease-in-out infinite;
+}
+@keyframes rb-pipe-flow {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+.rb-pipe-card {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 14px 18px;
+  flex: 1;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.rb-pipe-card:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
+  border-color: #C7D2FE;
+}
+.rb-pipe-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  border: 1.5px solid;
+  padding: 2px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+.rb-pipe-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #4B5563;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ROLES — Card Layout
+   ═══════════════════════════════════════════════════════════════ */
+.rb-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+.rb-role-card-v2 {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  border: 1px solid #E5E7EB;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.rb-role-card-v2:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15);
+}
+.rb-role-header {
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #fff;
+}
+.rb-role-icon { font-size: 2rem; }
+.rb-role-header h3 { margin: 0; font-size: 1.3rem; font-weight: 700; }
+.rb-role-header span { font-size: 0.8rem; opacity: 0.85; }
+.rb-role-perms {
+  list-style: none;
+  padding: 1.2rem 1.5rem;
+  margin: 0;
+}
+.rb-role-perms li {
+  padding: 8px 0;
+  border-bottom: 1px solid #F3F4F6;
+  font-size: 0.88rem;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rb-role-perms li:last-child { border-bottom: none; }
+.rb-check {
+  color: #059669;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DUPLICATE — Animated Meter
+   ═══════════════════════════════════════════════════════════════ */
+.rb-dup-panel { padding: 1rem 0; }
+.rb-dup-hero {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  background: linear-gradient(135deg, #FEF2F2, #FFF7ED);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid #FECACA;
+}
+.rb-dup-meter {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+}
+.rb-dup-ring { width: 100%; height: 100%; }
+.rb-dup-ring-bg {
+  fill: none;
+  stroke: #FEE2E2;
+  stroke-width: 8;
+}
+.rb-dup-ring-fill {
+  fill: none;
+  stroke: #DC2626;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 314;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dashoffset 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rb-dup-meter-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.rb-dup-num {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #DC2626;
+}
+.rb-dup-label {
+  font-size: 0.7rem;
+  color: #6B7280;
+  text-transform: uppercase;
+}
+.rb-dup-explain h3 { margin: 0 0 8px 0; font-size: 1.2rem; }
+.rb-dup-explain p { margin: 0; color: #4B5563; font-size: 0.92rem; line-height: 1.5; }
+.rb-dup-visual { margin-top: 1rem; display: flex; flex-direction: column; gap: 8px; }
+.rb-dup-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 24px;
+  background: #F3F4F6;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  padding-right: 12px;
+}
+.rb-dup-bar span {
+  position: relative;
+  z-index: 2;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  margin-left: auto;
+}
+.rb-dup-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 12px;
+  transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rb-dup-bar-fill.safe { background: linear-gradient(90deg, #059669, #34D399); }
+.rb-dup-bar-fill.danger { background: linear-gradient(90deg, #DC2626, #F87171); }
+
+.rb-dup-rules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+}
+.rb-dup-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: all 0.3s ease;
+}
+.rb-dup-rule:hover {
+  border-color: #C7D2FE;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+  transform: translateY(-2px);
+}
+.rb-dup-rule-num {
+  min-width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.rb-dup-rule p { margin: 0; font-size: 0.88rem; color: #374151; line-height: 1.4; }
+
+/* ═══════════════════════════════════════════════════════════════
+   AI — Feature Cards with Glow
+   ═══════════════════════════════════════════════════════════════ */
+.rb-ai-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.2rem;
+}
+.rb-ai-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.rb-ai-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.15);
+  border-color: #A5B4FC;
+}
+.rb-ai-card-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.rb-ai-card:hover .rb-ai-card-glow { opacity: 1; }
+.rb-ai-card-icon {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+  display: block;
+  animation: rb-float-gentle 3s ease-in-out infinite;
+}
+@keyframes rb-float-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.rb-ai-card h4 {
+  margin: 0 0 6px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1F2937;
+}
+.rb-ai-card p {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #6B7280;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REVIEW — Timeline
+   ═══════════════════════════════════════════════════════════════ */
+.rb-review-panel { padding: 1rem 0; }
+.rb-timeline {
+  position: relative;
+  padding: 1rem 0;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.rb-tl-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #6366F1, #8B5CF6, #A78BFA);
+  border-radius: 3px;
+  transform: translateX(-50%);
+}
+.rb-tl-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+.rb-tl-item.left { flex-direction: row; }
+.rb-tl-item.right { flex-direction: row-reverse; }
+.rb-tl-dot {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border: 3px solid #6366F1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  z-index: 3;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.2);
+}
+.rb-tl-card {
+  width: calc(50% - 40px);
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 14px 18px;
+  transition: all 0.3s ease;
+}
+.rb-tl-card:hover {
+  border-color: #C7D2FE;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
+  transform: scale(1.02);
+}
+.rb-tl-card h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #4F46E5;
+}
+.rb-tl-card p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #4B5563;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   QUIZ — Cards
+   ═══════════════════════════════════════════════════════════════ */
+.rb-quiz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+.rb-quiz-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem;
+  transition: all 0.3s ease;
+}
+.rb-quiz-card:hover {
+  transform: translateX(6px);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
+  border-color: #C7D2FE;
+}
+.rb-quiz-card-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  animation: rb-float-gentle 3s ease-in-out infinite;
+}
+.rb-quiz-card h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1F2937;
+}
+.rb-quiz-card p {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #6B7280;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════════════════════════ */
+body.dark-mode .rb-hero {
+  background: linear-gradient(135deg, #0D1117 0%, #161B22 40%, #1E1B4B 100%);
+}
+body.dark-mode .rb-tab-bar {
+  background: var(--glass-bg, #161b22);
+  border: 1px solid var(--glass-border, #30363d);
+}
+body.dark-mode .rb-tab { color: #8b949e; }
+body.dark-mode .rb-tab:hover { background: #1c2128; color: #c9d1d9; }
+body.dark-mode .rb-tab.active {
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  color: #fff;
+}
+body.dark-mode .rb-panel-title { color: #e2e8f0; }
+
+body.dark-mode .rb-pipe-card {
+  background: #161b22;
+  border-color: #30363d;
+}
+body.dark-mode .rb-pipe-card:hover { border-color: #6366F1; }
+body.dark-mode .rb-pipe-card p { color: #c9d1d9; }
+body.dark-mode .rb-pipe-connector { background: #30363d; }
+
+body.dark-mode .rb-role-card-v2 {
+  background: #161b22;
+  border-color: #30363d;
+}
+body.dark-mode .rb-role-perms li { color: #c9d1d9; border-bottom-color: #21262d; }
+
+body.dark-mode .rb-dup-hero {
+  background: linear-gradient(135deg, #1a0f0f, #1a1408);
+  border-color: #5c2020;
+}
+body.dark-mode .rb-dup-explain p { color: #c9d1d9; }
+body.dark-mode .rb-dup-rule {
+  background: #161b22;
+  border-color: #30363d;
+}
+body.dark-mode .rb-dup-rule:hover { border-color: #6366F1; }
+body.dark-mode .rb-dup-rule p { color: #c9d1d9; }
+body.dark-mode .rb-dup-bar { background: #21262d; }
+
+body.dark-mode .rb-ai-card {
+  background: #161b22;
+  border-color: #30363d;
+}
+body.dark-mode .rb-ai-card:hover { border-color: #6366F1; }
+body.dark-mode .rb-ai-card h4 { color: #e2e8f0; }
+body.dark-mode .rb-ai-card p { color: #8b949e; }
+
+body.dark-mode .rb-tl-card {
+  background: #161b22;
+  border-color: #30363d;
+}
+body.dark-mode .rb-tl-card:hover { border-color: #6366F1; }
+body.dark-mode .rb-tl-card p { color: #c9d1d9; }
+body.dark-mode .rb-tl-dot { background: #161b22; }
+
+body.dark-mode .rb-quiz-card {
+  background: #161b22;
+  border-color: #30363d;
+}
+body.dark-mode .rb-quiz-card:hover { border-color: #6366F1; }
+body.dark-mode .rb-quiz-card h4 { color: #e2e8f0; }
+body.dark-mode .rb-quiz-card p { color: #8b949e; }
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .rb-hero { padding: 2rem 1.5rem; }
+  .rb-title { font-size: 1.6rem; }
+  .rb-hero-stats { gap: 0.8rem; flex-wrap: wrap; }
+  .rb-tab-bar { padding: 4px; gap: 2px; }
+  .rb-tab { padding: 10px 12px; font-size: 0.8rem; }
+  .rb-tab-label { display: none; }
+  .rb-roles-grid { grid-template-columns: 1fr; }
+  .rb-dup-hero { flex-direction: column; text-align: center; }
+  .rb-dup-rules { grid-template-columns: 1fr; }
+  .rb-ai-grid { grid-template-columns: 1fr; }
+  .rb-timeline { padding-left: 30px; }
+  .rb-tl-line { left: 20px; }
+  .rb-tl-dot { left: 20px; }
+  .rb-tl-item.left, .rb-tl-item.right { flex-direction: row; padding-left: 50px; }
+  .rb-tl-card { width: 100%; }
+  .rb-quiz-grid { grid-template-columns: 1fr; }
+}

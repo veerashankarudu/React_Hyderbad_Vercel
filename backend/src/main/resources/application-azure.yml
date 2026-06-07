@@ -1,0 +1,28 @@
+# Azure APIM Profile — Cloud LLM (requires TEAM_API_KEY)
+# Run with: --spring.profiles.active=azure
+#
+# Set these environment variables before starting:
+#   export APIM_GATEWAY_URL=<url-from-team-guide.md>
+#   export TEAM_API_KEY=<key-from-team-guide.md>
+#
+# Models available: gpt-4.1-mini (default, cheap), gpt-4o (demo day)
+# Daily token budget: 50,000 tokens per team
+# Rate limit: 30 API calls/minute
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+  ai:
+    azure:
+      openai:
+        endpoint: ${APIM_GATEWAY_URL:https://placeholder-apim-gateway.azure-api.net}
+        api-key: ${TEAM_API_KEY:placeholder-team-key-not-set}
+        chat:
+          options:
+            deployment-name: ${AZURE_CHAT_MODEL:gpt-4.1-mini}
+            max-tokens: ${AI_MAX_TOKENS:800}
+            temperature: 0.3
+        embedding:
+          options:
+            deployment-name: text-embedding-ada-002

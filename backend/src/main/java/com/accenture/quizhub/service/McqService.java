@@ -10,6 +10,8 @@ import com.accenture.quizhub.exception.ResourceNotFoundException;
 import com.accenture.quizhub.repository.*;
 import lombok.RequiredArgsConstructor;
 import java.util.Map;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,20 +50,50 @@ public class McqService {
         mcq.setOptionB(sanitize(request.getOptionB()));
         mcq.setOptionC(sanitize(request.getOptionC()));
         mcq.setOptionD(sanitize(request.getOptionD()));
-        mcq.setCorrectAnswer(request.getCorrectAnswer().toUpperCase().substring(0, 1));
+        mcq.setCorrectAnswer(normalizeCorrectAnswer(request.getCorrectAnswer(), request.getQuestionType()));
+        mcq.setQuestionType(com.accenture.quizhub.enums.QuestionType.valueOf(
+                request.getQuestionType() != null ? request.getQuestionType().toUpperCase() : "SINGLE"));
+        mcq.setContentJson(request.getContentJson());
         mcq.setDifficulty(request.getDifficulty());
         mcq.setTechStack(techStack);
         mcq.setTopic(topic);
         mcq.setCreator(creator);
         mcq.setStatus(request.isSendForReview() ? McqStatus.READY_FOR_REVIEW : McqStatus.DRAFT);
 
-        if (mcqRepository.existsByQuestionStemIgnoreCase(mcq.getQuestionStem())) {
+        if (mcqRepository.existsByQuestionStemIgnoreCase(mcq.getQuestionStem()) && !request.isSkipDuplicateCheck()) {
             Long dupId = mcqRepository.findFirstByQuestionStemIgnoreCase(mcq.getQuestionStem())
                     .map(Mcq::getId).orElse(null);
             String msg = dupId != null
                     ? "DUPLICATE:" + dupId + ":Duplicate question — already exists in the database"
                     : "Duplicate question — already exists in the database";
             throw new BadRequestException(msg);
+        }
+
+        // AI semantic duplicate check — catches questions with different wording but same meaning
+        if (!request.isSkipDuplicateCheck()) {
+        try {
+            List<Mcq> pool = mcqRepository.findAll().stream()
+                    .filter(m -> m.getStatus() != McqStatus.REJECTED)
+                    .filter(m -> m.getTechStack() != null && m.getTechStack().getId().equals(techStack.getId()))
+                    .limit(50)
+                    .collect(Collectors.toList());
+            List<Map<String, Object>> similar = aiService.checkDuplicateAgainstDb(mcq.getQuestionStem(), pool);
+            similar.stream()
+                    .filter(r -> !r.containsKey("error"))
+                    .filter(r -> r.get("similarityPercent") != null
+                            && ((Number) r.get("similarityPercent")).intValue() >= 30)
+                    .findFirst()
+                    .ifPresent(match -> {
+                        int pct = ((Number) match.get("similarityPercent")).intValue();
+                        Object matchId = match.get("id");
+                        throw new BadRequestException("SIMILAR:" + matchId + ":" + pct
+                                + "%:AI detected " + pct + "% similarity with existing MCQ #" + matchId);
+                    });
+        } catch (BadRequestException e) {
+            throw e; // re-throw similarity rejection
+        } catch (Exception ignored) {
+            // AI unavailable — fall through to save without semantic check
+        }
         }
 
         String aiWarning = null;
@@ -111,7 +143,10 @@ public class McqService {
         mcq.setOptionB(sanitize(request.getOptionB()));
         mcq.setOptionC(sanitize(request.getOptionC()));
         mcq.setOptionD(sanitize(request.getOptionD()));
-        mcq.setCorrectAnswer(request.getCorrectAnswer().toUpperCase().substring(0, 1));
+        mcq.setCorrectAnswer(normalizeCorrectAnswer(request.getCorrectAnswer(), request.getQuestionType()));
+        mcq.setQuestionType(com.accenture.quizhub.enums.QuestionType.valueOf(
+                request.getQuestionType() != null ? request.getQuestionType().toUpperCase() : "SINGLE"));
+        mcq.setContentJson(request.getContentJson());
         mcq.setDifficulty(request.getDifficulty());
         mcq.setTechStack(techStack);
         mcq.setTopic(topic);
@@ -163,6 +198,34 @@ public class McqService {
         }
         if (mcq.getStatus() != McqStatus.DRAFT && mcq.getStatus() != McqStatus.REJECTED) {
             throw new BadRequestException("MCQ must be in DRAFT or REJECTED state to submit for review");
+        }
+
+        // AI semantic duplicate check before allowing submit for review (PPT Slide 8 requirement)
+        try {
+            List<Mcq> pool = mcqRepository.findAll().stream()
+                    .filter(m -> m.getStatus() != McqStatus.REJECTED)
+                    .filter(m -> !m.getId().equals(mcq.getId()))
+                    .filter(m -> m.getTechStack() != null && mcq.getTechStack() != null
+                            && m.getTechStack().getId().equals(mcq.getTechStack().getId()))
+                    .limit(50)
+                    .collect(Collectors.toList());
+            List<Map<String, Object>> similar = aiService.checkDuplicateAgainstDb(mcq.getQuestionStem(), pool);
+            similar.stream()
+                    .filter(r -> !r.containsKey("error"))
+                    .filter(r -> r.get("similarityPercent") != null
+                            && ((Number) r.get("similarityPercent")).intValue() >= 30)
+                    .findFirst()
+                    .ifPresent(match -> {
+                        int pct = ((Number) match.get("similarityPercent")).intValue();
+                        Object matchId = match.get("id");
+                        throw new BadRequestException("DUPLICATE:" + matchId + ":"
+                                + pct + "% similarity detected with existing MCQ #" + matchId
+                                + ". Please revise before submitting for review.");
+                    });
+        } catch (BadRequestException e) {
+            throw e;
+        } catch (Exception ignored) {
+            // AI unavailable — allow submit without semantic check
         }
 
         // If reviewer already assigned (resubmit after rejection), go directly to UNDER_REVIEW
@@ -219,6 +282,8 @@ public class McqService {
 
     @Transactional(readOnly = true)
     public Page<McqResponse> getMyMcqs(User user, McqStatus status, String search, int page, int size) {
+        if (size > 100) size = 100;
+        if (search != null && search.length() > 200) search = search.substring(0, 200);
         Pageable pageable = PageRequest.of(page, size, Sort.by("updatedAt").descending());
         Page<Mcq> mcqs = mcqRepository.findByCreatorWithFilters(user.getId(), status, search, pageable);
         return mcqs.map(this::toResponse);
@@ -287,6 +352,7 @@ public class McqService {
                 .optionC(mcq.getOptionC())
                 .optionD(mcq.getOptionD())
                 .correctAnswer(mcq.getCorrectAnswer())
+                .questionType(mcq.getQuestionType() != null ? mcq.getQuestionType().name() : "SINGLE")
                 .difficulty(mcq.getDifficulty())
                 .status(mcq.getStatus())
                 .techStackId(mcq.getTechStack().getId())
@@ -303,25 +369,40 @@ public class McqService {
                 .updatedAt(mcq.getUpdatedAt())
                 .aiScore(mcq.getAiScore())
                 .aiRisk(mcq.getAiRisk())
+                .aiGenerated(mcq.getAiGenerated() != null ? mcq.getAiGenerated() : false)
+                .contentJson(mcq.getContentJson())
                 .build();
     }
 
     /**
      * Strips HTML/script tags from user-supplied text to prevent XSS.
-     * Removes anything inside < > brackets, then decodes common HTML entities.
+     * Uses Jsoup with NONE safelist — removes all HTML tags and attributes.
      */
     private static String sanitize(String input) {
         if (input == null) return null;
-        // Remove all HTML tags (including script, iframe, img onerror, etc.)
-        String stripped = input.replaceAll("<[^>]*>", "");
-        // Decode common HTML entities to plain text
-        stripped = stripped
-            .replace("&lt;", "<")
-            .replace("&gt;", ">")
-            .replace("&amp;", "&")
-            .replace("&quot;", "\"")
-            .replace("&#x27;", "'")
-            .replace("&#x2F;", "/");
-        return stripped.trim();
+        return Jsoup.clean(input, Safelist.none()).trim();
+    }
+
+    /**
+     * Normalizes correctAnswer:
+     * - SINGLE type: "A" (single letter)
+     * - MULTI type: "A,B,D" (sorted comma-separated letters)
+     */
+    private String normalizeCorrectAnswer(String answer, String questionType) {
+        if (answer == null) return "A";
+        String upper = answer.toUpperCase().trim();
+        if ("MULTI".equalsIgnoreCase(questionType)) {
+            // Multi: accept "A,B,D" or "ABD" — normalize to sorted comma-separated
+            String[] parts = upper.replace(" ", "").split("[,]+");
+            java.util.TreeSet<String> sorted = new java.util.TreeSet<>();
+            for (String p : parts) {
+                for (char c : p.toCharArray()) {
+                    if (c >= 'A' && c <= 'D') sorted.add(String.valueOf(c));
+                }
+            }
+            return sorted.isEmpty() ? "A" : String.join(",", sorted);
+        }
+        // Single: first letter only
+        return upper.substring(0, 1);
     }
 }

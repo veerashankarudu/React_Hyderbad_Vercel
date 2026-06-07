@@ -37,6 +37,53 @@ export default function BulkUpload() {
   const [inlineTopics, setInlineTopics] = useState([]);
   const [inlineSubmitting, setInlineSubmitting] = useState(false);
 
+  // ── Force Add for duplicate rows ──
+  const [forceAdding, setForceAdding] = useState({}); // { rowIndex: true }
+
+  const handleForceAdd = async (errorRow, rowIndex) => {
+    setForceAdding(prev => ({ ...prev, [rowIndex]: true }));
+    try {
+      const matchedStack = techStacks.find(
+        ts => ts.name.toLowerCase() === (errorRow.techStack || '').toLowerCase()
+      );
+      if (!matchedStack) { toast.error('Unknown tech stack: ' + errorRow.techStack); return; }
+      // Find topic
+      let topicId = null;
+      if (errorRow.topic) {
+        try {
+          const { data: topics } = await API.get(`/master/tech-stacks/${matchedStack.id}/topics`);
+          const matched = (Array.isArray(topics) ? topics : []).find(
+            t => t.name.toLowerCase() === errorRow.topic.toLowerCase()
+          );
+          if (matched) topicId = matched.id;
+        } catch { /* proceed without topic */ }
+      }
+      await API.post('/mcqs', {
+        techStackId: matchedStack.id,
+        topicId: topicId,
+        questionStem: errorRow.questionStem,
+        optionA: errorRow.optionA,
+        optionB: errorRow.optionB,
+        optionC: errorRow.optionC,
+        optionD: errorRow.optionD,
+        correctAnswer: errorRow.correctAnswer,
+        difficulty: errorRow.difficulty || 'MEDIUM',
+        skipDuplicateCheck: true,
+        sendForReview: false,
+      });
+      // Move from errors to success
+      setResult(prev => {
+        const newErrors = prev.data.errors.filter((_, idx) => idx !== rowIndex);
+        return { ...prev, data: { ...prev.data, errors: newErrors, failed: newErrors.length, success: (prev.data.success || 0) + 1 } };
+      });
+      toast.success(`Row ${errorRow.row}: Question force-added as draft!`, { autoClose: 8000 });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to force-add question.');
+    } finally {
+      setForceAdding(prev => ({ ...prev, [rowIndex]: false }));
+    }
+  };
+
   const openInlineEdit = (errorRow) => {
     const matchedStack = techStacks.find(
       ts => ts.name.toLowerCase() === (errorRow.techStack || '').toLowerCase()
@@ -207,7 +254,7 @@ export default function BulkUpload() {
               disabled={downloading}
               style={{ marginTop: '0.75rem' }}
             >
-              {downloading ? t('bu.downloading') : `⬇ ${t('bu.downloadTemplate')}`}
+              {downloading ? t('bu.downloading') : t('bu.downloadTemplate')}
             </button>
           </div>
           <div className="upload-card-body">
@@ -286,6 +333,15 @@ export default function BulkUpload() {
                                         style={{ color: '#f59e0b', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, whiteSpace: 'nowrap' }}
                                       >
                                         👁 View
+                                      </button></>
+                                    )}
+                                    {(isDup || isSimilar) && e.questionStem && (
+                                      <> &nbsp;<button
+                                        onClick={() => handleForceAdd(e, i)}
+                                        disabled={forceAdding[i]}
+                                        style={{ color: '#059669', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, whiteSpace: 'nowrap' }}
+                                      >
+                                        {forceAdding[i] ? '⏳ Adding...' : '✓ Add Anyway'}
                                       </button></>
                                     )}
                                     {e.questionStem && (

@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/quiz-sessions")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class QuizSessionController {
 
     private final QuizSessionRepository sessionRepo;
@@ -30,6 +31,7 @@ public class QuizSessionController {
     private static final DateTimeFormatter FMT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     // ── 1. Create session (auth required) ──────────────────────────────────
+    @Transactional
     @PostMapping
     public ResponseEntity<Map<String, Object>> createSession(
             @RequestBody Map<String, Object> body,
@@ -242,7 +244,16 @@ public class QuizSessionController {
                 int chosenIdx = "ABCD".indexOf(chosenLabel);
                 if (chosenIdx >= 0 && chosenIdx < opts.size()) {
                     String originalKey = opts.get(chosenIdx)[0];
-                    if (originalKey.equals(m.getCorrectAnswer())) {
+                    // Support multi-select: check if originalKey is in comma-separated correctAnswer
+                    String expectedAnswer = m.getCorrectAnswer();
+                    if (expectedAnswer.contains(",")) {
+                        // Multi-select comparison with shuffle mapping
+                        // For now treat single selection against multi as partial
+                        if (expectedAnswer.contains(originalKey)) {
+                            correct++;
+                            breakdown.get(topicKey)[0]++;
+                        }
+                    } else if (originalKey.equals(expectedAnswer)) {
                         correct++;
                         breakdown.get(topicKey)[0]++;
                     }
@@ -338,11 +349,15 @@ public class QuizSessionController {
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to) {
 
-        // Build session dropdown list (all sessions, newest first)
+        // Build session dropdown list — only sessions that have at least 1 attempt
+        Set<Long> sessionIdsWithAttempts = attemptRepo.findLeaderboard(null, null, null)
+            .stream().map(QuizAttempt::getSessionId).collect(Collectors.toSet());
         List<Map<String, Object>> sessions = sessionRepo.findAll(
                 org.springframework.data.domain.Sort.by(
                     org.springframework.data.domain.Sort.Direction.DESC, "createdAt"))
-            .stream().map(s -> {
+            .stream()
+            .filter(s -> sessionIdsWithAttempts.contains(s.getId()))
+            .map(s -> {
                 Map<String, Object> m = new LinkedHashMap<>();
                 m.put("id", s.getId());
                 m.put("title", s.getTitle());

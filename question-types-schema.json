@@ -1,0 +1,2257 @@
+{
+  "schema_version": "1.0.0",
+  "platform": "QuizHub AI",
+  "description": "Comprehensive question type definitions for interactive coding assessment platform",
+  "question_types": [
+    {
+      "type_id": "SINGLE_CHOICE_MCQ",
+      "type_name": "Single Choice MCQ",
+      "description": "Standard multiple-choice question with exactly one correct answer from 4 options",
+      "interaction_pattern": "RADIO_SELECT",
+      "ui_component": "RadioButtonGroup",
+      "suitable_topics": ["Java", "Spring Boot", "React", "SQL", "AWS", "Networking", "DSA", "System Design", "Microservices", "DevOps"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "correct": 1.0,
+        "incorrect": 0.0,
+        "partial_credit": false,
+        "negative_marking_optional": true,
+        "negative_score": -0.25
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true, "supports_code_block": true, "supports_markdown": true },
+        "optionA": { "type": "string", "required": true },
+        "optionB": { "type": "string", "required": true },
+        "optionC": { "type": "string", "required": true },
+        "optionD": { "type": "string", "required": true },
+        "correctAnswer": { "type": "enum", "values": ["A", "B", "C", "D"], "required": true },
+        "explanation": { "type": "string", "required": false },
+        "codeSnippet": { "type": "string", "required": false, "language": "string" },
+        "difficulty": { "type": "enum", "values": ["EASY", "MEDIUM", "HARD"], "required": true },
+        "tags": { "type": "array", "items": "string" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 60 }
+      },
+      "example": {
+        "questionStem": "What is the output of the following code?",
+        "codeSnippet": "String s = \"Java\";\nSystem.out.println(s.length());",
+        "codeLanguage": "java",
+        "optionA": "3",
+        "optionB": "4",
+        "optionC": "5",
+        "optionD": "Error",
+        "correctAnswer": "B",
+        "explanation": "The String \"Java\" has 4 characters, so length() returns 4.",
+        "difficulty": "EASY",
+        "tags": ["java", "strings", "basics"]
+      },
+      "ui_recommendations": {
+        "layout": "vertical_options",
+        "code_highlight": true,
+        "show_line_numbers": true,
+        "option_style": "card_radio",
+        "animation": "fade_in_sequence",
+        "mobile_friendly": true
+      }
+    },
+    {
+      "type_id": "MULTIPLE_CHOICE",
+      "type_name": "Multiple Correct Answers",
+      "description": "Question with two or more correct answers from multiple options. User must select all correct options.",
+      "interaction_pattern": "CHECKBOX_SELECT",
+      "ui_component": "CheckboxGroup",
+      "suitable_topics": ["Java", "Spring Boot", "React", "SQL", "AWS", "Design Patterns", "Microservices"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "partial_formula": "correct_selected / total_correct - wrong_selected * penalty",
+        "penalty_per_wrong": 0.25,
+        "minimum_score": 0.0
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true, "supports_code_block": true },
+        "options": {
+          "type": "array",
+          "min_items": 4,
+          "max_items": 8,
+          "item_schema": {
+            "id": { "type": "string" },
+            "text": { "type": "string" },
+            "isCorrect": { "type": "boolean" }
+          }
+        },
+        "minCorrect": { "type": "integer", "minimum": 2 },
+        "explanation": { "type": "string" },
+        "difficulty": { "type": "enum", "values": ["EASY", "MEDIUM", "HARD"] },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 90 }
+      },
+      "example": {
+        "questionStem": "Which of the following are functional interfaces in Java?",
+        "options": [
+          { "id": "A", "text": "Runnable", "isCorrect": true },
+          { "id": "B", "text": "Comparator", "isCorrect": true },
+          { "id": "C", "text": "List", "isCorrect": false },
+          { "id": "D", "text": "ArrayList", "isCorrect": false }
+        ],
+        "explanation": "Functional interfaces have exactly one abstract method. Runnable has run(), Comparator has compare(). List and ArrayList have multiple abstract methods.",
+        "difficulty": "MEDIUM",
+        "tags": ["java", "functional-interfaces", "java8"]
+      },
+      "ui_recommendations": {
+        "layout": "vertical_checkboxes",
+        "show_selection_count": true,
+        "hint_text": "Select all that apply",
+        "highlight_on_select": true,
+        "show_minimum_required": true
+      }
+    },
+    {
+      "type_id": "DRAG_DROP_SEQUENCE",
+      "type_name": "Drag and Drop Ordering",
+      "description": "Arrange items in correct sequential order by dragging and dropping. Tests understanding of processes, algorithms, and workflows.",
+      "interaction_pattern": "DRAG_REORDER",
+      "ui_component": "SortableList",
+      "suitable_topics": ["Spring Boot", "Microservices", "DevOps", "DSA", "System Design", "Java", "React"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "partial_formula": "items_in_correct_position / total_items",
+        "adjacency_bonus": 0.1,
+        "minimum_score": 0.0
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "items": {
+          "type": "array",
+          "min_items": 3,
+          "max_items": 10,
+          "item_schema": {
+            "id": { "type": "string" },
+            "text": { "type": "string" },
+            "correctPosition": { "type": "integer" }
+          }
+        },
+        "shuffled": { "type": "boolean", "default": true },
+        "showConnectors": { "type": "boolean", "default": true },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 120 }
+      },
+      "example": {
+        "questionStem": "Arrange the Spring Boot startup flow in correct order:",
+        "items": [
+          { "id": "1", "text": "Run Main Method", "correctPosition": 1 },
+          { "id": "2", "text": "Application Context Creation", "correctPosition": 2 },
+          { "id": "3", "text": "Create Bean", "correctPosition": 3 },
+          { "id": "4", "text": "Dependency Injection", "correctPosition": 4 }
+        ],
+        "difficulty": "MEDIUM",
+        "tags": ["spring-boot", "lifecycle", "startup"]
+      },
+      "ui_recommendations": {
+        "layout": "vertical_sortable",
+        "drag_handle": "left_grip",
+        "drop_animation": "slide_smooth",
+        "connector_arrows": true,
+        "ghost_preview": true,
+        "touch_support": true,
+        "numbered_slots": true,
+        "visual_flow": "top_to_bottom_with_arrows"
+      }
+    },
+    {
+      "type_id": "MATCH_CONCEPT_DEFINITION",
+      "type_name": "Match Concept to Definition",
+      "description": "Connect concepts on the left to their definitions/descriptions on the right by drawing lines or drag-matching.",
+      "interaction_pattern": "DRAG_CONNECT",
+      "ui_component": "MatchingPairs",
+      "suitable_topics": ["Java", "Spring Boot", "Design Patterns", "DSA", "SQL", "AWS", "Networking"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "partial_formula": "correct_matches / total_matches",
+        "minimum_score": 0.0
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "pairs": {
+          "type": "array",
+          "min_items": 3,
+          "max_items": 8,
+          "item_schema": {
+            "left": { "type": "string" },
+            "right": { "type": "string" },
+            "pairId": { "type": "string" }
+          }
+        },
+        "shuffleRight": { "type": "boolean", "default": true },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 120 }
+      },
+      "example": {
+        "questionStem": "Match each Java collection to its characteristic:",
+        "pairs": [
+          { "left": "HashMap", "right": "Key-Value Storage", "pairId": "1" },
+          { "left": "ArrayList", "right": "Dynamic Array", "pairId": "2" },
+          { "left": "Queue", "right": "FIFO", "pairId": "3" },
+          { "left": "Stack", "right": "LIFO", "pairId": "4" }
+        ],
+        "difficulty": "EASY",
+        "tags": ["java", "collections", "data-structures"]
+      },
+      "ui_recommendations": {
+        "layout": "two_column_with_lines",
+        "connection_style": "bezier_curve",
+        "color_coded_connections": true,
+        "snap_to_target": true,
+        "highlight_matched": true,
+        "undo_connection": true
+      }
+    },
+    {
+      "type_id": "MATCH_CODE_OUTPUT",
+      "type_name": "Match Code Snippet to Output",
+      "description": "Match multiple code snippets to their corresponding outputs. Tests code tracing ability.",
+      "interaction_pattern": "DRAG_CONNECT",
+      "ui_component": "CodeOutputMatcher",
+      "suitable_topics": ["Java", "JavaScript", "Python", "SQL", "React"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "partial_formula": "correct_matches / total_matches"
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "codeSnippets": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "code": { "type": "string" },
+            "language": { "type": "string" }
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "output": { "type": "string" },
+            "matchesCodeId": { "type": "string" }
+          }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 150 }
+      },
+      "example": {
+        "questionStem": "Match each code snippet to its output:",
+        "codeSnippets": [
+          { "id": "A", "code": "System.out.println(5 + 5);", "language": "java" },
+          { "id": "B", "code": "System.out.println(\"5\" + 5);", "language": "java" }
+        ],
+        "outputs": [
+          { "id": "1", "output": "10", "matchesCodeId": "A" },
+          { "id": "2", "output": "55", "matchesCodeId": "B" }
+        ],
+        "difficulty": "EASY",
+        "tags": ["java", "operators", "string-concatenation"]
+      },
+      "ui_recommendations": {
+        "layout": "split_panel_code_and_output",
+        "code_syntax_highlight": true,
+        "output_monospace": true,
+        "drag_from_either_side": true,
+        "visual_connection_lines": true
+      }
+    },
+    {
+      "type_id": "MATCH_OUTPUT_TO_CODE",
+      "type_name": "Match Output to Code",
+      "description": "Given outputs, identify which code snippet produces each output. Reverse of code-to-output matching.",
+      "interaction_pattern": "DRAG_CONNECT",
+      "ui_component": "OutputCodeMatcher",
+      "suitable_topics": ["Java", "JavaScript", "Python", "SQL"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "partial_formula": "correct_matches / total_matches"
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "outputs": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "output": { "type": "string" }
+          }
+        },
+        "codeOptions": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "code": { "type": "string" },
+            "language": { "type": "string" },
+            "matchesOutputId": { "type": "string" }
+          }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 150 }
+      },
+      "example": {
+        "questionStem": "Match each output to the code that produces it:",
+        "outputs": [
+          { "id": "1", "output": "HelloWorld" },
+          { "id": "2", "output": "Hello World" }
+        ],
+        "codeOptions": [
+          { "id": "A", "code": "System.out.println(\"Hello\" + \"World\");", "language": "java", "matchesOutputId": "1" },
+          { "id": "B", "code": "System.out.println(\"Hello\" + \" \" + \"World\");", "language": "java", "matchesOutputId": "2" }
+        ],
+        "difficulty": "EASY"
+      },
+      "ui_recommendations": {
+        "layout": "output_first_code_second",
+        "emphasize_output_differences": true,
+        "code_panel_collapsible": false
+      }
+    },
+    {
+      "type_id": "FILL_IN_BLANK",
+      "type_name": "Fill in the Blank",
+      "description": "Complete a code statement or concept by filling in one or more blanks with the correct text.",
+      "interaction_pattern": "TEXT_INPUT",
+      "ui_component": "InlineCodeInput",
+      "suitable_topics": ["Java", "Spring Boot", "SQL", "React", "JavaScript", "AWS"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": false,
+        "case_sensitive": false,
+        "trim_whitespace": true,
+        "accept_alternatives": true
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "codeTemplate": { "type": "string", "required": true, "placeholder": "______" },
+        "blanks": {
+          "type": "array",
+          "item_schema": {
+            "position": { "type": "integer" },
+            "correctAnswer": { "type": "string" },
+            "alternatives": { "type": "array", "items": "string" },
+            "hint": { "type": "string" },
+            "caseSensitive": { "type": "boolean", "default": false }
+          }
+        },
+        "language": { "type": "string" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 60 }
+      },
+      "example": {
+        "questionStem": "Fill in the blank to create an ArrayList of Strings:",
+        "codeTemplate": "List<String> list = new ______<>();",
+        "blanks": [
+          {
+            "position": 1,
+            "correctAnswer": "ArrayList",
+            "alternatives": ["arraylist", "ARRAYLIST"],
+            "hint": "Most common List implementation"
+          }
+        ],
+        "language": "java",
+        "difficulty": "EASY",
+        "tags": ["java", "collections", "generics"]
+      },
+      "ui_recommendations": {
+        "layout": "inline_code_with_input_fields",
+        "code_context_highlight": true,
+        "input_width_matches_answer": true,
+        "autocomplete_disabled": true,
+        "monospace_font": true,
+        "show_cursor_blink": true
+      }
+    },
+    {
+      "type_id": "COMPLETE_MISSING_CODE",
+      "type_name": "Complete Missing Code Block",
+      "description": "A code snippet with a missing method call or logic block. User types the correct code to complete functionality.",
+      "interaction_pattern": "CODE_INPUT",
+      "ui_component": "CodeCompletionEditor",
+      "suitable_topics": ["Java", "Spring Boot", "React", "JavaScript", "Python", "DSA"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "evaluation_method": "exact_match_or_regex",
+        "accept_alternatives": true,
+        "ignore_whitespace": true
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "codeContext": { "type": "string", "required": true },
+        "missingBlocks": {
+          "type": "array",
+          "item_schema": {
+            "position": { "type": "integer" },
+            "placeholder": { "type": "string" },
+            "correctAnswer": { "type": "string" },
+            "alternatives": { "type": "array", "items": "string" },
+            "regex_pattern": { "type": "string" },
+            "hint": { "type": "string" }
+          }
+        },
+        "language": { "type": "string" },
+        "expectedOutput": { "type": "string" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 120 }
+      },
+      "example": {
+        "questionStem": "Complete the stream pipeline to double each number and print it:",
+        "codeContext": "List<Integer> nums = Arrays.asList(1, 2, 3);\nnums.stream()\n    ._______(x -> x * 2)\n    .forEach(System.out::println);",
+        "missingBlocks": [
+          {
+            "position": 1,
+            "placeholder": "_______",
+            "correctAnswer": "map",
+            "alternatives": ["map"],
+            "hint": "This operation transforms each element"
+          }
+        ],
+        "language": "java",
+        "expectedOutput": "2\n4\n6",
+        "difficulty": "MEDIUM",
+        "tags": ["java", "streams", "functional-programming"]
+      },
+      "ui_recommendations": {
+        "layout": "code_editor_with_gaps",
+        "syntax_highlighting": true,
+        "context_visible": true,
+        "inline_editor_for_gaps": true,
+        "tab_between_blanks": true,
+        "show_expected_output": false
+      }
+    },
+    {
+      "type_id": "CODE_REARRANGEMENT",
+      "type_name": "Code Rearrangement",
+      "description": "Rearrange shuffled code lines/blocks into the correct order to form a valid program.",
+      "interaction_pattern": "DRAG_REORDER",
+      "ui_component": "CodeBlockSorter",
+      "suitable_topics": ["Java", "JavaScript", "Python", "DSA", "Spring Boot"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "partial_formula": "longest_correct_subsequence / total_lines",
+        "compilation_check": true
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "codeBlocks": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "code": { "type": "string" },
+            "correctPosition": { "type": "integer" },
+            "indentLevel": { "type": "integer", "default": 0 }
+          }
+        },
+        "distractors": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "code": { "type": "string" }
+          },
+          "description": "Extra incorrect lines that should not be used"
+        },
+        "language": { "type": "string" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 180 }
+      },
+      "example": {
+        "questionStem": "Arrange the code blocks to form a valid Java program that prints 'Hello':",
+        "codeBlocks": [
+          { "id": "1", "code": "public class Test {", "correctPosition": 1, "indentLevel": 0 },
+          { "id": "2", "code": "    public static void main(String[] args) {", "correctPosition": 2, "indentLevel": 1 },
+          { "id": "3", "code": "        System.out.println(\"Hello\");", "correctPosition": 3, "indentLevel": 2 },
+          { "id": "4", "code": "    }", "correctPosition": 4, "indentLevel": 1 },
+          { "id": "5", "code": "}", "correctPosition": 5, "indentLevel": 0 }
+        ],
+        "language": "java",
+        "difficulty": "EASY",
+        "tags": ["java", "syntax", "basics"]
+      },
+      "ui_recommendations": {
+        "layout": "drag_blocks_with_indentation",
+        "show_indentation_guides": true,
+        "code_monospace": true,
+        "snap_to_position": true,
+        "auto_indent_visual": true,
+        "show_line_numbers_on_drop": true
+      }
+    },
+    {
+      "type_id": "PREDICT_OUTPUT",
+      "type_name": "Predict Program Output",
+      "description": "Read a code snippet and predict what it will print to the console. Tests code tracing and mental execution.",
+      "interaction_pattern": "TEXT_INPUT",
+      "ui_component": "OutputPredictionInput",
+      "suitable_topics": ["Java", "JavaScript", "Python", "C++", "DSA"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "line_by_line_scoring": true,
+        "partial_formula": "correct_lines / total_output_lines",
+        "trim_whitespace": true,
+        "case_sensitive": true
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "codeSnippet": { "type": "string", "required": true },
+        "language": { "type": "string", "required": true },
+        "expectedOutput": {
+          "type": "array",
+          "items": "string",
+          "description": "Each line of expected output"
+        },
+        "outputType": { "type": "enum", "values": ["SINGLE_LINE", "MULTI_LINE", "EXCEPTION"] },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 90 }
+      },
+      "example": {
+        "questionStem": "What will be printed to the console?",
+        "codeSnippet": "int x = 10;\nSystem.out.println(x++);\nSystem.out.println(++x);",
+        "language": "java",
+        "expectedOutput": ["10", "12"],
+        "outputType": "MULTI_LINE",
+        "difficulty": "MEDIUM",
+        "tags": ["java", "operators", "increment"]
+      },
+      "ui_recommendations": {
+        "layout": "code_top_input_bottom",
+        "multi_line_input": true,
+        "show_line_number_hints": true,
+        "placeholder_text": "Enter each output on a new line",
+        "show_num_expected_lines": true,
+        "code_highlight": true
+      }
+    },
+    {
+      "type_id": "DEBUG_CODE",
+      "type_name": "Debug the Code",
+      "description": "Identify bugs, runtime errors, or logical errors in the given code. May require fixing the code or identifying the exception.",
+      "interaction_pattern": "CODE_ANNOTATION",
+      "ui_component": "BugIdentifierEditor",
+      "suitable_topics": ["Java", "JavaScript", "Python", "Spring Boot", "React", "SQL"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "bug_identification_score": 0.5,
+        "fix_correctness_score": 0.5,
+        "multiple_bugs_partial": true
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "buggyCode": { "type": "string", "required": true },
+        "language": { "type": "string", "required": true },
+        "bugs": {
+          "type": "array",
+          "item_schema": {
+            "lineNumber": { "type": "integer" },
+            "bugType": { "type": "enum", "values": ["RUNTIME_ERROR", "COMPILATION_ERROR", "LOGICAL_ERROR", "EXCEPTION"] },
+            "description": { "type": "string" },
+            "fix": { "type": "string" },
+            "errorMessage": { "type": "string" }
+          }
+        },
+        "responseType": { "type": "enum", "values": ["IDENTIFY_LINE", "FIX_CODE", "NAME_EXCEPTION", "EXPLAIN_BUG"] },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 120 }
+      },
+      "example": {
+        "questionStem": "What error will occur when this code runs?",
+        "buggyCode": "String s = null;\nSystem.out.println(s.length());",
+        "language": "java",
+        "bugs": [
+          {
+            "lineNumber": 2,
+            "bugType": "RUNTIME_ERROR",
+            "description": "Calling method on null reference",
+            "fix": "if (s != null) System.out.println(s.length());",
+            "errorMessage": "NullPointerException"
+          }
+        ],
+        "responseType": "NAME_EXCEPTION",
+        "difficulty": "EASY",
+        "tags": ["java", "exceptions", "null-safety"]
+      },
+      "ui_recommendations": {
+        "layout": "code_editor_with_annotations",
+        "clickable_line_numbers": true,
+        "highlight_selected_line": true,
+        "error_icon_gutter": true,
+        "show_fix_editor": true,
+        "split_view_original_and_fix": true
+      }
+    },
+    {
+      "type_id": "FIND_COMPILATION_ERRORS",
+      "type_name": "Find Compilation Errors",
+      "description": "Identify all compilation/syntax errors in a code snippet. Tests language syntax knowledge.",
+      "interaction_pattern": "LINE_SELECT",
+      "ui_component": "CompilationErrorFinder",
+      "suitable_topics": ["Java", "JavaScript", "TypeScript", "C++", "Python"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "partial_formula": "correct_identifications / total_errors - false_positives * 0.25",
+        "minimum_score": 0.0
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "code": { "type": "string", "required": true },
+        "language": { "type": "string", "required": true },
+        "errors": {
+          "type": "array",
+          "item_schema": {
+            "lineNumber": { "type": "integer" },
+            "errorDescription": { "type": "string" },
+            "errorType": { "type": "string" },
+            "suggestion": { "type": "string" }
+          }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 120 }
+      },
+      "example": {
+        "questionStem": "Identify the compilation error in this code:",
+        "code": "List<int> list = new ArrayList<>();",
+        "language": "java",
+        "errors": [
+          {
+            "lineNumber": 1,
+            "errorDescription": "Cannot use primitive type 'int' as generic type parameter",
+            "errorType": "TYPE_ERROR",
+            "suggestion": "Use List<Integer> instead of List<int>"
+          }
+        ],
+        "difficulty": "EASY",
+        "tags": ["java", "generics", "type-system"]
+      },
+      "ui_recommendations": {
+        "layout": "code_with_clickable_lines",
+        "error_highlight_style": "red_underline",
+        "hover_tooltip_for_errors": true,
+        "ide_like_experience": true,
+        "squiggly_underlines": true
+      }
+    },
+    {
+      "type_id": "SPOT_CODE_SMELLS",
+      "type_name": "Spot Code Smells",
+      "description": "Identify code quality issues, anti-patterns, or design violations in a code snippet.",
+      "interaction_pattern": "MULTI_LINE_SELECT",
+      "ui_component": "CodeSmellDetector",
+      "suitable_topics": ["Java", "Spring Boot", "React", "Design Patterns", "Clean Code"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "partial_formula": "correct_smells_identified / total_smells",
+        "bonus_for_explanation": 0.2
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "code": { "type": "string", "required": true },
+        "language": { "type": "string", "required": true },
+        "smells": {
+          "type": "array",
+          "item_schema": {
+            "lineRange": { "start": "integer", "end": "integer" },
+            "smellType": { "type": "enum", "values": ["LONG_METHOD", "GOD_CLASS", "DUPLICATE_CODE", "MAGIC_NUMBERS", "DEEP_NESTING", "POOR_NAMING", "DEAD_CODE", "INAPPROPRIATE_INTIMACY"] },
+            "description": { "type": "string" },
+            "refactoring_suggestion": { "type": "string" }
+          }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 180 }
+      },
+      "example": {
+        "questionStem": "Identify the code smell and suggest improvement:",
+        "code": "if(user != null){\n   if(user.getName()!=null){\n      if(user.getName().length() > 0){\n         process(user);\n      }\n   }\n}",
+        "language": "java",
+        "smells": [
+          {
+            "lineRange": { "start": 1, "end": 7 },
+            "smellType": "DEEP_NESTING",
+            "description": "Excessive null checking with deep nesting",
+            "refactoring_suggestion": "Use Optional or early return pattern: if(user == null || user.getName() == null || user.getName().isEmpty()) return;"
+          }
+        ],
+        "difficulty": "MEDIUM",
+        "tags": ["clean-code", "refactoring", "code-quality"]
+      },
+      "ui_recommendations": {
+        "layout": "code_editor_with_region_selection",
+        "multi_select_lines": true,
+        "smell_category_tags": true,
+        "before_after_comparison": true,
+        "show_refactoring_diff": true
+      }
+    },
+    {
+      "type_id": "CODE_REVIEW_CHALLENGE",
+      "type_name": "Code Review Challenge",
+      "description": "Review a pull request snippet and identify issues related to performance, security, design, or correctness.",
+      "interaction_pattern": "ANNOTATION_COMMENTS",
+      "ui_component": "PullRequestReviewer",
+      "suitable_topics": ["Java", "Spring Boot", "React", "Security", "Performance", "Clean Code"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "categories_scored": ["correctness", "security", "performance", "design"],
+        "per_category_weight": 0.25
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "pullRequestCode": { "type": "string", "required": true },
+        "language": { "type": "string", "required": true },
+        "context": { "type": "string", "description": "Description of what the PR is trying to accomplish" },
+        "issues": {
+          "type": "array",
+          "item_schema": {
+            "lineNumber": { "type": "integer" },
+            "category": { "type": "enum", "values": ["CORRECTNESS", "SECURITY", "PERFORMANCE", "DESIGN", "READABILITY"] },
+            "severity": { "type": "enum", "values": ["CRITICAL", "MAJOR", "MINOR"] },
+            "description": { "type": "string" },
+            "suggestion": { "type": "string" }
+          }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 300 }
+      },
+      "example": {
+        "questionStem": "Review this code and identify potential issues:",
+        "pullRequestCode": "public String getUserData(String userId) {\n    String query = \"SELECT * FROM users WHERE id = '\" + userId + \"'\";\n    return jdbcTemplate.queryForObject(query, String.class);\n}",
+        "language": "java",
+        "context": "API endpoint for fetching user profile data",
+        "issues": [
+          {
+            "lineNumber": 2,
+            "category": "SECURITY",
+            "severity": "CRITICAL",
+            "description": "SQL Injection vulnerability - user input directly concatenated into query",
+            "suggestion": "Use parameterized query: SELECT * FROM users WHERE id = ?"
+          }
+        ],
+        "difficulty": "MEDIUM",
+        "tags": ["security", "sql-injection", "code-review"]
+      },
+      "ui_recommendations": {
+        "layout": "github_pr_review_style",
+        "inline_comment_support": true,
+        "severity_badges": true,
+        "diff_view_option": true,
+        "suggestion_block": true,
+        "approval_reject_workflow": true
+      }
+    },
+    {
+      "type_id": "INTERACTIVE_SQL_BUILDER",
+      "type_name": "Interactive SQL Builder",
+      "description": "Drag and drop SQL clauses to construct a valid query. Tests SQL composition knowledge.",
+      "interaction_pattern": "DRAG_COMPOSE",
+      "ui_component": "SQLQueryBuilder",
+      "suitable_topics": ["SQL", "Database", "Spring Data JPA"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "clause_order_score": 0.5,
+        "clause_content_score": 0.5,
+        "execution_validation": true
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "targetDescription": { "type": "string", "required": true },
+        "availableClauses": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "clause": { "type": "string" },
+            "category": { "type": "enum", "values": ["SELECT", "FROM", "WHERE", "JOIN", "GROUP_BY", "HAVING", "ORDER_BY", "LIMIT"] },
+            "isRequired": { "type": "boolean" },
+            "correctPosition": { "type": "integer" }
+          }
+        },
+        "distractorClauses": { "type": "array", "items": "string" },
+        "expectedQuery": { "type": "string" },
+        "sampleData": {
+          "type": "object",
+          "properties": {
+            "tables": { "type": "array" },
+            "expectedResult": { "type": "array" }
+          }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 180 }
+      },
+      "example": {
+        "questionStem": "Build a SQL query to find all employees with salary > 50000 ordered by name:",
+        "targetDescription": "Select name and salary from employees where salary exceeds 50000, sorted alphabetically",
+        "availableClauses": [
+          { "id": "1", "clause": "SELECT name, salary", "category": "SELECT", "isRequired": true, "correctPosition": 1 },
+          { "id": "2", "clause": "FROM employees", "category": "FROM", "isRequired": true, "correctPosition": 2 },
+          { "id": "3", "clause": "WHERE salary > 50000", "category": "WHERE", "isRequired": true, "correctPosition": 3 },
+          { "id": "4", "clause": "ORDER BY name ASC", "category": "ORDER_BY", "isRequired": true, "correctPosition": 4 }
+        ],
+        "distractorClauses": ["GROUP BY department", "HAVING COUNT(*) > 1", "LIMIT 10"],
+        "difficulty": "EASY",
+        "tags": ["sql", "queries", "filtering"]
+      },
+      "ui_recommendations": {
+        "layout": "clause_palette_and_canvas",
+        "drag_from_palette": true,
+        "clause_color_coding": true,
+        "live_query_preview": true,
+        "result_preview_on_submit": true,
+        "syntax_validation_realtime": true
+      }
+    },
+    {
+      "type_id": "QUERY_RESULT_PREDICTION",
+      "type_name": "Query Result Prediction",
+      "description": "Given a table schema with sample data and a SQL query, predict the output result set.",
+      "interaction_pattern": "TABLE_INPUT",
+      "ui_component": "QueryResultPredictor",
+      "suitable_topics": ["SQL", "Database", "Spring Data JPA"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "row_match_score": true,
+        "column_match_score": true,
+        "order_matters": true
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "tableSchema": {
+          "type": "array",
+          "item_schema": {
+            "tableName": { "type": "string" },
+            "columns": { "type": "array", "items": "string" },
+            "data": { "type": "array", "items": "array" }
+          }
+        },
+        "query": { "type": "string", "required": true },
+        "expectedResult": {
+          "columns": { "type": "array", "items": "string" },
+          "rows": { "type": "array", "items": "array" }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 120 }
+      },
+      "example": {
+        "questionStem": "What will this query return?",
+        "tableSchema": [
+          {
+            "tableName": "employee",
+            "columns": ["ID", "Name"],
+            "data": [
+              [1, "Ram"],
+              [2, "Sam"],
+              [3, "Tam"]
+            ]
+          }
+        ],
+        "query": "SELECT Name FROM employee WHERE id > 1;",
+        "expectedResult": {
+          "columns": ["Name"],
+          "rows": [["Sam"], ["Tam"]]
+        },
+        "difficulty": "EASY",
+        "tags": ["sql", "select", "where"]
+      },
+      "ui_recommendations": {
+        "layout": "table_display_with_query_and_result_input",
+        "show_table_data": true,
+        "editable_result_grid": true,
+        "add_remove_rows": true,
+        "column_auto_detect": true
+      }
+    },
+    {
+      "type_id": "REST_API_DESIGN",
+      "type_name": "REST API Design Questions",
+      "description": "Design or choose the correct REST API endpoint for a given scenario. Tests RESTful convention knowledge.",
+      "interaction_pattern": "RADIO_SELECT_OR_BUILD",
+      "ui_component": "APIDesigner",
+      "suitable_topics": ["REST API", "Spring Boot", "Microservices", "System Design"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "method_score": 0.4,
+        "path_score": 0.4,
+        "status_code_score": 0.2
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "scenario": { "type": "string", "required": true },
+        "responseType": { "type": "enum", "values": ["SELECT_ENDPOINT", "BUILD_ENDPOINT", "DESIGN_FULL_API"] },
+        "options": {
+          "type": "array",
+          "item_schema": {
+            "method": { "type": "enum", "values": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+            "path": { "type": "string" },
+            "description": { "type": "string" },
+            "isCorrect": { "type": "boolean" }
+          }
+        },
+        "correctDesign": {
+          "method": { "type": "string" },
+          "path": { "type": "string" },
+          "requestBody": { "type": "object" },
+          "responseCode": { "type": "integer" },
+          "responseBody": { "type": "object" }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 120 }
+      },
+      "example": {
+        "questionStem": "Which is the correct REST endpoint to fetch a specific customer's details?",
+        "scenario": "Design a REST API to fetch customer details by their ID",
+        "options": [
+          { "method": "GET", "path": "/customer/{id}", "description": "Fetch customer by ID", "isCorrect": true },
+          { "method": "POST", "path": "/customer/{id}", "description": "Post to customer", "isCorrect": false },
+          { "method": "PUT", "path": "/customer/all", "description": "Update all customers", "isCorrect": false },
+          { "method": "DELETE", "path": "/customer", "description": "Delete customer", "isCorrect": false }
+        ],
+        "difficulty": "EASY",
+        "tags": ["rest-api", "http-methods", "api-design"]
+      },
+      "ui_recommendations": {
+        "layout": "api_endpoint_cards",
+        "show_http_method_badge": true,
+        "method_color_coding": { "GET": "green", "POST": "blue", "PUT": "orange", "DELETE": "red" },
+        "swagger_style_display": true,
+        "request_response_preview": true
+      }
+    },
+    {
+      "type_id": "ARCHITECTURE_MATCHING",
+      "type_name": "Architecture Component Matching",
+      "description": "Identify and match architecture components to their correct layers or roles in a system diagram.",
+      "interaction_pattern": "DRAG_TO_ZONES",
+      "ui_component": "ArchitectureLayerDrop",
+      "suitable_topics": ["System Design", "Microservices", "Spring Boot", "AWS", "DevOps"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "partial_formula": "correct_placements / total_components"
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "layers": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "position": { "type": "integer" },
+            "description": { "type": "string" }
+          }
+        },
+        "components": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "correctLayerId": { "type": "string" },
+            "icon": { "type": "string" }
+          }
+        },
+        "diagramType": { "type": "enum", "values": ["LAYERED", "MICROSERVICE", "EVENT_DRIVEN", "HEXAGONAL"] },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 180 }
+      },
+      "example": {
+        "questionStem": "Drag each component to its correct architectural layer:",
+        "layers": [
+          { "id": "L1", "name": "Presentation Layer", "position": 1 },
+          { "id": "L2", "name": "Business Layer", "position": 2 },
+          { "id": "L3", "name": "Data Access Layer", "position": 3 },
+          { "id": "L4", "name": "Database Layer", "position": 4 }
+        ],
+        "components": [
+          { "id": "C1", "name": "Controller", "correctLayerId": "L1", "icon": "controller" },
+          { "id": "C2", "name": "Service", "correctLayerId": "L2", "icon": "service" },
+          { "id": "C3", "name": "Repository", "correctLayerId": "L3", "icon": "repository" },
+          { "id": "C4", "name": "MySQL", "correctLayerId": "L4", "icon": "database" }
+        ],
+        "diagramType": "LAYERED",
+        "difficulty": "MEDIUM",
+        "tags": ["architecture", "spring-boot", "layered-architecture"]
+      },
+      "ui_recommendations": {
+        "layout": "vertical_zones_with_drag_palette",
+        "zone_visual_style": "rounded_containers",
+        "snap_to_zone": true,
+        "show_layer_arrows": true,
+        "component_icons": true,
+        "responsive_zones": true
+      }
+    },
+    {
+      "type_id": "SYSTEM_DESIGN_CARD_SORT",
+      "type_name": "System Design Card Sorting",
+      "description": "Organize system components into the correct architecture by dragging cards into positions or groups.",
+      "interaction_pattern": "CARD_SORT",
+      "ui_component": "SystemDesignBoard",
+      "suitable_topics": ["System Design", "Microservices", "AWS", "DevOps"],
+      "difficulty_levels": ["HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "group_score": 0.5,
+        "connection_score": 0.5
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "scenario": { "type": "string", "required": true },
+        "cards": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "category": { "type": "string" },
+            "icon": { "type": "string" }
+          }
+        },
+        "expectedConnections": {
+          "type": "array",
+          "item_schema": {
+            "from": { "type": "string" },
+            "to": { "type": "string" },
+            "connectionType": { "type": "enum", "values": ["SYNC", "ASYNC", "EVENT", "HTTP", "GRPC"] }
+          }
+        },
+        "expectedGroups": {
+          "type": "array",
+          "item_schema": {
+            "groupName": { "type": "string" },
+            "cardIds": { "type": "array", "items": "string" }
+          }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 600 }
+      },
+      "example": {
+        "questionStem": "Design an e-commerce system by arranging components and drawing connections:",
+        "scenario": "Build a microservice architecture for an online shopping platform",
+        "cards": [
+          { "id": "1", "title": "API Gateway", "description": "Entry point for all requests", "category": "infrastructure", "icon": "gateway" },
+          { "id": "2", "title": "User Service", "description": "Manages user accounts", "category": "service", "icon": "user" },
+          { "id": "3", "title": "Order Service", "description": "Handles order processing", "category": "service", "icon": "cart" },
+          { "id": "4", "title": "Payment Service", "description": "Processes payments", "category": "service", "icon": "payment" },
+          { "id": "5", "title": "Message Queue", "description": "Async communication", "category": "infrastructure", "icon": "queue" },
+          { "id": "6", "title": "Service Registry", "description": "Service discovery", "category": "infrastructure", "icon": "registry" }
+        ],
+        "difficulty": "HARD",
+        "tags": ["system-design", "microservices", "architecture"]
+      },
+      "ui_recommendations": {
+        "layout": "canvas_freeform",
+        "grid_snap": true,
+        "connection_drawing": true,
+        "connection_labels": true,
+        "zoom_pan_support": true,
+        "minimap": true,
+        "card_resize": false,
+        "group_boxes": true
+      }
+    },
+    {
+      "type_id": "SEQUENCE_DIAGRAM",
+      "type_name": "Sequence Diagram Questions",
+      "description": "Arrange or complete message flows in a sequence diagram showing component interactions.",
+      "interaction_pattern": "DRAG_MESSAGES",
+      "ui_component": "SequenceDiagramEditor",
+      "suitable_topics": ["System Design", "Microservices", "Spring Boot", "REST API"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "message_order_score": 0.6,
+        "participant_correctness": 0.4
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "participants": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "type": { "type": "enum", "values": ["CLIENT", "SERVICE", "DATABASE", "QUEUE", "EXTERNAL"] }
+          }
+        },
+        "messages": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "from": { "type": "string" },
+            "to": { "type": "string" },
+            "label": { "type": "string" },
+            "type": { "type": "enum", "values": ["SYNC", "ASYNC", "RESPONSE", "SELF"] },
+            "correctOrder": { "type": "integer" }
+          }
+        },
+        "missingMessages": {
+          "type": "array",
+          "description": "Messages the user needs to place"
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 240 }
+      },
+      "example": {
+        "questionStem": "Complete the sequence diagram for a login flow:",
+        "participants": [
+          { "id": "client", "name": "Browser", "type": "CLIENT" },
+          { "id": "auth", "name": "Auth Service", "type": "SERVICE" },
+          { "id": "db", "name": "User DB", "type": "DATABASE" }
+        ],
+        "messages": [
+          { "id": "1", "from": "client", "to": "auth", "label": "POST /login", "type": "SYNC", "correctOrder": 1 },
+          { "id": "2", "from": "auth", "to": "db", "label": "findByUsername()", "type": "SYNC", "correctOrder": 2 },
+          { "id": "3", "from": "db", "to": "auth", "label": "User object", "type": "RESPONSE", "correctOrder": 3 },
+          { "id": "4", "from": "auth", "to": "client", "label": "JWT Token", "type": "RESPONSE", "correctOrder": 4 }
+        ],
+        "difficulty": "MEDIUM",
+        "tags": ["system-design", "authentication", "sequence-diagram"]
+      },
+      "ui_recommendations": {
+        "layout": "mermaid_style_diagram",
+        "vertical_timeline": true,
+        "drag_messages_to_position": true,
+        "participant_lifelines": true,
+        "message_arrow_types": true,
+        "auto_numbering": true
+      }
+    },
+    {
+      "type_id": "FLOWCHART_QUESTION",
+      "type_name": "Flowchart-Based Questions",
+      "description": "Answer questions based on a flowchart diagram, or complete missing parts of a flowchart.",
+      "interaction_pattern": "DIAGRAM_INTERACTION",
+      "ui_component": "FlowchartViewer",
+      "suitable_topics": ["DSA", "Java", "System Design", "DevOps"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": false,
+        "path_tracing_accuracy": true
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "flowchart": {
+          "type": "object",
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "item_schema": {
+                "id": { "type": "string" },
+                "label": { "type": "string" },
+                "type": { "type": "enum", "values": ["START", "END", "PROCESS", "DECISION", "INPUT", "OUTPUT"] },
+                "position": { "x": "integer", "y": "integer" }
+              }
+            },
+            "edges": {
+              "type": "array",
+              "item_schema": {
+                "from": { "type": "string" },
+                "to": { "type": "string" },
+                "label": { "type": "string" },
+                "condition": { "type": "string" }
+              }
+            }
+          }
+        },
+        "question": { "type": "string" },
+        "answerType": { "type": "enum", "values": ["TRACE_PATH", "PREDICT_OUTPUT", "FILL_NODE", "SELECT_ANSWER"] },
+        "correctAnswer": { "type": "string" },
+        "options": { "type": "array", "items": "string" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 120 }
+      },
+      "example": {
+        "questionStem": "Based on the flowchart, what happens when the condition (i <= 10) is FALSE?",
+        "flowchart": {
+          "nodes": [
+            { "id": "1", "label": "i = 1", "type": "PROCESS" },
+            { "id": "2", "label": "(i <= 10)?", "type": "DECISION" },
+            { "id": "3", "label": "System.out.println(\"Hello Java\")", "type": "PROCESS" },
+            { "id": "4", "label": "i++", "type": "PROCESS" },
+            { "id": "5", "label": "End", "type": "END" }
+          ],
+          "edges": [
+            { "from": "1", "to": "2" },
+            { "from": "2", "to": "3", "label": "true" },
+            { "from": "3", "to": "4" },
+            { "from": "4", "to": "2" },
+            { "from": "2", "to": "5", "label": "false" }
+          ]
+        },
+        "answerType": "SELECT_ANSWER",
+        "options": ["Loop continues", "Program terminates", "i resets to 1", "Error occurs"],
+        "correctAnswer": "Program terminates",
+        "difficulty": "EASY",
+        "tags": ["flowcharts", "loops", "control-flow"]
+      },
+      "ui_recommendations": {
+        "layout": "diagram_left_question_right",
+        "render_engine": "mermaid_or_canvas",
+        "zoomable": true,
+        "highlight_path_on_hover": true,
+        "node_color_coding": true,
+        "decision_diamond_shape": true,
+        "animated_trace_on_answer": true
+      }
+    },
+    {
+      "type_id": "INTERACTIVE_CODING",
+      "type_name": "Interactive Coding Playground",
+      "description": "Full code editor where users write, compile, and run code against test cases. Real-time execution environment.",
+      "interaction_pattern": "CODE_EDITOR",
+      "ui_component": "MonacoCodeEditor",
+      "suitable_topics": ["Java", "JavaScript", "Python", "DSA", "SQL"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "test_case_scoring": true,
+        "partial_formula": "passed_tests / total_tests",
+        "time_complexity_bonus": 0.1,
+        "space_complexity_bonus": 0.1
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "problemDescription": { "type": "string", "required": true },
+        "constraints": { "type": "array", "items": "string" },
+        "starterCode": { "type": "string" },
+        "language": { "type": "string", "required": true },
+        "testCases": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "input": { "type": "string" },
+            "expectedOutput": { "type": "string" },
+            "isHidden": { "type": "boolean", "default": false },
+            "weight": { "type": "number", "default": 1.0 }
+          }
+        },
+        "solutionCode": { "type": "string" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 1800 },
+        "memoryLimit": { "type": "integer", "unit": "MB", "default": 256 }
+      },
+      "example": {
+        "questionStem": "Two Sum",
+        "problemDescription": "Given an array of integers and a target, return indices of two numbers that add up to target.",
+        "constraints": ["2 <= nums.length <= 10^4", "-10^9 <= nums[i] <= 10^9", "Exactly one solution exists"],
+        "starterCode": "public int[] twoSum(int[] nums, int target) {\n    // Your code here\n}",
+        "language": "java",
+        "testCases": [
+          { "id": "1", "input": "[2,7,11,15], 9", "expectedOutput": "[0,1]", "isHidden": false },
+          { "id": "2", "input": "[3,2,4], 6", "expectedOutput": "[1,2]", "isHidden": false },
+          { "id": "3", "input": "[3,3], 6", "expectedOutput": "[0,1]", "isHidden": true }
+        ],
+        "difficulty": "EASY",
+        "tags": ["dsa", "arrays", "hashmap"]
+      },
+      "ui_recommendations": {
+        "layout": "split_description_and_editor",
+        "editor": "monaco_editor",
+        "syntax_highlighting": true,
+        "auto_complete": false,
+        "run_button": true,
+        "submit_button": true,
+        "test_case_tabs": true,
+        "console_output_panel": true,
+        "timer_visible": true,
+        "language_selector": true
+      }
+    },
+    {
+      "type_id": "TEST_CASE_WRITING",
+      "type_name": "Test Case Writing Challenges",
+      "description": "Write unit test cases for given code to achieve coverage or catch bugs.",
+      "interaction_pattern": "CODE_EDITOR",
+      "ui_component": "TestCaseEditor",
+      "suitable_topics": ["Java", "Spring Boot", "React", "Testing", "TDD"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "coverage_based_scoring": true,
+        "edge_case_bonus": 0.2,
+        "mutation_testing_score": true,
+        "partial_formula": "mutations_killed / total_mutations"
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "codeUnderTest": { "type": "string", "required": true },
+        "language": { "type": "string", "required": true },
+        "testFramework": { "type": "enum", "values": ["JUNIT5", "JEST", "PYTEST", "MOCHA"] },
+        "requiredCoverage": { "type": "number", "minimum": 0, "maximum": 100 },
+        "expectedTestCases": {
+          "type": "array",
+          "item_schema": {
+            "description": { "type": "string" },
+            "category": { "type": "enum", "values": ["HAPPY_PATH", "EDGE_CASE", "ERROR_CASE", "BOUNDARY"] },
+            "weight": { "type": "number" }
+          }
+        },
+        "starterTestCode": { "type": "string" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 600 }
+      },
+      "example": {
+        "questionStem": "Write JUnit 5 tests for this calculator method to achieve >90% coverage:",
+        "codeUnderTest": "public int divide(int a, int b) {\n    if (b == 0) throw new ArithmeticException(\"Division by zero\");\n    return a / b;\n}",
+        "language": "java",
+        "testFramework": "JUNIT5",
+        "requiredCoverage": 90,
+        "expectedTestCases": [
+          { "description": "Normal division", "category": "HAPPY_PATH", "weight": 0.3 },
+          { "description": "Division by zero", "category": "ERROR_CASE", "weight": 0.4 },
+          { "description": "Negative numbers", "category": "EDGE_CASE", "weight": 0.3 }
+        ],
+        "difficulty": "MEDIUM",
+        "tags": ["testing", "junit", "tdd"]
+      },
+      "ui_recommendations": {
+        "layout": "split_code_and_test_editor",
+        "code_read_only": true,
+        "test_editor_writable": true,
+        "run_tests_button": true,
+        "coverage_visualization": true,
+        "test_result_panel": true,
+        "green_red_indicators": true
+      }
+    },
+    {
+      "type_id": "UNIT_TESTING_QUESTIONS",
+      "type_name": "Unit Testing Questions",
+      "description": "Questions about testing concepts, mocking, assertions, and test design patterns.",
+      "interaction_pattern": "MIXED",
+      "ui_component": "TestingConceptQuiz",
+      "suitable_topics": ["Testing", "JUnit", "Mockito", "Jest", "TDD", "Spring Boot"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "subType": { "type": "enum", "values": ["ASSERTION_CHOICE", "MOCK_SETUP", "TEST_SMELL_DETECTION", "COVERAGE_PREDICTION"] },
+        "codeContext": { "type": "string" },
+        "options": { "type": "array" },
+        "correctAnswer": { "type": "string" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 90 }
+      },
+      "example": {
+        "questionStem": "Which assertion verifies that a method throws an exception?",
+        "subType": "ASSERTION_CHOICE",
+        "options": [
+          { "id": "A", "text": "assertEquals()", "isCorrect": false },
+          { "id": "B", "text": "assertThrows()", "isCorrect": true },
+          { "id": "C", "text": "assertNull()", "isCorrect": false },
+          { "id": "D", "text": "assertTrue()", "isCorrect": false }
+        ],
+        "difficulty": "EASY",
+        "tags": ["junit5", "assertions", "testing"]
+      },
+      "ui_recommendations": {
+        "layout": "context_aware_quiz",
+        "show_test_framework_badge": true,
+        "code_context_collapsible": true
+      }
+    },
+    {
+      "type_id": "REFACTORING_CHALLENGE",
+      "type_name": "Refactoring Challenges",
+      "description": "Refactor given code to improve quality while maintaining behavior. Validates both correctness and improvement.",
+      "interaction_pattern": "CODE_EDITOR",
+      "ui_component": "RefactoringEditor",
+      "suitable_topics": ["Java", "Spring Boot", "React", "Clean Code", "Design Patterns"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "behavior_preservation": 0.4,
+        "improvement_quality": 0.4,
+        "test_pass_required": true,
+        "code_metrics_improvement": 0.2
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "originalCode": { "type": "string", "required": true },
+        "language": { "type": "string", "required": true },
+        "refactoringGoals": { "type": "array", "items": "string" },
+        "testCases": { "type": "array", "description": "Tests that must still pass after refactoring" },
+        "expectedPatterns": { "type": "array", "items": "string", "description": "Design patterns to apply" },
+        "metrics": {
+          "before": { "cyclomaticComplexity": "integer", "linesOfCode": "integer" },
+          "expected_after": { "cyclomaticComplexity": "integer", "linesOfCode": "integer" }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 600 }
+      },
+      "example": {
+        "questionStem": "Refactor this code to reduce nesting and improve readability:",
+        "originalCode": "public String getDiscount(User user) {\n    if (user != null) {\n        if (user.isPremium()) {\n            if (user.getYears() > 5) {\n                return \"30%\";\n            } else {\n                return \"15%\";\n            }\n        } else {\n            return \"5%\";\n        }\n    }\n    return \"0%\";\n}",
+        "language": "java",
+        "refactoringGoals": ["Reduce nesting depth to max 1", "Use early return pattern", "Improve readability"],
+        "difficulty": "MEDIUM",
+        "tags": ["refactoring", "clean-code", "early-return"]
+      },
+      "ui_recommendations": {
+        "layout": "before_after_split",
+        "original_code_read_only": true,
+        "editable_solution_panel": true,
+        "diff_view_toggle": true,
+        "metrics_dashboard": true,
+        "run_tests_button": true
+      }
+    },
+    {
+      "type_id": "PERFORMANCE_OPTIMIZATION",
+      "type_name": "Performance Optimization Challenges",
+      "description": "Optimize code for better time/space complexity or runtime performance.",
+      "interaction_pattern": "CODE_EDITOR",
+      "ui_component": "PerformanceOptimizer",
+      "suitable_topics": ["DSA", "Java", "SQL", "System Design", "Spring Boot"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "correctness_required": true,
+        "performance_improvement_score": true,
+        "complexity_evaluation": true,
+        "benchmark_comparison": true
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "inefficientCode": { "type": "string", "required": true },
+        "language": { "type": "string", "required": true },
+        "currentComplexity": { "time": "string", "space": "string" },
+        "targetComplexity": { "time": "string", "space": "string" },
+        "testCases": { "type": "array" },
+        "benchmarkInput": { "type": "string", "description": "Large input for performance testing" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 900 }
+      },
+      "example": {
+        "questionStem": "Optimize this function from O(n²) to O(n):",
+        "inefficientCode": "public boolean hasDuplicate(int[] arr) {\n    for (int i = 0; i < arr.length; i++) {\n        for (int j = i + 1; j < arr.length; j++) {\n            if (arr[i] == arr[j]) return true;\n        }\n    }\n    return false;\n}",
+        "language": "java",
+        "currentComplexity": { "time": "O(n²)", "space": "O(1)" },
+        "targetComplexity": { "time": "O(n)", "space": "O(n)" },
+        "difficulty": "MEDIUM",
+        "tags": ["optimization", "time-complexity", "hashset"]
+      },
+      "ui_recommendations": {
+        "layout": "original_and_optimized_split",
+        "complexity_badge_display": true,
+        "benchmark_results_chart": true,
+        "big_o_selector": true,
+        "execution_time_comparison": true
+      }
+    },
+    {
+      "type_id": "SECURE_CODING",
+      "type_name": "Secure Coding Challenges",
+      "description": "Identify security vulnerabilities and write secure code. Based on OWASP Top 10.",
+      "interaction_pattern": "CODE_ANNOTATION_AND_FIX",
+      "ui_component": "SecurityCodeReview",
+      "suitable_topics": ["Security", "Java", "Spring Boot", "SQL", "REST API", "JavaScript"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "vulnerability_identification": 0.4,
+        "fix_correctness": 0.4,
+        "explanation_quality": 0.2
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "vulnerableCode": { "type": "string", "required": true },
+        "language": { "type": "string", "required": true },
+        "vulnerabilities": {
+          "type": "array",
+          "item_schema": {
+            "type": { "type": "enum", "values": ["SQL_INJECTION", "XSS", "CSRF", "INSECURE_DESERIALIZATION", "BROKEN_AUTH", "SENSITIVE_DATA_EXPOSURE", "XXE", "BROKEN_ACCESS_CONTROL", "SECURITY_MISCONFIGURATION", "INSUFFICIENT_LOGGING"] },
+            "lineNumber": { "type": "integer" },
+            "description": { "type": "string" },
+            "cweid": { "type": "string" },
+            "fix": { "type": "string" }
+          }
+        },
+        "responseType": { "type": "enum", "values": ["IDENTIFY_AND_FIX", "SELECT_VULNERABILITY", "WRITE_SECURE_VERSION"] },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 300 }
+      },
+      "example": {
+        "questionStem": "Identify the security vulnerability and provide a fix:",
+        "vulnerableCode": "@GetMapping(\"/search\")\npublic String search(@RequestParam String query) {\n    return \"<h1>Results for: \" + query + \"</h1>\";\n}",
+        "language": "java",
+        "vulnerabilities": [
+          {
+            "type": "XSS",
+            "lineNumber": 3,
+            "description": "User input directly rendered in HTML without sanitization",
+            "cweid": "CWE-79",
+            "fix": "Use HTML encoding: HtmlUtils.htmlEscape(query) or use template engine with auto-escaping"
+          }
+        ],
+        "responseType": "IDENTIFY_AND_FIX",
+        "difficulty": "MEDIUM",
+        "tags": ["security", "xss", "owasp"]
+      },
+      "ui_recommendations": {
+        "layout": "code_with_security_panel",
+        "vulnerability_severity_indicators": true,
+        "owasp_category_badges": true,
+        "cwe_links": true,
+        "before_after_fix_view": true,
+        "security_score_meter": true
+      }
+    },
+    {
+      "type_id": "REAL_WORLD_SCENARIO",
+      "type_name": "Real-World Scenario-Based Questions",
+      "description": "Complex scenarios mimicking real-world development problems requiring multiple skill application.",
+      "interaction_pattern": "MULTI_STEP",
+      "ui_component": "ScenarioWizard",
+      "suitable_topics": ["System Design", "Microservices", "Spring Boot", "AWS", "DevOps", "Database"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "step_based_scoring": true,
+        "partial_formula": "completed_steps_score / total_steps_score",
+        "time_bonus": true
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "scenario": { "type": "string", "required": true },
+        "context": { "type": "string" },
+        "steps": {
+          "type": "array",
+          "item_schema": {
+            "stepNumber": { "type": "integer" },
+            "description": { "type": "string" },
+            "questionType": { "type": "string", "description": "Any question_type_id" },
+            "weight": { "type": "number" }
+          }
+        },
+        "resources": { "type": "array", "items": "string", "description": "Docs or references provided" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 1200 }
+      },
+      "example": {
+        "questionStem": "Production Incident Response",
+        "scenario": "Your e-commerce platform is experiencing 500 errors during checkout. Logs show database connection pool exhaustion. Walk through the diagnosis and resolution.",
+        "steps": [
+          { "stepNumber": 1, "description": "Identify the root cause from the error logs", "questionType": "SINGLE_CHOICE_MCQ", "weight": 0.2 },
+          { "stepNumber": 2, "description": "Choose the correct monitoring metric to watch", "questionType": "MULTIPLE_CHOICE", "weight": 0.2 },
+          { "stepNumber": 3, "description": "Write the configuration fix", "questionType": "FILL_IN_BLANK", "weight": 0.3 },
+          { "stepNumber": 4, "description": "Design a long-term prevention strategy", "questionType": "SYSTEM_DESIGN_CARD_SORT", "weight": 0.3 }
+        ],
+        "difficulty": "HARD",
+        "tags": ["production", "debugging", "database", "spring-boot"]
+      },
+      "ui_recommendations": {
+        "layout": "step_by_step_wizard",
+        "progress_bar": true,
+        "step_navigation": true,
+        "context_sidebar": true,
+        "resource_panel": true,
+        "timer_per_step": false
+      }
+    },
+    {
+      "type_id": "CASE_STUDY",
+      "type_name": "Case Study-Based Assessment",
+      "description": "Multi-part assessment based on a detailed case study. Tests holistic problem-solving across multiple dimensions.",
+      "interaction_pattern": "MULTI_SECTION",
+      "ui_component": "CaseStudyAssessment",
+      "suitable_topics": ["System Design", "Microservices", "AWS", "DevOps", "Full Stack"],
+      "difficulty_levels": ["HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "section_weights": true,
+        "rubric_based": true,
+        "peer_review_option": true
+      },
+      "schema": {
+        "title": { "type": "string", "required": true },
+        "caseStudy": { "type": "string", "required": true },
+        "businessRequirements": { "type": "array", "items": "string" },
+        "technicalConstraints": { "type": "array", "items": "string" },
+        "sections": {
+          "type": "array",
+          "item_schema": {
+            "sectionId": { "type": "string" },
+            "title": { "type": "string" },
+            "questions": { "type": "array" },
+            "weight": { "type": "number" }
+          }
+        },
+        "totalTime": { "type": "integer", "unit": "minutes", "default": 60 }
+      },
+      "example": {
+        "title": "Design a Scalable Notification System",
+        "caseStudy": "TechCorp needs a notification system handling 1M users, supporting email, SMS, push, and in-app notifications with preferences and rate limiting.",
+        "businessRequirements": [
+          "Support 4 notification channels",
+          "User preference management",
+          "Rate limiting per user",
+          "99.9% delivery guarantee"
+        ],
+        "technicalConstraints": ["Budget: 3 microservices max", "Must handle 10K notifications/second", "Max latency: 5 seconds"],
+        "difficulty": "HARD",
+        "tags": ["system-design", "microservices", "scalability"]
+      },
+      "ui_recommendations": {
+        "layout": "tabbed_sections",
+        "case_study_always_visible": true,
+        "requirement_checklist": true,
+        "section_progress": true,
+        "overall_timer": true
+      }
+    },
+    {
+      "type_id": "MICROSERVICE_ARCHITECTURE",
+      "type_name": "Interactive Microservice Architecture Questions",
+      "description": "Build, identify, or fix microservice architectures by dragging components and defining communication patterns.",
+      "interaction_pattern": "CANVAS_BUILDER",
+      "ui_component": "MicroserviceDesigner",
+      "suitable_topics": ["Microservices", "Spring Boot", "AWS", "System Design", "DevOps"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "component_identification": 0.3,
+        "communication_pattern": 0.3,
+        "scalability_design": 0.2,
+        "fault_tolerance": 0.2
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "scenario": { "type": "string", "required": true },
+        "availableComponents": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "type": { "type": "enum", "values": ["SERVICE", "GATEWAY", "REGISTRY", "CONFIG", "QUEUE", "CACHE", "DATABASE", "LOAD_BALANCER"] },
+            "icon": { "type": "string" }
+          }
+        },
+        "expectedArchitecture": {
+          "components": { "type": "array" },
+          "connections": { "type": "array" },
+          "patterns": { "type": "array", "items": "string" }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 600 }
+      },
+      "example": {
+        "questionStem": "Identify and label the components in this microservice architecture:",
+        "scenario": "An e-commerce platform with service discovery, API gateway, and event-driven order processing",
+        "availableComponents": [
+          { "id": "1", "name": "API Gateway", "type": "GATEWAY", "icon": "gateway" },
+          { "id": "2", "name": "Eureka Server", "type": "REGISTRY", "icon": "registry" },
+          { "id": "3", "name": "Auth Service", "type": "SERVICE", "icon": "auth" },
+          { "id": "4", "name": "Order Service", "type": "SERVICE", "icon": "order" },
+          { "id": "5", "name": "Kafka", "type": "QUEUE", "icon": "queue" },
+          { "id": "6", "name": "Redis Cache", "type": "CACHE", "icon": "cache" }
+        ],
+        "difficulty": "HARD",
+        "tags": ["microservices", "spring-cloud", "architecture"]
+      },
+      "ui_recommendations": {
+        "layout": "canvas_with_component_palette",
+        "drag_and_connect": true,
+        "connection_protocol_labels": true,
+        "zoom_and_pan": true,
+        "component_detail_popup": true,
+        "architecture_pattern_hints": true
+      }
+    },
+    {
+      "type_id": "DATABASE_SCHEMA_DESIGN",
+      "type_name": "Database Schema Design Questions",
+      "description": "Design database schemas, normalize tables, or identify issues in existing schemas.",
+      "interaction_pattern": "SCHEMA_BUILDER",
+      "ui_component": "ERDiagramEditor",
+      "suitable_topics": ["SQL", "Database", "System Design", "Spring Data JPA"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "normalization_score": 0.3,
+        "relationship_accuracy": 0.3,
+        "constraint_correctness": 0.2,
+        "naming_conventions": 0.1,
+        "index_awareness": 0.1
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "requirements": { "type": "array", "items": "string" },
+        "responseType": { "type": "enum", "values": ["DESIGN_FROM_SCRATCH", "NORMALIZE", "IDENTIFY_ISSUES", "ADD_RELATIONSHIPS"] },
+        "existingSchema": {
+          "type": "object",
+          "properties": {
+            "tables": {
+              "type": "array",
+              "item_schema": {
+                "name": { "type": "string" },
+                "columns": { "type": "array" },
+                "primaryKey": { "type": "string" },
+                "foreignKeys": { "type": "array" }
+              }
+            }
+          }
+        },
+        "expectedSchema": { "type": "object" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 600 }
+      },
+      "example": {
+        "questionStem": "Design a database schema for a quiz platform with users, quizzes, and results:",
+        "requirements": [
+          "Users can create quizzes with multiple questions",
+          "Questions have 4 options with one correct answer",
+          "Track quiz attempts and scores",
+          "Support multiple difficulty levels"
+        ],
+        "responseType": "DESIGN_FROM_SCRATCH",
+        "difficulty": "MEDIUM",
+        "tags": ["database", "schema-design", "normalization"]
+      },
+      "ui_recommendations": {
+        "layout": "er_diagram_canvas",
+        "table_creation_form": true,
+        "relationship_drawing": true,
+        "data_type_selector": true,
+        "constraint_checkboxes": true,
+        "auto_layout": true,
+        "sql_preview": true
+      }
+    },
+    {
+      "type_id": "NETWORK_TROUBLESHOOTING",
+      "type_name": "Network Troubleshooting Simulations",
+      "description": "Diagnose network issues using simulated tools (ping, traceroute, netstat, etc.).",
+      "interaction_pattern": "TERMINAL_SIMULATION",
+      "ui_component": "NetworkSimulator",
+      "suitable_topics": ["Networking", "DevOps", "AWS", "System Administration"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "diagnosis_accuracy": 0.5,
+        "resolution_correctness": 0.3,
+        "efficiency": 0.2
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "scenario": { "type": "string", "required": true },
+        "networkTopology": {
+          "type": "object",
+          "properties": {
+            "nodes": { "type": "array" },
+            "connections": { "type": "array" },
+            "issues": { "type": "array" }
+          }
+        },
+        "availableCommands": { "type": "array", "items": "string" },
+        "simulatedOutputs": { "type": "object", "description": "Map of command to output" },
+        "expectedDiagnosis": { "type": "string" },
+        "expectedFix": { "type": "string" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 600 }
+      },
+      "example": {
+        "questionStem": "Users report they cannot access the internal API. Diagnose the issue.",
+        "scenario": "A microservice cannot reach the database server. Use the available tools to identify the problem.",
+        "availableCommands": ["ping", "traceroute", "netstat", "nslookup", "curl", "telnet"],
+        "expectedDiagnosis": "Firewall rule blocking port 3306",
+        "difficulty": "MEDIUM",
+        "tags": ["networking", "troubleshooting", "firewall"]
+      },
+      "ui_recommendations": {
+        "layout": "terminal_with_topology_diagram",
+        "terminal_emulator": true,
+        "network_diagram_sidebar": true,
+        "command_autocomplete": true,
+        "output_highlighting": true,
+        "diagnosis_form": true
+      }
+    },
+    {
+      "type_id": "DEVOPS_PIPELINE",
+      "type_name": "DevOps Pipeline Arrangement Questions",
+      "description": "Arrange CI/CD pipeline stages in correct order or fix pipeline configurations.",
+      "interaction_pattern": "DRAG_REORDER",
+      "ui_component": "PipelineBuilder",
+      "suitable_topics": ["DevOps", "CI/CD", "AWS", "Docker", "Kubernetes"],
+      "difficulty_levels": ["EASY", "MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "stage_order_score": 0.6,
+        "dependency_accuracy": 0.4
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "pipelineType": { "type": "enum", "values": ["CI", "CD", "CI_CD", "GITOPS"] },
+        "stages": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "correctPosition": { "type": "integer" },
+            "parallel": { "type": "boolean", "default": false },
+            "icon": { "type": "string" }
+          }
+        },
+        "distractorStages": { "type": "array", "description": "Stages that don't belong" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 180 }
+      },
+      "example": {
+        "questionStem": "Arrange the CI/CD pipeline stages in correct order:",
+        "pipelineType": "CI_CD",
+        "stages": [
+          { "id": "1", "name": "Code Checkout", "correctPosition": 1, "icon": "git" },
+          { "id": "2", "name": "Unit Tests", "correctPosition": 2, "icon": "test" },
+          { "id": "3", "name": "Build Artifact", "correctPosition": 3, "icon": "build" },
+          { "id": "4", "name": "Integration Tests", "correctPosition": 4, "icon": "integration" },
+          { "id": "5", "name": "Docker Image Build", "correctPosition": 5, "icon": "docker" },
+          { "id": "6", "name": "Deploy to Staging", "correctPosition": 6, "icon": "deploy" },
+          { "id": "7", "name": "Smoke Tests", "correctPosition": 7, "icon": "smoke" },
+          { "id": "8", "name": "Deploy to Production", "correctPosition": 8, "icon": "production" }
+        ],
+        "difficulty": "MEDIUM",
+        "tags": ["devops", "ci-cd", "pipeline"]
+      },
+      "ui_recommendations": {
+        "layout": "horizontal_pipeline_builder",
+        "stage_cards_with_icons": true,
+        "connection_arrows": true,
+        "parallel_lane_support": true,
+        "stage_detail_tooltips": true,
+        "pipeline_visualization": true
+      }
+    },
+    {
+      "type_id": "AWS_ARCHITECTURE_DESIGN",
+      "type_name": "AWS Architecture Design Questions",
+      "description": "Design AWS cloud architectures by selecting and connecting services for given requirements.",
+      "interaction_pattern": "CANVAS_BUILDER",
+      "ui_component": "AWSArchitectureCanvas",
+      "suitable_topics": ["AWS", "Cloud", "System Design", "DevOps"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "service_selection": 0.3,
+        "architecture_pattern": 0.3,
+        "cost_efficiency": 0.2,
+        "scalability_design": 0.2
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "requirements": { "type": "array", "items": "string" },
+        "constraints": { "type": "object", "properties": { "budget": "string", "latency": "string", "availability": "string" } },
+        "availableServices": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "category": { "type": "enum", "values": ["COMPUTE", "STORAGE", "DATABASE", "NETWORKING", "SECURITY", "MESSAGING", "MONITORING", "CDN"] },
+            "icon": { "type": "string" }
+          }
+        },
+        "expectedArchitecture": {
+          "services": { "type": "array" },
+          "connections": { "type": "array" },
+          "patterns": { "type": "array", "items": "string" }
+        },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 900 }
+      },
+      "example": {
+        "questionStem": "Design a serverless API architecture for a mobile app backend:",
+        "requirements": [
+          "Handle 100K requests/day",
+          "User authentication",
+          "REST API with CRUD operations",
+          "File upload support",
+          "Cost-effective (pay-per-use)"
+        ],
+        "availableServices": [
+          { "id": "1", "name": "API Gateway", "category": "NETWORKING", "icon": "api-gateway" },
+          { "id": "2", "name": "Lambda", "category": "COMPUTE", "icon": "lambda" },
+          { "id": "3", "name": "DynamoDB", "category": "DATABASE", "icon": "dynamodb" },
+          { "id": "4", "name": "S3", "category": "STORAGE", "icon": "s3" },
+          { "id": "5", "name": "Cognito", "category": "SECURITY", "icon": "cognito" },
+          { "id": "6", "name": "CloudWatch", "category": "MONITORING", "icon": "cloudwatch" }
+        ],
+        "difficulty": "MEDIUM",
+        "tags": ["aws", "serverless", "architecture"]
+      },
+      "ui_recommendations": {
+        "layout": "aws_style_canvas",
+        "official_aws_icons": true,
+        "service_palette_categorized": true,
+        "vpc_boundary_drawing": true,
+        "cost_estimator_sidebar": true,
+        "well_architected_hints": true
+      }
+    },
+    {
+      "type_id": "LIVE_PIPELINE_BUILDER",
+      "type_name": "Interactive Stream/Pipeline Builder",
+      "description": "Build a functional pipeline by dragging operators in sequence. Tests functional programming and data flow understanding.",
+      "interaction_pattern": "DRAG_COMPOSE_PIPELINE",
+      "ui_component": "PipelineOperatorBuilder",
+      "suitable_topics": ["Java", "JavaScript", "React", "Functional Programming"],
+      "difficulty_levels": ["MEDIUM", "HARD"],
+      "scoring_logic": {
+        "full_correct": 1.0,
+        "partial_credit": true,
+        "operator_selection": 0.4,
+        "operator_order": 0.3,
+        "output_correctness": 0.3
+      },
+      "schema": {
+        "questionStem": { "type": "string", "required": true },
+        "inputData": { "type": "string", "required": true },
+        "availableOperators": {
+          "type": "array",
+          "item_schema": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "configurable": { "type": "boolean" },
+            "configOptions": { "type": "object" }
+          }
+        },
+        "expectedPipeline": { "type": "array", "items": "string" },
+        "expectedOutput": { "type": "string" },
+        "language": { "type": "string" },
+        "timeLimit": { "type": "integer", "unit": "seconds", "default": 180 }
+      },
+      "example": {
+        "questionStem": "Build a Java Stream pipeline to filter even numbers, double them, and collect to a list:",
+        "inputData": "List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5, 6);",
+        "availableOperators": [
+          { "id": "1", "name": ".stream()", "description": "Convert to stream" },
+          { "id": "2", "name": ".filter(x -> x % 2 == 0)", "description": "Keep even numbers" },
+          { "id": "3", "name": ".map(x -> x * 2)", "description": "Double each element" },
+          { "id": "4", "name": ".collect(Collectors.toList())", "description": "Collect to list" },
+          { "id": "5", "name": ".sorted()", "description": "Sort elements" },
+          { "id": "6", "name": ".distinct()", "description": "Remove duplicates" }
+        ],
+        "expectedPipeline": [".stream()", ".filter(x -> x % 2 == 0)", ".map(x -> x * 2)", ".collect(Collectors.toList())"],
+        "expectedOutput": "[4, 8, 12]",
+        "language": "java",
+        "difficulty": "MEDIUM",
+        "tags": ["java", "streams", "functional-programming"]
+      },
+      "ui_recommendations": {
+        "layout": "operator_palette_and_pipeline_canvas",
+        "drag_operators_to_pipeline": true,
+        "live_output_preview": true,
+        "operator_tooltips": true,
+        "pipeline_flow_visualization": true,
+        "intermediate_results_toggle": true
+      }
+    }
+  ],
+  "platform_features": {
+    "gamification": {
+      "xp_system": {
+        "description": "Experience points earned per question based on difficulty and speed",
+        "xp_per_difficulty": { "EASY": 10, "MEDIUM": 25, "HARD": 50 },
+        "speed_bonus": { "under_25_percent_time": 1.5, "under_50_percent_time": 1.2 },
+        "streak_multiplier": { "3_streak": 1.5, "5_streak": 2.0, "10_streak": 3.0 }
+      },
+      "badges": {
+        "categories": [
+          { "name": "Topic Master", "description": "Answer 50+ questions correctly in a topic", "icon": "trophy" },
+          { "name": "Speed Demon", "description": "Complete 10 questions under 50% time", "icon": "lightning" },
+          { "name": "Perfect Score", "description": "Get 100% on a full quiz", "icon": "star" },
+          { "name": "Debugging Expert", "description": "Solve 25 debug challenges", "icon": "bug" },
+          { "name": "Architect", "description": "Complete 10 system design challenges", "icon": "building" },
+          { "name": "Security Guardian", "description": "Identify 20 vulnerabilities", "icon": "shield" },
+          { "name": "Code Reviewer", "description": "Complete 15 code review challenges", "icon": "magnifier" },
+          { "name": "Polyglot", "description": "Answer questions in 5+ languages", "icon": "globe" },
+          { "name": "Night Owl", "description": "Complete challenges after midnight", "icon": "moon" },
+          { "name": "First Blood", "description": "First to answer correctly in battle mode", "icon": "sword" }
+        ]
+      },
+      "levels": {
+        "progression": [
+          { "level": 1, "title": "Novice", "xp_required": 0 },
+          { "level": 5, "title": "Apprentice", "xp_required": 500 },
+          { "level": 10, "title": "Developer", "xp_required": 2000 },
+          { "level": 15, "title": "Senior Dev", "xp_required": 5000 },
+          { "level": 20, "title": "Tech Lead", "xp_required": 10000 },
+          { "level": 25, "title": "Architect", "xp_required": 20000 },
+          { "level": 30, "title": "Distinguished Engineer", "xp_required": 50000 }
+        ]
+      },
+      "daily_challenges": {
+        "description": "One challenge per day with bonus XP",
+        "bonus_xp": 100,
+        "streak_reward": "Special badge after 7-day streak"
+      }
+    },
+    "timer_challenges": {
+      "modes": [
+        {
+          "name": "Speed Round",
+          "description": "Answer as many questions as possible in 5 minutes",
+          "time_limit_seconds": 300,
+          "scoring": "questions_correct * difficulty_multiplier"
+        },
+        {
+          "name": "Countdown Challenge",
+          "description": "Each question has decreasing time limit",
+          "initial_time_seconds": 60,
+          "time_decrease_per_question": 5,
+          "minimum_time_seconds": 10
+        },
+        {
+          "name": "Time Attack",
+          "description": "Fixed time per question, wrong answer = time penalty",
+          "time_per_question_seconds": 30,
+          "penalty_seconds": 10,
+          "bonus_seconds_for_correct": 5
+        }
+      ]
+    },
+    "adaptive_difficulty": {
+      "model": "ELO_BASED",
+      "description": "Adjusts question difficulty based on user performance using ELO rating system",
+      "algorithm": {
+        "initial_rating": 1200,
+        "k_factor": 32,
+        "difficulty_bands": {
+          "EASY": { "min": 800, "max": 1200 },
+          "MEDIUM": { "min": 1200, "max": 1600 },
+          "HARD": { "min": 1600, "max": 2400 }
+        },
+        "adjustment_rules": [
+          "3 correct in a row → increase difficulty",
+          "2 wrong in a row → decrease difficulty",
+          "Time-based: fast correct = larger rating increase",
+          "Topic-specific ratings maintained separately"
+        ]
+      },
+      "question_selection": {
+        "strategy": "Select questions within ±200 of user's current rating",
+        "variety_factor": "Avoid same question type consecutively",
+        "weakness_targeting": "20% of questions target user's weakest topics"
+      }
+    },
+    "ai_hints": {
+      "levels": [
+        { "level": 1, "name": "Gentle Nudge", "description": "High-level conceptual hint", "xp_penalty": 0.1 },
+        { "level": 2, "name": "Direction", "description": "Points to the relevant concept or API", "xp_penalty": 0.25 },
+        { "level": 3, "name": "Detailed Hint", "description": "Specific approach with partial solution", "xp_penalty": 0.5 }
+      ],
+      "generation": {
+        "method": "AI-powered contextual hints based on question content and user's common mistakes",
+        "model": "GPT-4o-mini or local LLM",
+        "personalization": "Hints tailored to user's skill gaps"
+      },
+      "cooldown": "One hint per 30 seconds to encourage independent thinking"
+    },
+    "partial_scoring": {
+      "mechanisms": [
+        {
+          "type": "STEP_BASED",
+          "description": "Multi-step problems score each step independently",
+          "formula": "sum(step_scores * step_weights)"
+        },
+        {
+          "type": "PROXIMITY",
+          "description": "For numeric or code answers, partial credit for close answers",
+          "formula": "1 - (levenshtein_distance / max_distance)"
+        },
+        {
+          "type": "COMPONENT",
+          "description": "For matching/sorting, credit per correct placement",
+          "formula": "correct_components / total_components"
+        },
+        {
+          "type": "TEST_CASE",
+          "description": "For coding problems, credit per passing test case",
+          "formula": "passed_tests / total_tests"
+        },
+        {
+          "type": "TIME_DECAY",
+          "description": "Score decreases slightly with time spent",
+          "formula": "base_score * max(0.5, 1 - time_used/time_limit * 0.5)"
+        }
+      ]
+    },
+    "leaderboards": {
+      "types": [
+        { "name": "Global", "scope": "all_users", "reset": "never" },
+        { "name": "Weekly", "scope": "all_users", "reset": "weekly" },
+        { "name": "Topic", "scope": "per_topic", "reset": "monthly" },
+        { "name": "Team", "scope": "team_members", "reset": "weekly" },
+        { "name": "Battle Mode", "scope": "battle_participants", "reset": "per_battle" }
+      ],
+      "metrics": ["total_xp", "accuracy_percentage", "questions_solved", "streak_length", "speed_score"],
+      "anti_gaming": ["minimum_questions_to_qualify", "accuracy_threshold", "time_consistency_check"]
+    },
+    "coding_battle_mode": {
+      "modes": [
+        {
+          "name": "1v1 Duel",
+          "players": 2,
+          "questions": 5,
+          "time_per_question": 60,
+          "scoring": "speed_and_accuracy",
+          "matchmaking": "ELO_based"
+        },
+        {
+          "name": "Team Battle",
+          "players": "2v2 or 3v3",
+          "questions": 10,
+          "collaborative": true,
+          "scoring": "team_average"
+        },
+        {
+          "name": "Battle Royale",
+          "players": "up_to_50",
+          "elimination": true,
+          "rounds": 5,
+          "elimination_rule": "bottom_25_percent_each_round"
+        },
+        {
+          "name": "Code Golf",
+          "players": "any",
+          "objective": "shortest_correct_code",
+          "time_limit_minutes": 30,
+          "language_specific": true
+        }
+      ],
+      "features": {
+        "live_scoreboard": true,
+        "spectator_mode": true,
+        "replay_system": true,
+        "chat": true,
+        "emotes": true
+      }
+    },
+    "interview_simulation": {
+      "modes": [
+        {
+          "name": "Technical Screen",
+          "duration_minutes": 30,
+          "question_mix": ["SINGLE_CHOICE_MCQ", "PREDICT_OUTPUT", "DEBUG_CODE", "FILL_IN_BLANK"],
+          "difficulty_progression": true,
+          "ai_interviewer": true
+        },
+        {
+          "name": "Coding Round",
+          "duration_minutes": 45,
+          "question_types": ["INTERACTIVE_CODING"],
+          "problems": 2,
+          "difficulty": ["MEDIUM", "HARD"],
+          "hints_allowed": 2
+        },
+        {
+          "name": "System Design Round",
+          "duration_minutes": 45,
+          "question_types": ["SYSTEM_DESIGN_CARD_SORT", "MICROSERVICE_ARCHITECTURE", "AWS_ARCHITECTURE_DESIGN"],
+          "interactive_whiteboard": true,
+          "ai_follow_up_questions": true
+        },
+        {
+          "name": "Full Loop Simulation",
+          "rounds": [
+            { "name": "Phone Screen", "duration": 30, "focus": "fundamentals" },
+            { "name": "Coding 1", "duration": 45, "focus": "dsa" },
+            { "name": "Coding 2", "duration": 45, "focus": "applied_coding" },
+            { "name": "System Design", "duration": 45, "focus": "architecture" },
+            { "name": "Behavioral", "duration": 30, "focus": "soft_skills" }
+          ]
+        }
+      ],
+      "features": {
+        "ai_feedback_report": true,
+        "performance_comparison": "compare_to_average_candidate",
+        "improvement_suggestions": true,
+        "company_specific_prep": ["FAANG", "Startup", "Enterprise"],
+        "mock_interviewer_personas": true
+      }
+    }
+  },
+  "evaluation_engine": {
+    "description": "Backend evaluation configuration for all question types",
+    "auto_grading": {
+      "supported_types": ["SINGLE_CHOICE_MCQ", "MULTIPLE_CHOICE", "DRAG_DROP_SEQUENCE", "MATCH_CONCEPT_DEFINITION", "MATCH_CODE_OUTPUT", "FILL_IN_BLANK", "PREDICT_OUTPUT", "FIND_COMPILATION_ERRORS", "QUERY_RESULT_PREDICTION", "REST_API_DESIGN", "DEVOPS_PIPELINE"],
+      "method": "deterministic_comparison"
+    },
+    "code_execution_grading": {
+      "supported_types": ["INTERACTIVE_CODING", "TEST_CASE_WRITING", "PERFORMANCE_OPTIMIZATION"],
+      "method": "sandboxed_execution_with_test_cases",
+      "sandbox": "docker_container",
+      "languages": ["java", "javascript", "python", "sql"],
+      "timeout_ms": 10000,
+      "memory_limit_mb": 256
+    },
+    "ai_assisted_grading": {
+      "supported_types": ["CODE_REVIEW_CHALLENGE", "REFACTORING_CHALLENGE", "SECURE_CODING", "CASE_STUDY", "REAL_WORLD_SCENARIO"],
+      "method": "llm_rubric_evaluation",
+      "model": "gpt-4o-mini",
+      "rubric_based": true,
+      "human_review_escalation": true
+    }
+  },
+  "frontend_rendering": {
+    "description": "Component mapping for frontend rendering",
+    "component_registry": {
+      "RadioButtonGroup": { "library": "custom", "supports": ["SINGLE_CHOICE_MCQ"] },
+      "CheckboxGroup": { "library": "custom", "supports": ["MULTIPLE_CHOICE"] },
+      "SortableList": { "library": "react-beautiful-dnd", "supports": ["DRAG_DROP_SEQUENCE", "CODE_REARRANGEMENT", "DEVOPS_PIPELINE"] },
+      "MatchingPairs": { "library": "custom_svg", "supports": ["MATCH_CONCEPT_DEFINITION", "MATCH_CODE_OUTPUT", "MATCH_OUTPUT_TO_CODE"] },
+      "InlineCodeInput": { "library": "custom", "supports": ["FILL_IN_BLANK", "COMPLETE_MISSING_CODE"] },
+      "MonacoCodeEditor": { "library": "@monaco-editor/react", "supports": ["INTERACTIVE_CODING", "TEST_CASE_WRITING", "REFACTORING_CHALLENGE", "PERFORMANCE_OPTIMIZATION", "SECURE_CODING"] },
+      "FlowchartViewer": { "library": "reactflow", "supports": ["FLOWCHART_QUESTION", "SEQUENCE_DIAGRAM"] },
+      "ArchitectureCanvas": { "library": "reactflow", "supports": ["SYSTEM_DESIGN_CARD_SORT", "MICROSERVICE_ARCHITECTURE", "AWS_ARCHITECTURE_DESIGN"] },
+      "SQLQueryBuilder": { "library": "custom", "supports": ["INTERACTIVE_SQL_BUILDER"] },
+      "TableDisplay": { "library": "custom", "supports": ["QUERY_RESULT_PREDICTION"] },
+      "PipelineBuilder": { "library": "custom", "supports": ["DEVOPS_PIPELINE", "LIVE_PIPELINE_BUILDER"] },
+      "TerminalEmulator": { "library": "xterm.js", "supports": ["NETWORK_TROUBLESHOOTING"] }
+    },
+    "shared_components": {
+      "CodeHighlighter": { "library": "prism-react-renderer", "purpose": "Syntax highlighting for code snippets" },
+      "Timer": { "library": "custom", "purpose": "Countdown timer with warnings" },
+      "ProgressBar": { "library": "custom", "purpose": "Question progress indicator" },
+      "ScoreDisplay": { "library": "custom", "purpose": "Real-time score visualization" },
+      "HintPanel": { "library": "custom", "purpose": "AI-generated hints display" },
+      "ExplanationModal": { "library": "custom", "purpose": "Post-answer explanation" }
+    }
+  },
+  "api_schema": {
+    "description": "Backend API endpoints for question management",
+    "endpoints": {
+      "questions": {
+        "create": "POST /api/v1/questions",
+        "get_by_id": "GET /api/v1/questions/{id}",
+        "get_by_type": "GET /api/v1/questions?type={type_id}",
+        "get_by_topic": "GET /api/v1/questions?topic={topic}&difficulty={level}",
+        "update": "PUT /api/v1/questions/{id}",
+        "delete": "DELETE /api/v1/questions/{id}",
+        "bulk_create": "POST /api/v1/questions/bulk",
+        "ai_generate": "POST /api/v1/questions/ai-generate"
+      },
+      "assessment": {
+        "start": "POST /api/v1/assessments/start",
+        "submit_answer": "POST /api/v1/assessments/{id}/answer",
+        "get_results": "GET /api/v1/assessments/{id}/results",
+        "get_hint": "POST /api/v1/assessments/{id}/hint"
+      },
+      "battle": {
+        "create_room": "POST /api/v1/battles/create",
+        "join_room": "POST /api/v1/battles/{roomId}/join",
+        "submit_answer": "POST /api/v1/battles/{roomId}/answer",
+        "get_leaderboard": "GET /api/v1/battles/{roomId}/leaderboard"
+      },
+      "leaderboard": {
+        "global": "GET /api/v1/leaderboard/global",
+        "weekly": "GET /api/v1/leaderboard/weekly",
+        "by_topic": "GET /api/v1/leaderboard/topic/{topicId}"
+      }
+    }
+  }
+}

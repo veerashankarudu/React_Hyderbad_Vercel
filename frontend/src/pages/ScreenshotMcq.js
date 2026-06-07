@@ -11,7 +11,8 @@ export default function ScreenshotMcq() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [extracting, setExtracting] = useState(false);
-  const [extracted, setExtracted] = useState(null);
+  const [extractedList, setExtractedList] = useState(null);
+  const [currentIdx, setCurrentIdx] = useState(0);
   const [error, setError] = useState('');
   const fileRef = useRef();
   const navigate = useNavigate();
@@ -21,7 +22,8 @@ export default function ScreenshotMcq() {
     if (!file.type.startsWith('image/')) { setError('Please upload an image file (PNG, JPG, JPEG, WebP).'); return; }
     setImage(file);
     setPreview(URL.createObjectURL(file));
-    setExtracted(null);
+    setExtractedList(null);
+    setCurrentIdx(0);
     setError('');
   };
 
@@ -32,7 +34,7 @@ export default function ScreenshotMcq() {
 
   const handleExtract = async () => {
     if (!image) return;
-    setExtracting(true); setError(''); setExtracted(null);
+    setExtracting(true); setError(''); setExtractedList(null); setCurrentIdx(0);
     const formData = new FormData();
     formData.append('image', image);
     try {
@@ -41,8 +43,12 @@ export default function ScreenshotMcq() {
       });
       if (data.available === false) {
         setError(data.error || 'AI extraction unavailable. Please ensure AI is configured.');
+      } else if (data.questions && Array.isArray(data.questions)) {
+        // Multiple questions returned
+        setExtractedList(data.questions);
       } else {
-        setExtracted(data);
+        // Single question (backward compatible)
+        setExtractedList([data]);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to extract MCQ from image.');
@@ -56,6 +62,7 @@ export default function ScreenshotMcq() {
     navigate('/mcq/create', { state: { prefill: extracted } });
   };
 
+  const extracted = extractedList ? extractedList[currentIdx] : null;
   const OPTIONS = ['A', 'B', 'C', 'D'];
   const optionText = (key) => extracted?.[`option${key}`] || '';
   const { t } = useTranslation();
@@ -122,7 +129,7 @@ export default function ScreenshotMcq() {
               {image && (
                 <div className="screenshot-file-info">
                   <span className="file-name-pill">📷 {image.name}</span>
-                  <button className="btn-sm btn-outline" onClick={() => { setImage(null); setPreview(null); setExtracted(null); setError(''); }}>Remove</button>
+                  <button className="btn-sm btn-outline" onClick={() => { setImage(null); setPreview(null); setExtractedList(null); setCurrentIdx(0); setError(''); }}>Remove</button>
                 </div>
               )}
 
@@ -166,6 +173,13 @@ export default function ScreenshotMcq() {
 
               {extracted && (
                 <div className="extracted-mcq">
+                  {extractedList && extractedList.length > 1 && (
+                    <div className="extracted-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', padding: '0.5rem 0.75rem', background: 'var(--primary-light)', borderRadius: 'var(--radius-sm)' }}>
+                      <button className="btn-sm btn-outline" onClick={() => setCurrentIdx(i => Math.max(0, i - 1))} disabled={currentIdx === 0}>&larr; Prev</button>
+                      <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Question {currentIdx + 1} of {extractedList.length}</span>
+                      <button className="btn-sm btn-outline" onClick={() => setCurrentIdx(i => Math.min(extractedList.length - 1, i + 1))} disabled={currentIdx === extractedList.length - 1}>Next &rarr;</button>
+                    </div>
+                  )}
                   <div className="extracted-question">
                     <span className="extracted-field-label">{t('common.question')}</span>
                     <p>{txExtStem || extracted.questionStem || '—'}</p>

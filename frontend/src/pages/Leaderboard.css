@@ -142,7 +142,7 @@
 .lb-badge-none { color: var(--text-muted); font-size: 0.8rem; }
 
 /* ── Leaderboard mobile ── */
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .lb-page { padding: 1.25rem 1rem; }
   .lb-header { border-radius: 14px; padding: 1.25rem 1.1rem; flex-direction: column; align-items: flex-start; }
   .lb-header h1 { font-size: 1.35rem; }
@@ -208,9 +208,9 @@
 .lb-table { width: 100%; border-collapse: collapse; }
 .lb-table thead tr { background: #FAFAFA; }
 .lb-table th { padding: 0.85rem 1.25rem; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; text-align: left; border-bottom: 1px solid var(--border); }
-.lb-table td { padding: 0.85rem 1.25rem; border-bottom: 1px solid #F3F4F6; vertical-align: middle; }
+.lb-table td { padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
 .lb-table tbody tr:last-child td { border-bottom: none; }
-.lb-table tbody tr:hover { background: #FAFAFF; }
+.lb-table tbody tr:hover { background: var(--surface-hover); }
 .lb-top3-row { background: linear-gradient(90deg, rgba(124,58,237,0.04), transparent) !important; }
 
 .lb-rank-cell { font-size: 1.1rem; width: 70px; }
@@ -226,12 +226,12 @@
 .lb-eid { font-size: 0.8rem; color: var(--text-muted); }
 
 .lb-reviews-cell { display: flex; align-items: center; gap: 0.65rem; }
-.lb-bar-bg { flex: 1; height: 8px; background: #F3F4F6; border-radius: 99px; overflow: hidden; }
+.lb-bar-bg { flex: 1; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
 .lb-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
 .lb-count-num { font-size: 0.82rem; font-weight: 700; color: var(--text); min-width: 28px; text-align: right; }
 
 /* ── Leaderboard mobile ── */
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .lb-page { padding: 1.25rem 1rem; }
   .lb-header { border-radius: 14px; padding: 1.25rem 1.1rem; }
   .lb-header h1 { font-size: 1.35rem; }
@@ -262,9 +262,9 @@
 body.dark-mode .lb-table thead tr { background: rgba(255,255,255,0.04); }
 body.dark-mode .lb-table th { border-bottom-color: rgba(255,255,255,0.08); }
 body.dark-mode .lb-table td { border-bottom-color: rgba(255,255,255,0.05); }
-body.dark-mode .lb-table tbody tr:hover { background: rgba(124,58,237,0.07) !important; }
-body.dark-mode .lb-top3-row { background: linear-gradient(90deg, rgba(124,58,237,0.12), transparent) !important; }
-body.dark-mode .lb-me-row { background: linear-gradient(90deg, rgba(16,185,129,0.1), transparent) !important; }
+body.dark-mode .lb-table tbody tr:hover { background: rgba(124,58,237,0.07); }
+body.dark-mode .lb-top3-row { background: linear-gradient(90deg, rgba(124,58,237,0.12), transparent); }
+body.dark-mode .lb-me-row { background: linear-gradient(90deg, rgba(16,185,129,0.1), transparent); }
 body.dark-mode .lb-bar-bg { background: rgba(255,255,255,0.08); }
 body.dark-mode .lb-you-tag { background: rgba(16,185,129,0.15); color: #34d399; }
 body.dark-mode .badge-champion { background: linear-gradient(90deg, rgba(251,191,36,0.25), rgba(245,158,11,0.18)); color: #fcd34d; }

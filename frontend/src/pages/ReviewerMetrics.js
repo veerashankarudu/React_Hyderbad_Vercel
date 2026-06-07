@@ -83,7 +83,7 @@ export default function ReviewerMetrics() {
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
                     <thead>
-                      <tr style={{ background: 'var(--bg-light)', textAlign: 'left' }}>
+                      <tr className="rm-thead-row" style={{ textAlign: 'left' }}>
                         {[{col:'fullName',label:t('rm.colReviewer')},{col:'enterpriseId',label:t('rm.colEnterpriseId')},{col:'totalAssigned',label:t('rm.colAssigned')},{col:'completed',label:t('rm.colCompleted')},{col:'approved',label:t('rm.colApproved')},{col:'rejected',label:t('rm.colRejected')},{col:'pending',label:t('rm.colPending')},{col:'approvalRate',label:t('rm.colApprovalRate')}].map(h => (
                           <SortableTh key={h.col} colKey={h.col} label={h.label}
                             sortCol={mSort.col} sortDir={mSort.dir} onSort={handleMSort}
@@ -93,9 +93,9 @@ export default function ReviewerMetrics() {
                     </thead>
                     <tbody>
                       {sortRows(metrics, mSort.col, mSort.dir).slice((mPage-1)*pageSize, mPage*pageSize).map((r, i) => (
-                        <tr key={r.userId || i} style={{ borderTop: '1px solid var(--border)', background: i % 2 === 0 ? '#fff' : 'var(--bg-light)' }}>
+                        <tr key={r.userId || i} className="rm-row">
                           <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>{r.fullName}</td>
-                          <td style={{ padding: '0.6rem 1rem', color: '#6b7280', fontFamily: 'monospace', fontSize: '0.78rem' }}>{r.enterpriseId}</td>
+                          <td style={{ padding: '0.6rem 1rem', fontFamily: 'monospace', fontSize: '0.78rem' }} className="rm-muted">{r.enterpriseId}</td>
                           <td style={{ padding: '0.6rem 1rem', textAlign: 'center', fontWeight: 600 }}>{r.totalAssigned}</td>
                           <td style={{ padding: '0.6rem 1rem', textAlign: 'center' }}>{r.completed}</td>
                           <td style={{ padding: '0.6rem 1rem', textAlign: 'center', color: '#059669', fontWeight: 600 }}>{r.approved}</td>
@@ -103,7 +103,7 @@ export default function ReviewerMetrics() {
                           <td style={{ padding: '0.6rem 1rem', textAlign: 'center', color: '#d97706' }}>{r.pending}</td>
                           <td style={{ padding: '0.6rem 1rem', textAlign: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
-                              <div style={{ width: '60px', height: '6px', background: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }}>
+                              <div className="rm-progress-bg" style={{ width: '60px', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
                                 <div style={{ width: `${r.approvalRate}%`, height: '100%', background: approvalColor(r.approvalRate), borderRadius: '3px' }} />
                               </div>
                               <span style={{ fontWeight: 700, color: approvalColor(r.approvalRate), fontSize: '0.82rem' }}>{r.approvalRate}%</span>
@@ -131,7 +131,7 @@ export default function ReviewerMetrics() {
               <div style={{ padding: '1rem 1.25rem', fontWeight: 700, fontSize: '0.95rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <span>{t('rm.slaTitle')}</span>
                 {sla.length > 0 && (
-                  <span style={{ background: '#fee2e2', color: '#991b1b', borderRadius: '12px', padding: '0.15rem 0.65rem', fontSize: '0.78rem', fontWeight: 700 }}>
+                  <span className="rm-sla-badge">
                     {t('rm.breached', { count: sla.length })}
                   </span>
                 )}
@@ -142,7 +142,7 @@ export default function ReviewerMetrics() {
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
                     <thead>
-                      <tr style={{ background: '#fef2f2', textAlign: 'left' }}>
+                      <tr className="rm-sla-thead-row" style={{ textAlign: 'left' }}>
                         {[{col:'id',label:t('rm.colMcqId')},{col:'questionStem',label:t('rm.colQuestion')},{col:'status',label:t('rm.colStatus')},{col:'techStack',label:t('rm.colTechStack')},{col:'creatorName',label:t('rm.colCreator')},{col:'reviewerName',label:t('rm.colReviewerName')},{col:'hoursStuck',label:t('rm.colTimeStuck')}].map(h => (
                           <SortableTh key={h.col} colKey={h.col} label={h.label}
                             sortCol={sSort.col} sortDir={sSort.dir} onSort={handleSSort}
@@ -152,10 +152,10 @@ export default function ReviewerMetrics() {
                     </thead>
                     <tbody>
                       {sortRows(sla, sSort.col, sSort.dir).slice((sPage-1)*pageSize, sPage*pageSize).map((m, i) => (
-                        <tr key={m.id || i} style={{ borderTop: '1px solid var(--border)', background: i % 2 === 0 ? '#fff' : '#fef2f2' }}>
-                          <td style={{ padding: '0.6rem 1rem', fontWeight: 700, color: '#991b1b' }}>#{m.id}</td>
-                          <td style={{ padding: '0.6rem 1rem', maxWidth: '280px', color: '#374151' }}>{((slaStemMap[m.id ?? i] || m.questionStem || '').substring(0, 80))}{(slaStemMap[m.id ?? i] || m.questionStem)?.length > 80 ? '…' : ''}</td>
-                          <td style={{ padding: '0.6rem 1rem' }}><span style={{ padding: '0.15rem 0.55rem', borderRadius: '8px', background: '#fef3c7', color: '#92400e', fontSize: '0.72rem', fontWeight: 600 }}>{m.status?.replace('_',' ')}</span></td>
+                        <tr key={m.id || i} className="rm-sla-row">
+                          <td style={{ padding: '0.6rem 1rem', fontWeight: 700 }} className="rm-sla-id">#{m.id}</td>
+                          <td style={{ padding: '0.6rem 1rem', maxWidth: '280px' }} className="rm-sla-text">{((slaStemMap[m.id ?? i] || m.questionStem || '').substring(0, 80))}{(slaStemMap[m.id ?? i] || m.questionStem)?.length > 80 ? '…' : ''}</td>
+                          <td style={{ padding: '0.6rem 1rem' }}><span className="rm-status-badge">{m.status?.replace('_',' ')}</span></td>
                           <td style={{ padding: '0.6rem 1rem', fontSize: '0.78rem' }}>{m.techStack}</td>
                           <td style={{ padding: '0.6rem 1rem', fontSize: '0.78rem' }}>{m.creatorName}</td>
                           <td style={{ padding: '0.6rem 1rem', fontSize: '0.78rem' }}>{m.reviewerName || '—'}</td>

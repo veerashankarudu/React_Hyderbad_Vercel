@@ -8,12 +8,17 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 import org.springframework.web.multipart.MultipartFile;
+
+import reactor.core.publisher.Flux;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,18 +32,31 @@ public class AIService {
     @Autowired(required = false)
     private EmbeddingModel embeddingModel;
 
+    @Autowired(required = false)
+    private VectorStore vectorStore;
+
+    @Value("${spring.ai.ollama.base-url:http://localhost:11434}")
+    private String ollamaBaseUrl;
+
     @Value("${spring.ai.openai.api-key:}")
     private String openAiApiKey;
 
+    @Value("${spring.ai.ollama.chat.enabled:true}")
+    private boolean ollamaEnabled;
+
     private boolean isApiKeyConfigured() {
+        // Ollama doesn't need an API key — it's local
+        if (ollamaEnabled) return true;
         return openAiApiKey != null
             && !openAiApiKey.isBlank()
             && !openAiApiKey.startsWith("sk-placeholder");
     }
 
     private String noKeyMessage() {
-        return "🔑 **OpenAI API key is not configured.**\n\n"
-             + "To enable AI features, set the `OPENAI_API_KEY` environment variable and restart the backend.\n\n"
+        return "🔑 **AI is not configured.**\n\n"
+             + "To enable AI features, either:\n"
+             + "• Start Ollama locally (`ollama serve`) — works out of the box!\n"
+             + "• Or set the `OPENAI_API_KEY` environment variable and restart the backend.\n\n"
              + "Commands that don't need AI (like `@bot help`) still work!";
     }
 
@@ -73,18 +91,89 @@ public class AIService {
     }
 
     /**
-     * Compares newStem against existingMcqs (fetched from DB for same tech stack + topic).
-     * Returns a list of {id, questionStem, similarityPercent} for matches ≥ threshold.
-     * If existingMcqs is empty, falls back to generic AI check.
+     * Generate a raw text completion from a prompt.
+     */
+    public String generateRawCompletion(String prompt) {
+        if (!isApiKeyConfigured()) {
+            throw new RuntimeException("AI is not configured");
+        }
+        return chatClient.prompt()
+                .user(prompt)
+                .call()
+                .content();
+    }
+
+    /**
+     * Compares newStem against existingMcqs using a HYBRID approach:
+     * 1. ALWAYS runs text-based similarity (keyword + n-gram + concept matching) — guaranteed to work
+     * 2. OPTIONALLY enhances with AI semantic scoring if Ollama/OpenAI is available
+     * Returns a list of {id, questionStem, similarityPercent, reason} for matches ≥ 10%.
      */
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> checkDuplicateAgainstDb(String newStem, List<Mcq> existingMcqs) {
         if (existingMcqs == null || existingMcqs.isEmpty()) {
-            // No existing questions to compare — return empty (no duplicates)
             return new ArrayList<>();
         }
 
-        // Build a numbered list of existing questions for the AI
+        // STEP 1: Always compute text-based similarity (instant, reliable, no AI needed)
+        List<Map<String, Object>> textResults = textBasedSimilarityCheck(newStem, existingMcqs);
+
+        // STEP 2: Try AI-enhanced semantic scoring for better accuracy
+        List<Map<String, Object>> aiResults = null;
+        try {
+            if (isApiKeyConfigured()) {
+                // Only send top candidates to AI (limit prompt size) — max 30 from pool
+                List<Mcq> aiPool = existingMcqs.size() > 30 ? existingMcqs.subList(0, 30) : existingMcqs;
+                aiResults = getAiSimilarityScores(newStem, aiPool);
+            }
+        } catch (Exception e) {
+            // AI unavailable — text-based results are sufficient
+            aiResults = null;
+        }
+
+        // STEP 3: Merge results — use AI scores where available, text-based as fallback
+        if (aiResults != null && !aiResults.isEmpty()) {
+            Map<Object, Map<String, Object>> merged = new LinkedHashMap<>();
+            // Start with text-based results
+            for (Map<String, Object> tr : textResults) {
+                if (tr.get("id") != null) merged.put(tr.get("id"), tr);
+            }
+            // Overlay AI results (AI scores take priority for items it scored)
+            for (Map<String, Object> ar : aiResults) {
+                Object id = ar.get("id");
+                if (id == null) continue;
+                if (merged.containsKey(id)) {
+                    // Take the HIGHER score between AI and text-based
+                    int aiPct = ((Number) ar.get("similarityPercent")).intValue();
+                    int txtPct = ((Number) merged.get(id).get("similarityPercent")).intValue();
+                    if (aiPct > txtPct) {
+                        merged.put(id, ar);
+                    }
+                } else {
+                    merged.put(id, ar);
+                }
+            }
+            List<Map<String, Object>> finalResults = new ArrayList<>(merged.values());
+            finalResults.removeIf(r -> {
+                Object pct = r.get("similarityPercent");
+                return pct == null || ((Number) pct).intValue() < 10;
+            });
+            finalResults.sort((a, b) -> Integer.compare(
+                ((Number) b.get("similarityPercent")).intValue(),
+                ((Number) a.get("similarityPercent")).intValue()
+            ));
+            return finalResults.size() > 20 ? finalResults.subList(0, 20) : finalResults;
+        }
+
+        // No AI — return text-based results directly
+        return textResults.size() > 20 ? textResults.subList(0, 20) : textResults;
+    }
+
+    /**
+     * Calls AI (Ollama/OpenAI) for semantic similarity scoring.
+     * Returns scored list or null if AI is unavailable.
+     */
+    private List<Map<String, Object>> getAiSimilarityScores(String newStem, List<Mcq> existingMcqs) {
         StringBuilder existingList = new StringBuilder();
         for (int i = 0; i < existingMcqs.size(); i++) {
             Mcq m = existingMcqs.get(i);
@@ -94,43 +183,194 @@ public class AIService {
         }
 
         String prompt = String.format(
-            "You are a duplicate detection engine for an MCQ question bank.\n\n" +
+            "You are a SEMANTIC duplicate detection engine for a technical MCQ question bank.\n\n" +
+            "YOUR JOB: Detect if the NEW QUESTION tests the SAME CONCEPT/KNOWLEDGE as any existing question.\n" +
+            "This is NOT about word matching — it's about MEANING and INTENT.\n\n" +
+            "SCORING GUIDE:\n" +
+            "- 80-100%%: Tests IDENTICAL knowledge point (definite duplicate, just rephrased)\n" +
+            "- 50-79%%: Tests OVERLAPPING knowledge (partially same concept)\n" +
+            "- 20-49%%: RELATED topic but tests DIFFERENT specific knowledge\n" +
+            "- 0-19%%: UNRELATED questions\n\n" +
             "NEW QUESTION:\n\"%s\"\n\n" +
-            "EXISTING QUESTIONS (same tech stack and topic):\n%s\n" +
-            "For each existing question, calculate a similarity percentage (0-100) based on semantic meaning, " +
-            "not just exact words. Two questions are similar if they test the same concept in a similar way.\n\n" +
-            "Respond ONLY with a valid JSON array (no markdown, no extra text). " +
-            "Include ONLY questions with similarity >= 10%%:\n" +
-            "[{\"id\": <question_id_number>, \"questionStem\": \"<stem>\", \"similarityPercent\": <0-100>}]\n" +
-            "If none are similar, return an empty array: []",
+            "EXISTING QUESTIONS:\n%s\n" +
+            "Respond ONLY with a valid JSON array. Include ONLY questions with similarity >= 15%%:\n" +
+            "[{\"id\": <question_id_number>, \"questionStem\": \"<stem>\", \"similarityPercent\": <0-100>, \"reason\": \"<brief reason>\"}]\n" +
+            "If none are similar, return: []",
             newStem, existingList.toString()
         );
 
+        String raw = chatClient.prompt().user(prompt).call().content();
+        if (raw == null) return null;
+        raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
+        int start = raw.indexOf('[');
+        int end = raw.lastIndexOf(']');
+        if (start < 0 || end <= start) return null;
+        raw = raw.substring(start, end + 1);
         try {
-            String raw = chatClient.prompt().user(prompt).call().content();
-            if (raw == null) return new ArrayList<>();
-            raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
-            int start = raw.indexOf('[');
-            int end = raw.lastIndexOf(']');
-            if (start < 0 || end <= start) return new ArrayList<>();
-            raw = raw.substring(start, end + 1);
             List<Map<String, Object>> results = objectMapper.readValue(raw, new TypeReference<List<Map<String, Object>>>() {});
-            // Filter to >= 10% and sort descending
             results.removeIf(r -> {
                 Object pct = r.get("similarityPercent");
                 return pct == null || ((Number) pct).intValue() < 10;
             });
-            results.sort((a, b) -> {
-                int pa = ((Number) a.get("similarityPercent")).intValue();
-                int pb = ((Number) b.get("similarityPercent")).intValue();
-                return Integer.compare(pb, pa);
-            });
             return results;
         } catch (Exception e) {
-            Map<String, Object> err = new HashMap<>();
-            err.put("error", "AI similarity check failed: " + e.getMessage());
-            return List.of(err);
+            return null;
         }
+    }
+
+    /**
+     * Robust text-based similarity check using multiple layers:
+     * 1. Keyword containment (if query keywords appear in existing question)
+     * 2. Jaccard word overlap
+     * 3. Concept/synonym expansion overlap
+     * 4. N-gram (bigram) overlap for phrase matching
+     * 5. Substring containment bonus
+     * Threshold: 10% (shows more candidates for user to review)
+     */
+    private List<Map<String, Object>> textBasedSimilarityCheck(String newStem, List<Mcq> existingMcqs) {
+        Set<String> newWords = tokenize(newStem);
+        Set<String> newConcepts = expandConcepts(newWords);
+        Set<String> newBigrams = getBigrams(newStem.toLowerCase());
+        String newNormalized = newStem.toLowerCase().replaceAll("[^a-z0-9\\s]", " ").replaceAll("\\s+", " ").trim();
+        List<Map<String, Object>> results = new ArrayList<>();
+
+        for (Mcq m : existingMcqs) {
+            String existingStem = m.getQuestionStem();
+            if (existingStem == null || existingStem.isBlank()) continue;
+
+            Set<String> existingWords = tokenize(existingStem);
+            Set<String> existingConcepts = expandConcepts(existingWords);
+            Set<String> existingBigrams = getBigrams(existingStem.toLowerCase());
+            String existingNormalized = existingStem.toLowerCase().replaceAll("[^a-z0-9\\s]", " ").replaceAll("\\s+", " ").trim();
+
+            // Layer 1: Direct word overlap (Jaccard)
+            int intersection = 0;
+            for (String w : newWords) { if (existingWords.contains(w)) intersection++; }
+            int union = newWords.size() + existingWords.size() - intersection;
+            double wordScore = union == 0 ? 0 : (intersection * 100.0 / union);
+
+            // Layer 2: Concept/synonym overlap
+            int conceptIntersection = 0;
+            for (String c : newConcepts) { if (existingConcepts.contains(c)) conceptIntersection++; }
+            int conceptUnion = newConcepts.size() + existingConcepts.size() - conceptIntersection;
+            double conceptScore = conceptUnion == 0 ? 0 : (conceptIntersection * 100.0 / conceptUnion);
+
+            // Layer 3: Bigram overlap (captures phrase structure)
+            int bigramIntersection = 0;
+            for (String bg : newBigrams) { if (existingBigrams.contains(bg)) bigramIntersection++; }
+            int bigramUnion = newBigrams.size() + existingBigrams.size() - bigramIntersection;
+            double bigramScore = bigramUnion == 0 ? 0 : (bigramIntersection * 100.0 / bigramUnion);
+
+            // Layer 4: Keyword containment — if ALL significant new words appear in existing
+            int keywordHits = 0;
+            for (String w : newWords) {
+                if (existingNormalized.contains(w)) keywordHits++;
+            }
+            double keywordScore = newWords.isEmpty() ? 0 : (keywordHits * 100.0 / newWords.size());
+
+            // Layer 5: Substring containment bonus
+            double substringBonus = 0;
+            if (newNormalized.length() >= 5 && existingNormalized.contains(newNormalized)) {
+                substringBonus = 40; // Query is contained in existing question
+            } else if (existingNormalized.length() >= 5 && newNormalized.contains(existingNormalized)) {
+                substringBonus = 35; // Existing question is contained in new query
+            }
+
+            // Combined score: weighted blend of all layers + substring bonus
+            double combinedScore = (wordScore * 0.20) + (conceptScore * 0.25) +
+                                   (bigramScore * 0.20) + (keywordScore * 0.35) + substringBonus;
+
+            // Cap at 100
+            int percent = (int) Math.min(100, Math.round(combinedScore));
+
+            if (percent >= 10) {
+                Map<String, Object> match = new HashMap<>();
+                match.put("id", m.getId());
+                match.put("questionStem", existingStem);
+                match.put("similarityPercent", percent);
+                match.put("reason", getMatchReason(wordScore, conceptScore, keywordScore, substringBonus));
+                results.add(match);
+            }
+        }
+        results.sort((a, b) -> Integer.compare(
+            ((Number) b.get("similarityPercent")).intValue(),
+            ((Number) a.get("similarityPercent")).intValue()
+        ));
+        return results;
+    }
+
+    /** Generate a brief reason for why the match was found */
+    private String getMatchReason(double wordScore, double conceptScore, double keywordScore, double substringBonus) {
+        if (substringBonus > 0) return "Contains same question text";
+        if (keywordScore >= 80) return "All keywords match";
+        if (conceptScore >= 60) return "Same concept detected";
+        if (wordScore >= 50) return "High word overlap";
+        if (keywordScore >= 50) return "Most keywords match";
+        return "Related terms found";
+    }
+
+    /** Get bigrams (pairs of consecutive words) from text */
+    private Set<String> getBigrams(String text) {
+        if (text == null || text.isBlank()) return Collections.emptySet();
+        String[] words = text.replaceAll("[^a-z0-9\\s]", " ").trim().split("\\s+");
+        Set<String> bigrams = new HashSet<>();
+        for (int i = 0; i < words.length - 1; i++) {
+            if (words[i].length() > 1 && words[i + 1].length() > 1) {
+                bigrams.add(words[i] + " " + words[i + 1]);
+            }
+        }
+        return bigrams;
+    }
+
+    /**
+     * Expands word set with known synonyms/abbreviations for better concept matching.
+     * E.g., "DI" → also includes "dependency injection", "JPA" → "java persistence api"
+     */
+    private Set<String> expandConcepts(Set<String> words) {
+        // Synonym map: technical concepts that mean the same thing
+        Map<String, Set<String>> synonyms = Map.ofEntries(
+            Map.entry("di", Set.of("dependency", "injection", "ioc", "inversion")),
+            Map.entry("dependency", Set.of("di", "injection", "ioc")),
+            Map.entry("injection", Set.of("di", "dependency", "ioc", "inject")),
+            Map.entry("ioc", Set.of("di", "dependency", "injection", "inversion", "control")),
+            Map.entry("polymorphism", Set.of("override", "overriding", "runtime", "dynamic", "dispatch")),
+            Map.entry("override", Set.of("polymorphism", "overriding")),
+            Map.entry("encapsulation", Set.of("access", "modifier", "private", "getter", "setter", "hiding")),
+            Map.entry("inheritance", Set.of("extends", "subclass", "parent", "child", "superclass")),
+            Map.entry("abstraction", Set.of("abstract", "interface", "hiding", "complexity")),
+            Map.entry("autowired", Set.of("inject", "di", "dependency", "wire")),
+            Map.entry("jpa", Set.of("persistence", "hibernate", "orm", "entity", "repository")),
+            Map.entry("hibernate", Set.of("jpa", "orm", "persistence", "entity")),
+            Map.entry("orm", Set.of("jpa", "hibernate", "persistence", "mapping")),
+            Map.entry("rest", Set.of("api", "http", "endpoint", "restful", "resource")),
+            Map.entry("api", Set.of("rest", "endpoint", "restful", "service")),
+            Map.entry("microservices", Set.of("microservice", "distributed", "service", "discovery")),
+            Map.entry("autoconfig", Set.of("autoconfiguration", "auto", "configuration", "springbootapplication")),
+            Map.entry("autoconfiguration", Set.of("autoconfig", "enableautoconfiguration", "springbootapplication")),
+            Map.entry("bean", Set.of("component", "service", "repository", "managed", "spring")),
+            Map.entry("component", Set.of("bean", "service", "repository", "managed")),
+            Map.entry("annotation", Set.of("annotated", "decorator", "metadata")),
+            Map.entry("controller", Set.of("restcontroller", "handler", "endpoint", "mapping")),
+            Map.entry("transaction", Set.of("transactional", "commit", "rollback", "acid")),
+            Map.entry("scope", Set.of("singleton", "prototype", "request", "session")),
+            Map.entry("aop", Set.of("aspect", "pointcut", "advice", "crosscutting")),
+            Map.entry("aspect", Set.of("aop", "pointcut", "advice", "crosscutting")),
+            Map.entry("stream", Set.of("streams", "pipeline", "functional", "lambda", "filter", "map")),
+            Map.entry("lambda", Set.of("functional", "stream", "arrow", "anonymous")),
+            Map.entry("thread", Set.of("threading", "concurrent", "parallel", "runnable", "executor")),
+            Map.entry("concurrent", Set.of("thread", "threading", "parallel", "synchronization")),
+            Map.entry("exception", Set.of("error", "throw", "catch", "try", "handling")),
+            Map.entry("collection", Set.of("collections", "list", "set", "map", "arraylist", "hashmap")),
+            Map.entry("sql", Set.of("query", "database", "select", "join", "table")),
+            Map.entry("query", Set.of("sql", "select", "jpql", "hql", "criteria"))
+        );
+
+        Set<String> expanded = new java.util.HashSet<>(words);
+        for (String word : words) {
+            Set<String> syns = synonyms.get(word);
+            if (syns != null) expanded.addAll(syns);
+        }
+        return expanded;
     }
 
     /** Legacy single-question check (kept for backward compat) */
@@ -172,7 +412,13 @@ public class AIService {
             raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
             int start = raw.indexOf('{'); int end = raw.lastIndexOf('}');
             if (start >= 0 && end > start) raw = raw.substring(start, end + 1);
-            Map<String, Object> result = objectMapper.readValue(raw, Map.class);
+            Map<String, Object> result;
+            try {
+                result = objectMapper.readValue(raw, Map.class);
+            } catch (Exception parseEx) {
+                String repaired = repairJson(raw);
+                result = objectMapper.readValue(repaired, Map.class);
+            }
             result.put("available", true);
             return result;
         } catch (Exception e) {
@@ -260,14 +506,22 @@ public class AIService {
     @SuppressWarnings("unchecked")
     public Map<String, Object> generateExplanations(String questionStem, String optA, String optB,
                                                      String optC, String optD, String correctAnswer) {
+        // Build JSON keys only for the wrong options
+        StringBuilder wrongKeys = new StringBuilder();
+        for (String opt : new String[]{"A", "B", "C", "D"}) {
+            if (!opt.equals(correctAnswer)) {
+                wrongKeys.append(",\"why").append(opt).append("Wrong\":\"...\"");
+            }
+        }
         String prompt = String.format(
             "You are an expert educator. For the following MCQ, generate:\n" +
-            "1. A clear explanation of WHY the correct answer is right\n" +
-            "2. A brief explanation of why each wrong option is incorrect\n\n" +
-            "Question: %s\nA) %s\nB) %s\nC) %s\nD) %s\nCorrect: Option %s\n\n" +
-            "Respond ONLY with valid JSON (no markdown):\n" +
-            "{\"whyCorrect\":\"...\",\"whyAWrong\":\"...\",\"whyBWrong\":\"...\",\"whyCWrong\":\"...\",\"whyDWrong\":\"...\"}",
-            questionStem, optA, optB, optC, optD, correctAnswer
+            "1. A clear explanation of WHY the correct answer (%s) is right\n" +
+            "2. A brief explanation of why EACH of the other three options is incorrect\n\n" +
+            "Question: %s\nA) %s\nB) %s\nC) %s\nD) %s\nCorrect Answer: %s\n\n" +
+            "IMPORTANT: You MUST provide explanations for ALL three wrong options.\n" +
+            "Respond ONLY with valid JSON (no markdown). Use EXACTLY these keys:\n" +
+            "{\"whyCorrect\":\"...\"%s}",
+            correctAnswer, questionStem, optA, optB, optC, optD, correctAnswer, wrongKeys.toString()
         );
         try {
             String raw = chatClient.prompt().user(prompt).call().content();
@@ -288,23 +542,89 @@ public class AIService {
     public Map<String, Object> extractFromImage(MultipartFile image) {
         try {
             byte[] bytes = image.getBytes();
-            String mimeType = image.getContentType() != null ? image.getContentType() : "image/png";
-            ByteArrayResource imgResource = new ByteArrayResource(bytes) {
-                @Override public String getFilename() { return image.getOriginalFilename(); }
-            };
-            UserMessage msg = UserMessage.builder()
-                .text("You are an MCQ extraction assistant. Extract any multiple-choice question from this image. " +
-                    "Respond ONLY with valid JSON (no markdown): " +
-                    "{\"questionStem\":\"...\",\"optionA\":\"...\",\"optionB\":\"...\",\"optionC\":\"...\",\"optionD\":\"...\",\"correctAnswer\":\"A|B|C|D\",\"difficulty\":\"EASY|MEDIUM|HARD\"}. " +
-                    "If no clear MCQ is found, return {\"error\":\"No MCQ found\"}.")
-                .media(new org.springframework.ai.content.Media(MimeType.valueOf(mimeType), imgResource))
+            String base64Image = Base64.getEncoder().encodeToString(bytes);
+
+            var httpClient = java.net.http.HttpClient.newHttpClient();
+
+            // Step 1: OCR via minicpm-v (accurate text reading from images)
+            Map<String, Object> ocrReqBody = new HashMap<>();
+            ocrReqBody.put("model", "minicpm-v");
+            ocrReqBody.put("prompt", "Read all the text in this image exactly as written, line by line. Include every question, every answer option, and any answer indicators.");
+            ocrReqBody.put("images", List.of(base64Image));
+            ocrReqBody.put("stream", false);
+
+            var ocrRequest = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create(ollamaBaseUrl + "/api/generate"))
+                .header("Content-Type", "application/json")
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(ocrReqBody)))
+                .timeout(java.time.Duration.ofSeconds(180))
                 .build();
-            String raw = chatClient.prompt(new Prompt(List.of(msg))).call().content();
-            if (raw == null) throw new RuntimeException("null response");
+
+            var ocrResponse = httpClient.send(ocrRequest, java.net.http.HttpResponse.BodyHandlers.ofString());
+            Map<String, Object> ocrResp = objectMapper.readValue(ocrResponse.body(), Map.class);
+            String ocrText = (String) ocrResp.getOrDefault("response", "");
+
+            if (ocrText == null || ocrText.isBlank()) {
+                throw new RuntimeException("Empty response from vision model");
+            }
+
+            // Step 2: Convert OCR text to structured JSON
+            String structurePrompt = "You are a JSON formatter. Your ONLY job is to put the text below into JSON format. You must NOT change, rephrase, add, or remove ANY words.\n\n" +
+                "TEXT FROM IMAGE:\n" + ocrText + "\n\n" +
+                "OUTPUT FORMAT: A JSON array where each MCQ question is one object:\n" +
+                "[{\"questionStem\":\"EXACT question text\",\"optionA\":\"EXACT option a text\",\"optionB\":\"EXACT option b text\",\"optionC\":\"EXACT option c text\",\"optionD\":\"EXACT option d text\",\"correctAnswer\":\"D\",\"difficulty\":\"MEDIUM\"}]\n\n" +
+                "STRICT RULES:\n" +
+                "1. COPY text character-for-character from the OCR output. Do NOT rewrite or improve.\n" +
+                "2. Only remove numbering prefixes like '1.' '2.' 'a)' 'b)' 'c)' 'd)'\n" +
+                "3. correctAnswer = the letter matching the answer shown (A/B/C/D)\n" +
+                "4. Return ONLY the JSON array. No explanation.";
+
+            String raw = chatClient.prompt().user(structurePrompt).call().content();
+            if (raw == null || raw.isBlank()) throw new RuntimeException("Text model returned empty response");
+
             raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
-            return objectMapper.readValue(raw, Map.class);
+
+            // Try parsing as array first (multiple questions)
+            int arrStart = raw.indexOf('['); int arrEnd = raw.lastIndexOf(']');
+            int objStart = raw.indexOf('{'); int objEnd = raw.lastIndexOf('}');
+
+            Map<String, Object> result = new HashMap<>();
+            if (arrStart >= 0 && arrEnd > arrStart && (objStart < 0 || arrStart <= objStart)) {
+                // It's a JSON array
+                String arrJson = raw.substring(arrStart, arrEnd + 1);
+                try {
+                    List<Map<String, Object>> questions = objectMapper.readValue(arrJson, List.class);
+                    if (questions.size() == 1) {
+                        // Single question — return flat for backward compatibility
+                        result = questions.get(0);
+                    } else if (questions.size() > 1) {
+                        // Multiple questions — return as array
+                        result.put("questions", questions);
+                    }
+                } catch (Exception parseEx) {
+                    String repaired = repairTruncatedJsonArray(arrJson);
+                    List<Map<String, Object>> questions = objectMapper.readValue(repaired, List.class);
+                    if (questions.size() == 1) {
+                        result = questions.get(0);
+                    } else {
+                        result.put("questions", questions);
+                    }
+                }
+            } else if (objStart >= 0 && objEnd > objStart) {
+                // Fallback: single JSON object
+                String objJson = raw.substring(objStart, objEnd + 1);
+                try {
+                    result = objectMapper.readValue(objJson, Map.class);
+                } catch (Exception parseEx) {
+                    String repaired = repairJson(objJson);
+                    result = objectMapper.readValue(repaired, Map.class);
+                }
+            }
+            result.put("available", true);
+            return result;
         } catch (Exception e) {
             Map<String, Object> err = new HashMap<>();
+            err.put("available", false);
             err.put("error", "Image extraction failed: " + e.getMessage());
             return err;
         }
@@ -333,7 +653,7 @@ public class AIService {
             int start = raw.indexOf('[');
             int end = raw.lastIndexOf(']');
             if (start >= 0 && end > start) raw = raw.substring(start, end + 1);
-            List<Map<String, Object>> questions = objectMapper.readValue(raw, List.class);
+            List<Map<String, Object>> questions = objectMapper.readValue(raw, new TypeReference<List<Map<String, Object>>>() {});
             return questions;
         } catch (Exception e) {
             List<Map<String, Object>> fallback = new ArrayList<>();
@@ -342,6 +662,167 @@ public class AIService {
             fallback.add(err);
             return fallback;
         }
+    }
+
+    /**
+     * Generate questions of a specific type (supports all 17 question types).
+     */
+    public List<Map<String, Object>> generateMcqs(String techStackName, String topicName, int count, String difficulty, String questionType) {
+        // For standard single MCQ, use the original method
+        if (questionType == null || questionType.equals("SINGLE")) {
+            return generateMcqs(techStackName, topicName, count, difficulty);
+        }
+
+        // MULTI gets a special prompt for multiple correct answers
+        if (questionType.equals("MULTI")) {
+            String prompt = String.format(
+                "You are an expert MCQ question designer for technical training. " +
+                "Generate exactly %d high-quality MULTIPLE-SELECT questions about \"%s\" in the topic \"%s\".\n\n" +
+                "Requirements:\n" +
+                "- Difficulty level: %s\n" +
+                "- Each question must have exactly 4 options (A, B, C, D)\n" +
+                "- Each question MUST have 2 or 3 correct answers (NOT just one!)\n" +
+                "- Questions must test real understanding with multiple valid choices\n\n" +
+                "Respond ONLY with a valid JSON array (no markdown, no extra text):\n" +
+                "[{\"questionStem\":\"...\",\"optionA\":\"...\",\"optionB\":\"...\",\"optionC\":\"...\",\"optionD\":\"...\",\"correctAnswer\":\"A,C\",\"difficulty\":\"%s\"}]",
+                count, techStackName, topicName, difficulty, difficulty
+            );
+            try {
+                String raw = chatClient.prompt().user(prompt).call().content();
+                if (raw == null) throw new RuntimeException("null response");
+                raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
+                int start = raw.indexOf('[');
+                int end = raw.lastIndexOf(']');
+                if (start >= 0 && end > start) raw = raw.substring(start, end + 1);
+                return objectMapper.readValue(raw, new TypeReference<List<Map<String, Object>>>() {});
+            } catch (Exception e) {
+                List<Map<String, Object>> fallback = new ArrayList<>();
+                Map<String, Object> err = new HashMap<>();
+                err.put("error", "AI generation failed: " + e.getMessage());
+                fallback.add(err);
+                return fallback;
+            }
+        }
+
+        String formatInstructions = getFormatForType(questionType);
+        String prompt = String.format(
+            "You are an expert technical question designer for enterprise training assessments.\n" +
+            "Generate exactly %d questions of type \"%s\" about \"%s\" in the topic \"%s\".\n\n" +
+            "Difficulty level: %s\n" +
+            "Questions must be practical, scenario-based, and test real understanding.\n\n" +
+            "Each question MUST include a \"questionStem\" field with the question text.\n" +
+            "%s\n\n" +
+            "Respond ONLY with a valid JSON array (no markdown, no extra text).",
+            count, questionType, techStackName, topicName, difficulty, formatInstructions
+        );
+        try {
+            String raw = chatClient.prompt().user(prompt).call().content();
+            if (raw == null) throw new RuntimeException("null response");
+            raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
+            int start = raw.indexOf('[');
+            int end = raw.lastIndexOf(']');
+            if (start >= 0 && end > start) raw = raw.substring(start, end + 1);
+            List<Map<String, Object>> questions = objectMapper.readValue(raw, new TypeReference<List<Map<String, Object>>>() {});
+            return questions;
+        } catch (Exception e) {
+            List<Map<String, Object>> fallback = new ArrayList<>();
+            Map<String, Object> err = new HashMap<>();
+            err.put("error", "AI generation failed: " + e.getMessage());
+            fallback.add(err);
+            return fallback;
+        }
+    }
+
+    private String getFormatForType(String type) {
+        switch (type) {
+            case "DRAG_ORDER": return "Format: [{\"questionStem\":\"Arrange these in correct order:\",\"items\":[\"step1\",\"step2\",\"step3\",\"step4\"],\"correctAnswer\":\"step1,step2,step3,step4\"}]";
+            case "MATCH_PAIRS": return "Format: [{\"questionStem\":\"Match the concepts:\",\"pairs\":[{\"left\":\"concept\",\"right\":\"definition\"},{\"left\":\"concept2\",\"right\":\"definition2\"}],\"correctAnswer\":\"concept->definition\"}]";
+            case "CODE_OUTPUT": return "Format: [{\"questionStem\":\"Match each code snippet to its output:\",\"pairs\":[{\"code\":\"System.out.println(2+3);\",\"output\":\"5\"},{\"code\":\"System.out.println(\\\"Hi\\\");\",\"output\":\"Hi\"}],\"correctAnswer\":\"matched\"}]";
+            case "FILL_BLANK": return "Format: [{\"questionStem\":\"Fill in the blanks:\",\"codeTemplate\":\"List<String> list = new ArrayList<>();\\nlist.stream().___( s -> s.length() > 3 ).___( System.out::println );\",\"answers\":\"filter,forEach\",\"correctAnswer\":\"filter,forEach\"}]";
+            case "PREDICT_OUTPUT": return "Format: [{\"questionStem\":\"What is the output of this code?\",\"code\":\"int x=5; for(int i=0;i<3;i++) x+=i; System.out.println(x);\",\"correctOutput\":\"8\",\"distractors\":\"5,6,15\",\"correctAnswer\":\"8\"}]";
+            case "DEBUG_CODE": return "Format: [{\"questionStem\":\"Find and fix the bug:\",\"buggyCode\":\"String s=null;\\nSystem.out.println(s.length());\",\"bugDescription\":\"NullPointerException\",\"fixedCode\":\"String s=\\\"\\\";\\nif(s!=null) System.out.println(s.length());\",\"correctAnswer\":\"NullPointerException\"}]";
+            case "CODE_REARRANGE": return "Format: [{\"questionStem\":\"Arrange these code lines in correct order:\",\"blocks\":[\"public class Main {\",\"  public static void main(String[] args) {\",\"    System.out.println(\\\"Hello\\\");\",\"  }\",\"}\"],\"correctAnswer\":\"1,2,3,4,5\"}]";
+            case "SQL_BUILDER": return "Format: [{\"questionStem\":\"Build the SQL query:\",\"clauses\":[\"SELECT name, age\",\"FROM employees\",\"WHERE age > 25\",\"ORDER BY name\"],\"expectedResult\":\"Returns employees older than 25 sorted by name\",\"correctAnswer\":\"SELECT,FROM,WHERE,ORDER BY\"}]";
+            case "ARCH_LAYERS": return "Format: [{\"questionStem\":\"Identify the architecture layers:\",\"layers\":[{\"name\":\"Presentation\",\"components\":\"Controllers, Views\"},{\"name\":\"Business\",\"components\":\"Services, DTOs\"},{\"name\":\"Data\",\"components\":\"Repositories, Entities\"}],\"correctAnswer\":\"Presentation,Business,Data\"}]";
+            case "CODE_REVIEW": return "Format: [{\"questionStem\":\"Review this code and identify issues:\",\"code\":\"public void process(List items) {\\n  for(int i=0;i<=items.size();i++) {\\n    System.out.println(items.get(i));\\n  }\\n}\",\"issues\":\"Off-by-one error, raw types\",\"fixedCode\":\"public void process(List<String> items) {\\n  for(int i=0;i<items.size();i++) {\\n    System.out.println(items.get(i));\\n  }\\n}\",\"correctAnswer\":\"Off-by-one error\"}]";
+            case "PIPELINE_BUILD": return "Format: [{\"questionStem\":\"Build the Stream pipeline:\",\"operators\":[\"stream()\",\"filter(x -> x > 0)\",\"map(x -> x * 2)\",\"collect(Collectors.toList())\"],\"expectedResult\":\"Doubles all positive numbers and collects to list\",\"correctAnswer\":\"stream,filter,map,collect\"}]";
+            case "FLOWCHART": return "Format: [{\"questionStem\":\"What is the flow of execution?\",\"stages\":[\"Start\",\"Input validation\",\"Process data\",\"Return result\",\"End\"],\"correctAnswer\":\"Start,Input,Process,Return,End\"}]";
+            case "DEVOPS_PIPE": return "Format: [{\"questionStem\":\"Arrange the CI/CD pipeline stages:\",\"stages\":[\"Code Commit\",\"Build\",\"Unit Test\",\"Deploy to Staging\",\"Integration Test\",\"Deploy to Production\"],\"correctAnswer\":\"Commit,Build,Test,Stage,IntTest,Prod\"}]";
+            case "SECURE_CODE": return "Format: [{\"questionStem\":\"Identify the security vulnerability:\",\"vulnerableCode\":\"String query = \\\"SELECT * FROM users WHERE id=\\\" + userId;\",\"vulnerability\":\"SQL Injection\",\"secureFix\":\"PreparedStatement ps = conn.prepareStatement(\\\"SELECT * FROM users WHERE id=?\\\"); ps.setString(1, userId);\",\"correctAnswer\":\"SQL Injection\"}]";
+            case "RIDDLE": return "Format: [{\"questionStem\":\"Solve this tech riddle:\",\"riddle\":\"I run but never walk, I have a stack but no shelves. What am I?\",\"hints\":[\"Think about execution\",\"Related to JVM\"],\"answer\":\"A Thread\",\"correctAnswer\":\"A Thread\"}]";
+            default: return "Format: [{\"questionStem\":\"...\",\"optionA\":\"...\",\"optionB\":\"...\",\"optionC\":\"...\",\"optionD\":\"...\",\"correctAnswer\":\"A\"}]";
+        }
+    }
+
+    /**
+     * Generate interactive questions from a free-form prompt.
+     * Returns diverse question types: SINGLE_MCQ, MULTI_MCQ, DRAG_ORDER, FILL_BLANK, PREDICT_OUTPUT, DEBUG_CODE, RIDDLE.
+     */
+    public List<Map<String, Object>> generateInteractiveQuestions(String userPrompt) {
+        String prompt = String.format(
+            "Generate quiz questions. Request: \"%s\"\n\n" +
+            "Rules: If no count specified, generate 5. Match the topic exactly. Use VARIED types (mix them). Keep all text SHORT.\n\n" +
+            "JSON formats (respond ONLY with a JSON array, no markdown):\n" +
+            "SINGLE_MCQ: {\"type\":\"SINGLE_MCQ\",\"question\":\"?\",\"code\":null,\"options\":[{\"letter\":\"A\",\"text\":\"..\"},{\"letter\":\"B\",\"text\":\"..\"},{\"letter\":\"C\",\"text\":\"..\"},{\"letter\":\"D\",\"text\":\"..\"}],\"correct\":\"B\",\"explanation\":\"..\"}\n" +
+            "MULTI_MCQ: {\"type\":\"MULTI_MCQ\",\"question\":\"?\",\"options\":[{\"letter\":\"A\",\"text\":\"..\"},{\"letter\":\"B\",\"text\":\"..\"},{\"letter\":\"C\",\"text\":\"..\"},{\"letter\":\"D\",\"text\":\"..\"}],\"correctSet\":[\"A\",\"C\"],\"explanation\":\"..\"}\n" +
+            "DRAG_ORDER: {\"type\":\"DRAG_ORDER\",\"question\":\"Arrange in order:\",\"items\":[\"s1\",\"s2\",\"s3\",\"s4\"],\"correctOrder\":[0,1,2,3]}\n" +
+            "PREDICT_OUTPUT: {\"type\":\"PREDICT_OUTPUT\",\"question\":\"Output?\",\"code\":\"short code\",\"expectedOutput\":\"x\",\"explanation\":\"..\"}\n" +
+            "DEBUG_CODE: {\"type\":\"DEBUG_CODE\",\"question\":\"Bug?\",\"code\":\"code\",\"options\":[{\"id\":\"A\",\"text\":\"..\"},{\"id\":\"B\",\"text\":\"..\"},{\"id\":\"C\",\"text\":\"..\"},{\"id\":\"D\",\"text\":\"..\"}],\"correct\":\"A\",\"explanation\":\"..\"}\n" +
+            "RIDDLE: {\"type\":\"RIDDLE\",\"riddle\":\"Creative puzzle text\",\"hints\":[\"h1\",\"h2\"],\"options\":[{\"letter\":\"A\",\"text\":\"..\"},{\"letter\":\"B\",\"text\":\"..\"},{\"letter\":\"C\",\"text\":\"..\"},{\"letter\":\"D\",\"text\":\"..\"}],\"correct\":\"A\",\"explanation\":\"..\"}\n\n" +
+            "IMPORTANT: Use SINGLE_MCQ as default. Only use RIDDLE if user says 'riddle'. Mix 2-3 different types for variety. Keep options under 6 words. Keep explanations under 12 words. Keep code under 3 lines. Output ONLY the JSON array.\n",
+            userPrompt
+        );
+        try {
+            String raw = chatClient.prompt().user(prompt).call().content();
+            if (raw == null) throw new RuntimeException("null response from AI");
+            raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
+            int start = raw.indexOf('[');
+            int end = raw.lastIndexOf(']');
+            if (start >= 0 && end > start) {
+                raw = raw.substring(start, end + 1);
+            }
+            // Try parsing as-is first
+            try {
+                List<Map<String, Object>> questions = objectMapper.readValue(raw, List.class);
+                return questions;
+            } catch (Exception parseErr) {
+                // JSON truncated — try to recover by finding last complete object
+                String repaired = repairTruncatedJsonArray(raw);
+                List<Map<String, Object>> questions = objectMapper.readValue(repaired, List.class);
+                if (questions.isEmpty()) throw parseErr;
+                return questions;
+            }
+        } catch (Exception e) {
+            List<Map<String, Object>> fallback = new ArrayList<>();
+            Map<String, Object> err = new HashMap<>();
+            err.put("error", "AI generation failed: " + e.getMessage());
+            fallback.add(err);
+            return fallback;
+        }
+    }
+
+    private String repairTruncatedJsonArray(String raw) {
+        // Find the last complete JSON object by finding last "},"  or "}" before truncation
+        int lastCompleteObj = -1;
+        int depth = 0;
+        boolean inString = false;
+        boolean escape = false;
+        for (int i = 0; i < raw.length(); i++) {
+            char c = raw.charAt(i);
+            if (escape) { escape = false; continue; }
+            if (c == '\\') { escape = true; continue; }
+            if (c == '"') { inString = !inString; continue; }
+            if (inString) continue;
+            if (c == '{') depth++;
+            if (c == '}') {
+                depth--;
+                if (depth == 0) lastCompleteObj = i;
+            }
+        }
+        if (lastCompleteObj > 0) {
+            return raw.substring(0, lastCompleteObj + 1) + "]";
+        }
+        return "[]";
     }
 
     public String chatReply(String userMessage) {
@@ -701,5 +1182,442 @@ public class AIService {
         }
         double denom = Math.sqrt(normA) * Math.sqrt(normB);
         return denom == 0 ? 0.0 : dot / denom;
+    }
+
+    /**
+     * Analyzes resume text and generates interview questions based on the candidate's
+     * skills, experience, and projects.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> analyzeResume(String resumeText, String jobRole, String jobDescription) {
+        if (!isApiKeyConfigured()) {
+            Map<String, Object> noKey = new HashMap<>();
+            noKey.put("error", noKeyMessage());
+            return noKey;
+        }
+
+        String jdSection = "";
+        if (jobDescription != null && !jobDescription.isBlank()) {
+            String jdTrimmed = jobDescription.length() > 4000 ? jobDescription.substring(0, 4000) : jobDescription;
+            jdSection = "\n\nJOB DESCRIPTION:\n\"\"\"\n" + jdTrimmed + "\n\"\"\"\n\n" +
+                "IMPORTANT: Cross-reference the resume against this JD. Identify:\n" +
+                "- Skills the JD REQUIRES that are MISSING or WEAK in the resume (highlight as gaps)\n" +
+                "- Skills the candidate CLAIMS that match JD requirements (verify with tough questions)\n" +
+                "- Experience level mismatch between JD expectation and resume reality\n" +
+                "- Generate questions that specifically test JD requirements the resume doesn't clearly demonstrate\n";
+        }
+
+        String prompt = String.format(
+            "You are a technical interviewer. Analyze this resume and generate interview questions.\n\n" +
+            "RESUME:\n%s\n\n" +
+            "%s" +
+            "EXPERIENCE CALCULATION: Look at job dates. If first job started in 2021, experience = ~5 years (to 2026). " +
+            "If 2019, ~7 years. NEVER say 15+ years unless resume shows work starting 2011 or earlier.\n\n" +
+            "Return ONLY valid JSON with this EXACT structure (no markdown, no extra text):\n" +
+            "{\n" +
+            "  \"profile\": {\n" +
+            "    \"name\": \"name\",\n" +
+            "    \"experience\": \"X years\",\n" +
+            "    \"level\": \"Junior|Mid|Senior|Lead\",\n" +
+            "    \"skills\": [\"top 8 skills\"],\n" +
+            "    \"projects\": [\"project1\", \"project2\"],\n" +
+            "    \"strengths\": [\"s1\", \"s2\"],\n" +
+            "    \"gaps\": [\"g1\", \"g2\"],\n" +
+            "    \"summary\": \"brief summary\"\n" +
+            "  },\n" +
+            "  \"questions\": {\n" +
+            "    \"technical\": [{\"question\": \"q\", \"answer\": \"a\", \"difficulty\": \"EASY|MEDIUM|HARD\", \"type\": \"positive|negative|edge_case\"}],\n" +
+            "    \"coding\": [{\"question\": \"Write code to...\", \"answer\": \"solution\", \"difficulty\": \"MEDIUM|HARD\", \"type\": \"positive\"}],\n" +
+            "    \"sql\": [{\"question\": \"Write SQL to...\", \"answer\": \"SELECT...\", \"difficulty\": \"MEDIUM|HARD\", \"type\": \"positive\"}],\n" +
+            "    \"projectBased\": [{\"question\": \"q\", \"answer\": \"a\", \"difficulty\": \"MEDIUM\", \"type\": \"positive\"}],\n" +
+            "    \"behavioral\": [{\"question\": \"q\", \"answer\": \"a\", \"type\": \"positive\"}],\n" +
+            "    \"scenario\": [{\"question\": \"q\", \"answer\": \"a\", \"type\": \"positive\"}]\n" +
+            "  }\n" +
+            "}\n\n" +
+            "REQUIREMENTS:\n" +
+            "- technical: 8 questions about backend, frontend, architecture, security from resume skills\n" +
+            "- coding: 5 questions asking to write actual code (Java, Python, JavaScript)\n" +
+            "- sql: 4 questions with SQL queries (joins, window functions, optimization)\n" +
+            "- projectBased: 5 questions about their specific projects\n" +
+            "- behavioral: 4 questions about leadership, failures, teamwork\n" +
+            "- scenario: 4 questions about production incidents, DevOps, system design\n" +
+            "- Every question MUST have an answer field\n" +
+            "- Mix of positive, negative, edge_case types\n" +
+            "- Keep answers concise (1-2 sentences)\n" +
+            "- Total: 30 questions minimum\n" +
+            "- Output ONLY the JSON object, nothing else",
+            resumeText.length() > 6000 ? resumeText.substring(0, 6000) : resumeText,
+            jdSection
+        );
+
+        try {
+            String raw = chatClient.prompt().user(prompt).call().content();
+            if (raw == null) throw new RuntimeException("null response from AI");
+            raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
+            int start = raw.indexOf('{');
+            int end = raw.lastIndexOf('}');
+            if (start >= 0 && end > start) raw = raw.substring(start, end + 1);
+
+            // Attempt to repair common JSON issues from small models
+            Map<String, Object> result;
+            try {
+                result = objectMapper.readValue(raw, Map.class);
+            } catch (Exception parseEx) {
+                // Try to repair: fix trailing commas, unclosed strings, truncated arrays
+                String repaired = repairJson(raw);
+                result = objectMapper.readValue(repaired, Map.class);
+            }
+            result.put("available", true);
+            return result;
+        } catch (Exception e) {
+            Map<String, Object> fallback = new HashMap<>();
+            fallback.put("available", false);
+            fallback.put("error", "AI resume analysis failed: " + e.getMessage());
+            return fallback;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FEATURE: AI Personalized Learning Path
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Analyzes a user's quiz history (wrong answers) and generates a personalized learning path.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> generateLearningPath(String userName, List<Map<String, Object>> wrongAnswers,
+                                                     List<Map<String, Object>> correctAnswers) {
+        if (!isApiKeyConfigured()) {
+            return Map.of("available", false, "error", noKeyMessage());
+        }
+
+        StringBuilder wrongSummary = new StringBuilder();
+        for (Map<String, Object> wa : wrongAnswers) {
+            wrongSummary.append(String.format("- Topic: %s | Q: %s | Correct was: %s (user chose: %s)\n",
+                wa.getOrDefault("topic", "Unknown"),
+                wa.getOrDefault("questionStem", ""),
+                wa.getOrDefault("correctAnswer", ""),
+                wa.getOrDefault("userAnswer", "")));
+        }
+
+        int totalQuestions = wrongAnswers.size() + correctAnswers.size();
+        double accuracy = totalQuestions > 0 ? (double) correctAnswers.size() / totalQuestions * 100 : 0;
+
+        // Count weak topics
+        Map<String, Long> topicErrors = new java.util.LinkedHashMap<>();
+        for (Map<String, Object> wa : wrongAnswers) {
+            String topic = (String) wa.getOrDefault("topic", "General");
+            topicErrors.merge(topic, 1L, Long::sum);
+        }
+
+        String prompt = String.format(
+            "You are an AI learning advisor for a technical training platform.\n\n" +
+            "LEARNER: %s\nOVERALL ACCURACY: %.1f%% (%d/%d correct)\n\n" +
+            "WRONG ANSWERS (areas of weakness):\n%s\n" +
+            "WEAK TOPICS (by error count): %s\n\n" +
+            "Generate a personalized learning path. Respond ONLY with valid JSON:\n" +
+            "{\n" +
+            "  \"overallLevel\": \"Beginner|Intermediate|Advanced\",\n" +
+            "  \"accuracy\": %.1f,\n" +
+            "  \"weakTopics\": [{\"topic\":\"...\",\"errorCount\":N,\"priority\":\"HIGH|MEDIUM|LOW\"}],\n" +
+            "  \"learningPath\": [\n" +
+            "    {\"step\":1,\"topic\":\"...\",\"action\":\"what to study\",\"resource\":\"suggested resource type\",\"estimatedTime\":\"30 min\",\"difficulty\":\"EASY|MEDIUM|HARD\"}\n" +
+            "  ],\n" +
+            "  \"practiceRecommendations\": [\"Take 5 more MCQs on X\",\"Review concept Y\"],\n" +
+            "  \"strengths\": [\"topics user is good at\"],\n" +
+            "  \"motivationalNote\": \"encouraging message\"\n" +
+            "}",
+            userName, accuracy, correctAnswers.size(), totalQuestions,
+            wrongSummary.toString(), topicErrors.toString(), accuracy
+        );
+
+        try {
+            String raw = chatClient.prompt().user(prompt).call().content();
+            if (raw == null) throw new RuntimeException("null response");
+            raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
+            int s = raw.indexOf('{'), e = raw.lastIndexOf('}');
+            if (s >= 0 && e > s) raw = raw.substring(s, e + 1);
+            Map<String, Object> result;
+            try { result = objectMapper.readValue(raw, Map.class); }
+            catch (Exception px) { result = objectMapper.readValue(repairJson(raw), Map.class); }
+            result.put("available", true);
+            return result;
+        } catch (Exception e) {
+            // Rule-based fallback
+            Map<String, Object> fallback = new java.util.LinkedHashMap<>();
+            fallback.put("available", true);
+            fallback.put("source", "rules");
+            fallback.put("accuracy", accuracy);
+            fallback.put("overallLevel", accuracy > 75 ? "Advanced" : accuracy > 50 ? "Intermediate" : "Beginner");
+            List<Map<String, Object>> weakTopics = new ArrayList<>();
+            topicErrors.entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .limit(5)
+                .forEach(entry -> {
+                    Map<String, Object> wt = new java.util.LinkedHashMap<>();
+                    wt.put("topic", entry.getKey());
+                    wt.put("errorCount", entry.getValue());
+                    wt.put("priority", entry.getValue() >= 3 ? "HIGH" : entry.getValue() >= 2 ? "MEDIUM" : "LOW");
+                    weakTopics.add(wt);
+                });
+            fallback.put("weakTopics", weakTopics);
+            fallback.put("learningPath", List.of(Map.of("step", 1, "topic", weakTopics.isEmpty() ? "General" : weakTopics.get(0).get("topic"),
+                "action", "Review fundamentals and practice more MCQs", "estimatedTime", "1 hour", "difficulty", "MEDIUM")));
+            fallback.put("practiceRecommendations", List.of("Practice more questions on your weak topics", "Review explanations for wrong answers"));
+            fallback.put("motivationalNote", String.format("You got %.0f%% correct! Focus on your weak areas and you'll improve quickly.", accuracy));
+            return fallback;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FEATURE: AI Code-to-MCQ Generator
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Takes a code snippet and generates MCQs about what the code does.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> generateMcqsFromCode(String codeSnippet, String language, int count, String difficulty) {
+        if (!isApiKeyConfigured()) {
+            return List.of(Map.of("error", noKeyMessage()));
+        }
+        if (count < 1) count = 1;
+        if (count > 5) count = 5;
+
+        String prompt = String.format(
+            "You are an expert programming instructor. Analyze this %s code snippet and generate %d MCQ questions about it.\n\n" +
+            "CODE:\n```%s\n%s\n```\n\n" +
+            "Generate questions that test:\n" +
+            "- What the code outputs/returns\n" +
+            "- What happens if specific lines are modified\n" +
+            "- Time/space complexity\n" +
+            "- Which design patterns or concepts are demonstrated\n" +
+            "- Potential bugs or edge cases\n\n" +
+            "Difficulty level: %s\n\n" +
+            "Respond ONLY with a valid JSON array (no markdown):\n" +
+            "[{\"questionStem\":\"What is the output of this code?\",\"optionA\":\"...\",\"optionB\":\"...\",\"optionC\":\"...\",\"optionD\":\"...\",\"correctAnswer\":\"A\",\"difficulty\":\"%s\",\"explanation\":\"why the correct answer is right\"}]",
+            language, count, language, codeSnippet, difficulty, difficulty
+        );
+
+        try {
+            String raw = chatClient.prompt().user(prompt).call().content();
+            if (raw == null) throw new RuntimeException("null response");
+            raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
+            int start = raw.indexOf('['), end = raw.lastIndexOf(']');
+            if (start >= 0 && end > start) raw = raw.substring(start, end + 1);
+            return objectMapper.readValue(raw, new TypeReference<List<Map<String, Object>>>() {});
+        } catch (Exception e) {
+            return List.of(Map.of("error", "AI code analysis failed: " + e.getMessage()));
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FEATURE: AI MCQ Auto-Rewrite / Improve
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Takes a weak/low-quality MCQ and rewrites it to be better.
+     * Returns original + improved side by side.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> rewriteMcq(String questionStem, String optA, String optB,
+                                           String optC, String optD, String correctAnswer, String difficulty) {
+        if (!isApiKeyConfigured()) {
+            return Map.of("available", false, "error", noKeyMessage());
+        }
+
+        String prompt = String.format(
+            "You are an expert MCQ improvement specialist. Rewrite this weak question to be significantly better.\n\n" +
+            "ORIGINAL MCQ:\n" +
+            "Question: %s\nA) %s\nB) %s\nC) %s\nD) %s\nCorrect: %s\nDifficulty: %s\n\n" +
+            "IMPROVE IT BY:\n" +
+            "- Making the question stem clearer, more specific, and scenario-based\n" +
+            "- Improving distractors to be plausible but clearly wrong\n" +
+            "- Ensuring technical accuracy\n" +
+            "- Making it test practical understanding, not just memorization\n" +
+            "- Keeping the same correct answer concept but rewriting everything\n\n" +
+            "Respond ONLY with valid JSON (no markdown):\n" +
+            "{\n" +
+            "  \"improved\": {\n" +
+            "    \"questionStem\": \"...\",\n" +
+            "    \"optionA\": \"...\",\n" +
+            "    \"optionB\": \"...\",\n" +
+            "    \"optionC\": \"...\",\n" +
+            "    \"optionD\": \"...\",\n" +
+            "    \"correctAnswer\": \"A\",\n" +
+            "    \"difficulty\": \"%s\"\n" +
+            "  },\n" +
+            "  \"improvements\": [\"what was improved 1\", \"what was improved 2\"],\n" +
+            "  \"qualityBefore\": 45,\n" +
+            "  \"qualityAfter\": 88\n" +
+            "}",
+            questionStem, optA, optB, optC, optD, correctAnswer, difficulty, difficulty
+        );
+
+        try {
+            String raw = chatClient.prompt().user(prompt).call().content();
+            if (raw == null) throw new RuntimeException("null response");
+            raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
+            int s = raw.indexOf('{'), e = raw.lastIndexOf('}');
+            if (s >= 0 && e > s) raw = raw.substring(s, e + 1);
+            Map<String, Object> result;
+            try { result = objectMapper.readValue(raw, Map.class); }
+            catch (Exception px) { result = objectMapper.readValue(repairJson(raw), Map.class); }
+            result.put("available", true);
+            // Include original for comparison
+            result.put("original", Map.of(
+                "questionStem", questionStem,
+                "optionA", optA, "optionB", optB, "optionC", optC, "optionD", optD,
+                "correctAnswer", correctAnswer, "difficulty", difficulty
+            ));
+            return result;
+        } catch (Exception e) {
+            return Map.of("available", false, "error", "AI rewrite failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Attempts to repair malformed JSON from AI models that truncate or produce invalid output.
+     */
+    private String repairJson(String json) {
+        // Remove control characters that break parsing
+        json = json.replaceAll("[\\x00-\\x1F&&[^\\n\\r\\t]]", "");
+
+        // Fix unescaped quotes inside string values (common AI mistake)
+        // Replace smart quotes with regular quotes
+        json = json.replace('\u201c', '"').replace('\u201d', '"')
+                   .replace('\u2018', '\'').replace('\u2019', '\'');
+
+        // Remove trailing commas before closing brackets/braces
+        json = json.replaceAll(",\\s*}", "}").replaceAll(",\\s*]", "]");
+
+        // Fix missing commas between entries (common with small models)
+        // Pattern: "value"\s+"key" or "value"\s+{ or ]\s+"key" or }\s+"key" or }\s+{ or ]\s+{
+        json = json.replaceAll("\"(\\s*\\n\\s*)\"", "\",\n\"");
+        json = json.replaceAll("\"(\\s*\\n\\s*)\\{", "\",\n{");
+        json = json.replaceAll("\\}(\\s*\\n\\s*)\"", "},\n\"");
+        json = json.replaceAll("\\](\\s*\\n\\s*)\"", "],\n\"");
+        json = json.replaceAll("\\}(\\s*\\n\\s*)\\{", "},\n{");
+        json = json.replaceAll("\\](\\s*\\n\\s*)\\{", "],\n{");
+        json = json.replaceAll("\\](\\s*\\n\\s*)\\[", "],\n[");
+        // Also handle same-line missing commas
+        json = json.replaceAll("\"\\s+\"(?=[a-zA-Z_])", "\", \"");
+
+        // Remove trailing commas again (in case repairs introduced issues)
+        json = json.replaceAll(",\\s*}", "}").replaceAll(",\\s*]", "]");
+
+        // Balance braces and brackets
+        int braces = 0, brackets = 0;
+        for (char c : json.toCharArray()) {
+            if (c == '{') braces++;
+            else if (c == '}') braces--;
+            else if (c == '[') brackets++;
+            else if (c == ']') brackets--;
+        }
+
+        // If truncated, close open structures
+        StringBuilder sb = new StringBuilder(json);
+
+        // If we're inside an unclosed string, close it
+        boolean inString = false;
+        for (int i = 0; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (c == '"' && (i == 0 || json.charAt(i - 1) != '\\')) {
+                inString = !inString;
+            }
+        }
+        if (inString) sb.append("\"");
+
+        // Close unclosed brackets and braces
+        for (int i = 0; i < brackets; i++) sb.append("]");
+        for (int i = 0; i < braces; i++) sb.append("}");
+
+        // Remove trailing commas again after repairs
+        String repaired = sb.toString();
+        repaired = repaired.replaceAll(",\\s*}", "}").replaceAll(",\\s*]", "]");
+
+        return repaired;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // RAG — Retrieval-Augmented Generation — Spring AI Pattern #3
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Answers a user question using RAG: retrieves relevant documents from the
+     * vector store and augments the prompt with context before generating.
+     */
+    public Map<String, Object> ragQuery(String question) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        if (!isApiKeyConfigured()) {
+            result.put("error", noKeyMessage());
+            return result;
+        }
+        if (vectorStore == null) {
+            result.put("error", "Vector store not available. Embedding model may not be configured.");
+            return result;
+        }
+
+        // Retrieve top-3 relevant documents
+        List<Document> docs = vectorStore.similaritySearch(
+                SearchRequest.builder().query(question).topK(3).build());
+
+        String context = docs.stream()
+                .map(Document::getText)
+                .reduce("", (a, b) -> a + "\n" + b);
+
+        String augmentedPrompt = String.format(
+            "Answer the following question using ONLY the context provided. " +
+            "If the context does not contain enough information, say so.\n\n" +
+            "CONTEXT:\n%s\n\nQUESTION: %s\n\nANSWER:",
+            context, question);
+
+        String answer = chatClient.prompt()
+                .user(augmentedPrompt)
+                .call()
+                .content();
+
+        result.put("answer", answer);
+        result.put("sources", docs.stream()
+                .map(d -> d.getMetadata().getOrDefault("source", "unknown"))
+                .collect(Collectors.toList()));
+        result.put("question", question);
+        return result;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STREAMING CHAT (SSE) — Hackathon Spring AI Pattern #2
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Streams a chat response token-by-token as Server-Sent Events.
+     */
+    public Flux<String> streamChat(String userMessage) {
+        if (!isApiKeyConfigured()) {
+            return Flux.just("[ERROR] " + noKeyMessage());
+        }
+        return chatClient.prompt()
+                .user(userMessage)
+                .stream()
+                .content();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TOOL CALLING — Spring AI Pattern #4
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Answers a question using tool calling. The LLM can invoke QuizHubTools
+     * methods to fetch live data from the database before responding.
+     */
+    public String toolChat(String userMessage, Object tools) {
+        if (!isApiKeyConfigured()) {
+            return noKeyMessage();
+        }
+        return chatClient.prompt()
+                .user(userMessage)
+                .tools(tools)
+                .call()
+                .content();
     }
 }

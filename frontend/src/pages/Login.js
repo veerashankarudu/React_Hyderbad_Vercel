@@ -16,6 +16,12 @@ export default function Login() {
   const { t } = useTranslation();
 
   useEffect(() => {
+    const fallback = [
+      { label: 'Admin', id: 'divya.madhanasekar', password: 'Admin@123' },
+      { label: 'SME 1', id: 'birendra.kumar.singh', password: 'Sme@1234' },
+      { label: 'SME 2', id: 'swati.avinash.nikam', password: 'Sme@1234' },
+      { label: 'SME 3', id: 'indugu.hari.prasad', password: 'Sme@1234' },
+    ];
     API.get('/auth/demo-users')
       .then(({ data }) => {
         const admins = data.filter(u => u.role === 'ADMIN');
@@ -24,9 +30,9 @@ export default function Login() {
           ...admins.map((u, i) => ({ label: admins.length === 1 ? 'Admin' : `Admin ${i + 1}`, id: u.enterpriseId, password: 'Admin@123' })),
           ...smes.map((u, i) => ({ label: `SME ${i + 1}`, id: u.enterpriseId, password: 'Sme@1234' })),
         ];
-        setDemoUsers(entries);
+        setDemoUsers(entries.length > 0 ? entries : fallback);
       })
-      .catch(() => {});
+      .catch(() => setDemoUsers(fallback));
   }, []);
 
   const handleSubmit = async (e) => {

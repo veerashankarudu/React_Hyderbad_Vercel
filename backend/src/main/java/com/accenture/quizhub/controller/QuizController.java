@@ -6,6 +6,7 @@ import com.accenture.quizhub.repository.McqRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/quiz")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class QuizController {
 
     private final McqRepository mcqRepository;
@@ -90,7 +92,15 @@ public class QuizController {
 
             String given = entry.getValue() == null ? "" : entry.getValue().toUpperCase().trim();
             String expected = mcq.getCorrectAnswer().toUpperCase().trim();
-            boolean isCorrect = given.equals(expected);
+            // Multi-select: compare sorted sets (e.g. "A,B" == "B,A")
+            boolean isCorrect;
+            if (given.contains(",") || expected.contains(",")) {
+                java.util.Set<String> givenSet = new java.util.TreeSet<>(java.util.Arrays.asList(given.split(",")));
+                java.util.Set<String> expectedSet = new java.util.TreeSet<>(java.util.Arrays.asList(expected.split(",")));
+                isCorrect = givenSet.equals(expectedSet);
+            } else {
+                isCorrect = given.equals(expected);
+            }
             if (isCorrect) correct++;
 
             Map<String, Object> r = new LinkedHashMap<>();

@@ -4,6 +4,8 @@ import Navbar from '../components/Navbar';
 import API from '../api';
 import { useTranslation } from 'react-i18next';
 import { useContentTranslation } from '../hooks/useContentTranslation';
+import { useAuth } from '../AuthContext';
+import { generateCertificate } from '../utils/generateCertificate';
 import './Quiz.css';
 
 const OPTION_KEYS = ['A', 'B', 'C', 'D'];
@@ -14,6 +16,7 @@ const DIFF_COLOR = { EASY: '#059669', MEDIUM: '#D97706', HARD: '#DC2626' };
 export default function Quiz() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   // Setup phase
   const [techStacks, setTechStacks] = useState([]);
@@ -271,6 +274,18 @@ export default function Quiz() {
               <div className="quiz-result-actions">
                 <button className="quiz-retry-btn" onClick={restartQuiz}>{t('quiz.tryAgain')}</button>
                 <button className="quiz-home-btn" onClick={() => navigate('/')}>{t('quiz.dashboard')}</button>
+                <button className="quiz-cert-btn" onClick={() => {
+                  const rank = result.percentage >= 90 ? 1 : result.percentage >= 80 ? 2 : result.percentage >= 70 ? 3 : null;
+                  generateCertificate({
+                    name: user?.fullName || 'Participant',
+                    score: result.score,
+                    total: result.total,
+                    percentage: result.percentage,
+                    rank,
+                    techStack: config.techStackId ? techStacks.find(ts => String(ts.id) === String(config.techStackId))?.name : null,
+                    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                  });
+                }}>🎓 {t('quiz.downloadCert', 'Download Certificate')}</button>
               </div>
             </div>
 
