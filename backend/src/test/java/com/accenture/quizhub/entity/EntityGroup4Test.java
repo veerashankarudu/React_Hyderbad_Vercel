@@ -55,6 +55,7 @@ class EntityGroup4Test {
                     "Inheritance",
                     "Encapsulation",
                     "B",
+                    null,
                     QuestionType.SINGLE,
                     Difficulty.HARD,
                     McqStatus.APPROVED,

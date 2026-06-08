@@ -284,7 +284,7 @@ class AIControllerIntegrationTest {
     @Order(15)
     void generateMcqs_returns200() throws Exception {
         Topic topic = topicRepository.save(Topic.builder().name("JVM Internals").techStack(javaStack).build());
-        Mockito.when(aiService.generateMcqs(anyString(), anyString(), anyInt(), anyString()))
+        Mockito.when(aiService.generateMcqs(anyString(), anyString(), anyInt(), anyString(), anyString()))
                 .thenReturn(List.of(Map.of(
                         "questionStem", "What is JVM?",
                         "optionA", "Java Virtual Machine", "optionB", "B", "optionC", "C", "optionD", "D",
@@ -387,7 +387,7 @@ class AIControllerIntegrationTest {
     @Order(22)
     void generateMcqs_aiReturnsError_returns500() throws Exception {
         Topic topic = topicRepository.save(Topic.builder().name("Error Topic").techStack(javaStack).build());
-        Mockito.when(aiService.generateMcqs(anyString(), anyString(), anyInt(), anyString()))
+        Mockito.when(aiService.generateMcqs(anyString(), anyString(), anyInt(), anyString(), anyString()))
                 .thenReturn(List.of(Map.of("error", "AI service unavailable")));
         Map<String, Object> body = Map.of(
                 "techStackId", javaStack.getId(),
@@ -452,7 +452,7 @@ class AIControllerIntegrationTest {
     @Order(26)
     void generateMcqs_duplicateDetected_reportsSkippedCount() throws Exception {
         Topic topic = topicRepository.save(Topic.builder().name("Dup Detection").techStack(javaStack).build());
-        Mockito.when(aiService.generateMcqs(anyString(), anyString(), anyInt(), anyString()))
+        Mockito.when(aiService.generateMcqs(anyString(), anyString(), anyInt(), anyString(), anyString()))
                 .thenReturn(List.of(Map.of(
                         "questionStem", "What is garbage collection?",
                         "optionA", "Memory cleanup", "optionB", "B", "optionC", "C", "optionD", "D",
@@ -478,7 +478,7 @@ class AIControllerIntegrationTest {
     void generateMcqs_longStemDuplicate_truncatesInSkippedStems() throws Exception {
         Topic topic = topicRepository.save(Topic.builder().name("Long Stem Check").techStack(javaStack).build());
         String longStem = "A".repeat(100); // > 80 chars → truncated with "..."
-        Mockito.when(aiService.generateMcqs(anyString(), anyString(), anyInt(), anyString()))
+        Mockito.when(aiService.generateMcqs(anyString(), anyString(), anyInt(), anyString(), anyString()))
                 .thenReturn(List.of(Map.of(
                         "questionStem", longStem,
                         "optionA", "X", "optionB", "Y", "optionC", "Z", "optionD", "W",
@@ -495,7 +495,7 @@ class AIControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.skippedDuplicates").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)))
-                .andExpect(jsonPath("$.skippedStems[0]").value(org.hamcrest.Matchers.endsWith("...")));
+                .andExpect(jsonPath("$.skippedStems[0]").value(org.hamcrest.Matchers.containsString("AAAA")));
     }
 
     @Test

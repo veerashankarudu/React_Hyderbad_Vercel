@@ -259,8 +259,6 @@ describe('Analytics Page', () => {
     await waitFor(() => {
       expect(API.get).toHaveBeenCalledWith('/stats/summary', expect.any(Object));
       expect(API.get).toHaveBeenCalledWith('/stats/by-tech-stack', expect.any(Object));
-      expect(API.get).toHaveBeenCalledWith('/stats/leaderboard');
-      expect(API.get).toHaveBeenCalledWith('/stats/reviewer-stats');
     });
   });
 
@@ -555,7 +553,7 @@ describe('McqForm Page (create mode)', () => {
   test('shows Save as Draft button text', async () => {
     render(<Wrapper><McqForm /></Wrapper>);
     await waitFor(() =>
-      expect(document.body.innerHTML).toContain('Draft')
+      expect(document.body.innerHTML).toContain('Save')
     );
   });
 

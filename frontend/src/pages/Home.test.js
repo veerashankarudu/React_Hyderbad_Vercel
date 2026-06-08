@@ -153,8 +153,8 @@ describe('Home Page', () => {
   test('renders the AI showcase banner section', async () => {
     render(<Wrapper><Home /></Wrapper>);
     await waitFor(() => {
-      // The banner contains the AI robot emoji in the page
-      expect(document.body.innerHTML).toContain('🤖');
+      // The banner contains the AI greeting section
+      expect(document.body.innerHTML).toContain('ai-greet-banner');
     });
   });
 });

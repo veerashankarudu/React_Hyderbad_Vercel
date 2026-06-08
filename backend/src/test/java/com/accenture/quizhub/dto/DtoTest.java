@@ -135,7 +135,7 @@ class DtoTest {
                     "SINGLE", Difficulty.MEDIUM, McqStatus.READY_FOR_REVIEW,
                     7L, "Spring", 8L, "DI",
                     "cr02", "Carol", "rv02", "Dave",
-                    List.of(comment), 1, ts, ts, null, 90, "HIGH", null
+                    List.of(comment), 1, ts, ts, null, 90, "HIGH", null, null
             );
             assertThat(mcq.getId()).isEqualTo(3L);
             assertThat(mcq.getDifficulty()).isEqualTo(Difficulty.MEDIUM);

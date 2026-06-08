@@ -573,7 +573,7 @@ describe('PendingReviews – branch coverage', () => {
     render(<Wrapper><PendingReviews /></Wrapper>);
     await waitFor(() => screen.getByText('Describe eventual consistency in distributed systems.'));
 
-    const reviewBtn = screen.getByRole('button', { name: /review/i });
+    const reviewBtn = screen.getByRole('button', { name: /view full question/i });
     fireEvent.click(reviewBtn);
 
     await waitFor(() =>
@@ -586,7 +586,7 @@ describe('PendingReviews – branch coverage', () => {
     render(<Wrapper><PendingReviews /></Wrapper>);
     await waitFor(() => screen.getByText('Describe eventual consistency in distributed systems.'));
 
-    const reviewBtn = screen.getByRole('button', { name: /review/i });
+    const reviewBtn = screen.getByRole('button', { name: /view full question/i });
     fireEvent.click(reviewBtn);
 
     await waitFor(() =>
@@ -599,7 +599,7 @@ describe('PendingReviews – branch coverage', () => {
     render(<Wrapper><PendingReviews /></Wrapper>);
     await waitFor(() => screen.getByText('Describe eventual consistency in distributed systems.'));
 
-    fireEvent.click(screen.getByRole('button', { name: /review/i }));
+    fireEvent.click(screen.getByRole('button', { name: /view full question/i }));
     await waitFor(() => expect(document.querySelector('.review-panel')).toBeTruthy());
 
     const backBtn = document.querySelector('.review-back-btn');
@@ -615,7 +615,7 @@ describe('PendingReviews – branch coverage', () => {
     render(<Wrapper><PendingReviews /></Wrapper>);
     await waitFor(() => screen.getByText('Describe eventual consistency in distributed systems.'));
 
-    fireEvent.click(screen.getByRole('button', { name: /review/i }));
+    fireEvent.click(screen.getByRole('button', { name: /view full question/i }));
     await waitFor(() => expect(document.querySelector('.review-panel')).toBeTruthy());
 
     // Without selecting APPROVE/REJECT and without checklist, submit is disabled
@@ -629,7 +629,7 @@ describe('PendingReviews – branch coverage', () => {
     render(<Wrapper><PendingReviews /></Wrapper>);
     await waitFor(() => screen.getByText('Describe eventual consistency in distributed systems.'));
 
-    fireEvent.click(screen.getByRole('button', { name: /review/i }));
+    fireEvent.click(screen.getByRole('button', { name: /view full question/i }));
     await waitFor(() => expect(document.querySelector('.review-panel')).toBeTruthy());
 
     const approveBtn = document.querySelector('.verdict-btn.approve');
@@ -643,7 +643,7 @@ describe('PendingReviews – branch coverage', () => {
     render(<Wrapper><PendingReviews /></Wrapper>);
     await waitFor(() => screen.getByText('Describe eventual consistency in distributed systems.'));
 
-    fireEvent.click(screen.getByRole('button', { name: /review/i }));
+    fireEvent.click(screen.getByRole('button', { name: /view full question/i }));
     await waitFor(() => expect(document.querySelector('.review-panel')).toBeTruthy());
 
     const rejectBtn = document.querySelector('.verdict-btn.reject');
@@ -657,7 +657,7 @@ describe('PendingReviews – branch coverage', () => {
     render(<Wrapper><PendingReviews /></Wrapper>);
     await waitFor(() => screen.getByText('Describe eventual consistency in distributed systems.'));
 
-    fireEvent.click(screen.getByRole('button', { name: /review/i }));
+    fireEvent.click(screen.getByRole('button', { name: /view full question/i }));
     await waitFor(() => expect(document.querySelector('.review-panel')).toBeTruthy());
 
     // Check all checklist items
@@ -683,7 +683,7 @@ describe('PendingReviews – branch coverage', () => {
     render(<Wrapper><PendingReviews /></Wrapper>);
     await waitFor(() => screen.getByText('Describe eventual consistency in distributed systems.'));
 
-    fireEvent.click(screen.getByRole('button', { name: /review/i }));
+    fireEvent.click(screen.getByRole('button', { name: /view full question/i }));
     await waitFor(() => expect(document.querySelector('.review-panel')).toBeTruthy());
 
     // Check all 4 checklist items
@@ -710,7 +710,7 @@ describe('PendingReviews – branch coverage', () => {
     render(<Wrapper><PendingReviews /></Wrapper>);
     await waitFor(() => screen.getByText('Describe eventual consistency in distributed systems.'));
 
-    fireEvent.click(screen.getByRole('button', { name: /review/i }));
+    fireEvent.click(screen.getByRole('button', { name: /view full question/i }));
     await waitFor(() => expect(document.querySelector('.review-panel')).toBeTruthy());
 
     const checkboxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
@@ -743,7 +743,7 @@ describe('PendingReviews – branch coverage', () => {
     render(<Wrapper><PendingReviews /></Wrapper>);
     await waitFor(() => screen.getByText('Describe eventual consistency in distributed systems.'));
 
-    fireEvent.click(screen.getByRole('button', { name: /review/i }));
+    fireEvent.click(screen.getByRole('button', { name: /view full question/i }));
     await waitFor(() => expect(document.querySelector('.review-panel')).toBeTruthy());
 
     const checkboxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');

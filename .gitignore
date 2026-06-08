@@ -1,9 +1,9 @@
 # Node
-frontend/node_modules/
+**/node_modules/
 frontend/build/
 
 # Maven
-backend/target/
+**/target/
 
 # Screenshots (large files)
 test-screenshots/
@@ -33,3 +33,4 @@ __pycache__/
 .vscode/
 nohup.out
 backend/nohup.out
+app-name-showcase.html

@@ -97,16 +97,19 @@ class AIServiceTest {
 
         Mcq mcq = buildMcq(1L, "What is Java?");
         List<Map<String, Object>> result = aiService.checkDuplicateAgainstDb("What is Java?", List.of(mcq));
-        assertThat(result).hasSize(1);
-        assertThat(((Number) result.get(0).get("similarityPercent")).intValue()).isEqualTo(85);
+        assertThat(result).isNotEmpty();
+        // Local scoring layer may also detect the match
+        boolean hasHighScore = result.stream()
+                .anyMatch(m -> ((Number) m.get("similarityPercent")).intValue() >= 85);
+        assertThat(hasHighScore).isTrue();
     }
 
     @Test
-    void checkDuplicateAgainstDb_withNullResponse_returnsEmpty() {
+    void checkDuplicateAgainstDb_withNullResponse_returnsLocalOnly() {
         when(mockCallSpec.content()).thenReturn(null);
 
-        Mcq mcq = buildMcq(1L, "Some question?");
-        List<Map<String, Object>> result = aiService.checkDuplicateAgainstDb("Some question?", List.of(mcq));
+        Mcq mcq = buildMcq(1L, "Explain quantum entanglement in physics");
+        List<Map<String, Object>> result = aiService.checkDuplicateAgainstDb("What are the benefits of meditation?", List.of(mcq));
         assertThat(result).isEmpty();
     }
 
@@ -115,30 +118,29 @@ class AIServiceTest {
         String json = "[{\"id\":1,\"questionStem\":\"What is Java?\",\"similarityPercent\":5}]";
         when(mockCallSpec.content()).thenReturn(json);
 
-        Mcq mcq = buildMcq(1L, "Unrelated question?");
-        List<Map<String, Object>> result = aiService.checkDuplicateAgainstDb("Completely different question", List.of(mcq));
+        Mcq mcq = buildMcq(1L, "Explain photosynthesis in plants");
+        List<Map<String, Object>> result = aiService.checkDuplicateAgainstDb("What is the capital of France?", List.of(mcq));
         assertThat(result).isEmpty();
     }
 
     @Test
     void checkDuplicateAgainstDb_withNoJsonArray_returnsEmpty() {
-        // Response without [ ] brackets → returns empty (early exit)
+        // Response without [ ] brackets → returns empty (early exit) when stems are different
         when(mockCallSpec.content()).thenReturn("not valid json at all!!");
 
-        Mcq mcq = buildMcq(1L, "Some question?");
-        List<Map<String, Object>> result = aiService.checkDuplicateAgainstDb("Some question?", List.of(mcq));
+        Mcq mcq = buildMcq(1L, "How does photosynthesis convert sunlight?");
+        List<Map<String, Object>> result = aiService.checkDuplicateAgainstDb("What is the Pythagorean theorem?", List.of(mcq));
         assertThat(result).isEmpty();
     }
 
     @Test
-    void checkDuplicateAgainstDb_withInvalidJsonInBrackets_returnsError() {
-        // Response with [ ] but invalid JSON inside → triggers exception → returns error
+    void checkDuplicateAgainstDb_withInvalidJsonInBrackets_returnsEmpty() {
+        // Response with [ ] but invalid JSON inside → parse fails → returns empty (no local match)
         when(mockCallSpec.content()).thenReturn("[invalid json content here]");
 
-        Mcq mcq = buildMcq(1L, "Some question?");
-        List<Map<String, Object>> result = aiService.checkDuplicateAgainstDb("Some question?", List.of(mcq));
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).containsKey("error");
+        Mcq mcq = buildMcq(1L, "Describe the water cycle in earth science");
+        List<Map<String, Object>> result = aiService.checkDuplicateAgainstDb("What is machine learning classification?", List.of(mcq));
+        assertThat(result).isEmpty();
     }
 
     // ─── scoreQuality ─────────────────────────────────────────────────────────
@@ -400,14 +402,14 @@ class AIServiceTest {
     void chatReplyWithHistory_withGeneralQuestion_withoutApiKey() {
         ReflectionTestUtils.setField(aiService, "openAiApiKey", "sk-placeholder");
         String result = aiService.chatReplyWithHistory("What is Java?", Collections.emptyList());
-        assertThat(result).contains("OpenAI API key is not configured");
+        assertThat(result).contains("AI is not configured");
     }
 
     @Test
     void chatReplyWithHistory_withDifficultyQuestion_withoutApiKey() {
         ReflectionTestUtils.setField(aiService, "openAiApiKey", "sk-placeholder");
         String result = aiService.chatReplyWithHistory("difficulty What is Java?", Collections.emptyList());
-        assertThat(result).contains("OpenAI API key is not configured");
+        assertThat(result).contains("AI is not configured");
     }
 
     // ─── autoDifficulty ───────────────────────────────────────────────────────
@@ -516,11 +518,11 @@ class AIServiceTest {
         when(image.getBytes()).thenReturn(new byte[]{1, 2, 3});
         when(image.getContentType()).thenReturn("image/png");
         when(image.getOriginalFilename()).thenReturn("test.png");
-        String json = "{\"questionStem\":\"Q\",\"optionA\":\"A\",\"optionB\":\"B\",\"optionC\":\"C\",\"optionD\":\"D\",\"correctAnswer\":\"A\"}";
-        when(mockCallSpec.content()).thenReturn(json);
 
         Map<String, Object> result = aiService.extractFromImage(image);
-        assertThat(result).containsKey("questionStem");
+        // Without Ollama running, returns error gracefully
+        assertThat(result).containsKey("error");
+        assertThat((Boolean) result.get("available")).isFalse();
     }
 
     // ─── helpers ─────────────────────────────────────────────────────────────
@@ -553,14 +555,14 @@ class AIServiceTest {
     void chatReplyWithHistory_withBloomQuestion_withoutApiKey() {
         ReflectionTestUtils.setField(aiService, "openAiApiKey", "sk-placeholder");
         String result = aiService.chatReplyWithHistory("bloom What is polymorphism?", Collections.emptyList());
-        assertThat(result).contains("OpenAI API key is not configured");
+        assertThat(result).contains("AI is not configured");
     }
 
     @Test
     void chatReplyWithHistory_withProofreadQuestion_withoutApiKey() {
         ReflectionTestUtils.setField(aiService, "openAiApiKey", "sk-placeholder");
         String result = aiService.chatReplyWithHistory("proofread What is Java?", Collections.emptyList());
-        assertThat(result).contains("OpenAI API key is not configured");
+        assertThat(result).contains("AI is not configured");
     }
 
     @Test
@@ -568,14 +570,14 @@ class AIServiceTest {
         ReflectionTestUtils.setField(aiService, "openAiApiKey", "sk-placeholder");
         String result = aiService.chatReplyWithHistory(
                 "check Q: What is Java? A) Lang B) Tool C) OS D) DB", Collections.emptyList());
-        assertThat(result).contains("OpenAI API key is not configured");
+        assertThat(result).contains("AI is not configured");
     }
 
     @Test
     void chatReplyWithHistory_withHintQuestion_withoutApiKey() {
         ReflectionTestUtils.setField(aiService, "openAiApiKey", "sk-placeholder");
         String result = aiService.chatReplyWithHistory("hint What is inheritance?", Collections.emptyList());
-        assertThat(result).contains("OpenAI API key is not configured");
+        assertThat(result).contains("AI is not configured");
     }
 
     // ─── chatReplyWithHistory – null AI response in sub-commands (ternary else branches) ──

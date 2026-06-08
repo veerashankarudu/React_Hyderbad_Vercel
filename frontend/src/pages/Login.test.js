@@ -65,8 +65,8 @@ describe('Login Page', () => {
 
   test('renders app brand name', () => {
     render(<Wrapper><Login /></Wrapper>);
-    // The login page shows the brand text — translation: 'Smart Quiz AI Hub'
-    expect(document.body.innerHTML).toContain('Smart Quiz AI Hub');
+    // The login page shows the brand text
+    expect(document.body.innerHTML).toContain('QuizHub AI');
   });
 
   test('calls API.post on form submit', async () => {

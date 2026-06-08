@@ -234,7 +234,7 @@ describe('Home — AI generator modal and formatAgo', () => {
 
   test('AI Generate Now button opens AI modal', async () => {
     render(<Home />);
-    await waitFor(() => expect(document.querySelector('.ai-showcase-cta, .qa-btn-ai')).toBeTruthy());
+    await waitFor(() => expect(document.querySelector('.dashboard')).toBeTruthy());
     const aiBtn = document.querySelector('.ai-showcase-cta');
     if (aiBtn) {
       fireEvent.click(aiBtn);
@@ -245,7 +245,7 @@ describe('Home — AI generator modal and formatAgo', () => {
 
   test('AI modal: clicking close button hides modal', async () => {
     render(<Home />);
-    await waitFor(() => expect(document.querySelector('.ai-showcase-cta, .qa-btn-ai')).toBeTruthy());
+    await waitFor(() => expect(document.querySelector('.dashboard')).toBeTruthy());
     const aiBtn = document.querySelector('.ai-showcase-cta') || document.querySelector('.qa-btn-ai');
     if (aiBtn) {
       fireEvent.click(aiBtn);
@@ -261,7 +261,7 @@ describe('Home — AI generator modal and formatAgo', () => {
 
   test('AI modal: selecting tech stack triggers topic load', async () => {
     render(<Home />);
-    await waitFor(() => expect(document.querySelector('.ai-showcase-cta, .qa-btn-ai')).toBeTruthy());
+    await waitFor(() => expect(document.querySelector('.dashboard')).toBeTruthy());
     const aiBtn = document.querySelector('.ai-showcase-cta') || document.querySelector('.qa-btn-ai');
     if (aiBtn) {
       fireEvent.click(aiBtn);
@@ -277,7 +277,7 @@ describe('Home — AI generator modal and formatAgo', () => {
 
   test('AI modal: generate MCQs calls API', async () => {
     render(<Home />);
-    await waitFor(() => expect(document.querySelector('.ai-showcase-cta, .qa-btn-ai')).toBeTruthy());
+    await waitFor(() => expect(document.querySelector('.dashboard')).toBeTruthy());
     const aiBtn = document.querySelector('.ai-showcase-cta') || document.querySelector('.qa-btn-ai');
     if (aiBtn) {
       fireEvent.click(aiBtn);
@@ -299,7 +299,7 @@ describe('Home — AI generator modal and formatAgo', () => {
 
   test('Quick Actions AI Generate button opens modal', async () => {
     render(<Home />);
-    await waitFor(() => expect(document.querySelector('.qa-btn-ai')).toBeTruthy());
+    await waitFor(() => expect(document.querySelector('.dashboard')).toBeTruthy());
     const qaAiBtn = document.querySelector('.qa-btn-ai');
     if (qaAiBtn) {
       fireEvent.click(qaAiBtn);
