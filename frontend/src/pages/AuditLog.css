@@ -14,7 +14,7 @@ body.dark-mode .al-page .btn-secondary {
   border: 1px solid rgba(255,255,255,0.1) !important;
   color: #e2e8f0 !important;
 }
-body.dark-mode .al-page .btn-secondary:hover { border-color: #6366f1; color: #818cf8; }
+body.dark-mode .al-page .btn-secondary:hover { border-color: #A100FF; color: #C77DFF; }
 body.dark-mode .al-page input[type="text"] {
   background: rgba(255,255,255,0.06) !important;
   border-color: rgba(255,255,255,0.1) !important;
@@ -50,12 +50,12 @@ body.dark-mode .al-page table th {
 body.dark-mode .al-page .al-row { border-top-color: rgba(255,255,255,0.06) !important; }
 body.dark-mode .al-page .al-row:nth-child(odd) { background: rgba(255,255,255,0.02) !important; }
 body.dark-mode .al-page .al-row:nth-child(even) { background: rgba(255,255,255,0.04) !important; }
-body.dark-mode .al-page .al-row:hover { background: rgba(99,102,241,0.08) !important; }
+body.dark-mode .al-page .al-row:hover { background: rgba(161,0,255,0.08) !important; }
 body.dark-mode .al-page table td { color: #c9d1d9 !important; }
 
 /* Cell-specific colors */
 .al-actor { color: #1d4ed8; }
-body.dark-mode .al-page .al-actor { color: #818cf8 !important; }
+body.dark-mode .al-page .al-actor { color: #C77DFF !important; }
 .al-target { color: var(--text); }
 body.dark-mode .al-page .al-target { color: #c9d1d9 !important; }
 .al-details { color: var(--text-muted); }
@@ -80,7 +80,7 @@ body.dark-mode .al-page span[style*="color: var(--text-muted)"] { color: #6e7681
 body.dark-mode .al-page .pagination button {
   background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: #94a3b8;
 }
-.al-page .pagination button:hover { border-color: #6366f1; color: #818cf8; }
-.al-page .pagination button.active { background: #6366f1; color: white; border-color: #6366f1; font-weight: 600; }
+.al-page .pagination button:hover { border-color: #A100FF; color: #C77DFF; }
+.al-page .pagination button.active { background: #A100FF; color: white; border-color: #A100FF; font-weight: 600; }
 .al-page .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 .al-page .pagination span { font-size: 0.85rem; color: var(--text-muted); }

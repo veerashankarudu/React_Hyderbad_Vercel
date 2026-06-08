@@ -104,11 +104,11 @@
     "answered": "Répondu",
     "screenshotNotAvailable": "Capture d'écran non disponible",
     "andMore": "+ plus",
-    "appName": "Smart Quiz AI Hub"
+    "appName": "QuizHub AI"
   },
   "login": {
     "title": "Smart Quiz AI Hub",
-    "subtitle": "Accenture Hack-N-Stack 2026",
+    "subtitle": "by Bumble Bee 2026",
     "tagline": "Gestion du cycle de vie MCQ alimentée par l'IA",
     "welcomeBack": "Bon retour",
     "signInPrompt": "Connectez-vous avec votre ID d'entreprise pour continuer",
@@ -124,8 +124,8 @@
     "feat2": "Détection de doublons alimentée par l'IA",
     "feat3": "Workflow de révision et d'approbation en plusieurs étapes",
     "feat4": "Import en masse via CSV / Excel",
-    "appName": "Smart Quiz AI Hub",
-    "hackathon": "Accenture Hack-N-Stack 2026",
+    "appName": "QuizHub AI",
+    "hackathon": "by Bumble Bee 2026",
     "passwordPlaceholder": "Entrez votre mot de passe",
     "feature1": "Créez et gérez des QCM",
     "feature2": "Détection de doublons IA",
@@ -502,7 +502,7 @@
   },
   "reg": {
     "title": "Smart Quiz AI Hub",
-    "hackathon": "Accenture Hack-N-Stack 2026",
+    "hackathon": "by Bumble Bee 2026",
     "submitted": "Inscription soumise !",
     "createAccount": "Créer un compte",
     "registerPrompt": "Inscrivez-vous en tant que PME pour commencer",

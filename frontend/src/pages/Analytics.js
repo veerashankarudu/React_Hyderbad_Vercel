@@ -1,21 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import API from '../api';
 import { useAuth } from '../AuthContext';
 import { useTranslation } from 'react-i18next';
-import SortableTh from '../components/SortableTh';
-import TablePagination from '../components/TablePagination';
 import './Analytics.css';
 
 const STATUS_META = {
   APPROVED:         { label: 'Approved',         color: '#059669', bg: '#D1FAE5' },
   REJECTED:         { label: 'Rejected',         color: '#DC2626', bg: '#FEE2E2' },
   UNDER_REVIEW:     { label: 'Under Review',     color: '#D97706', bg: '#FEF3C7' },
-  READY_FOR_REVIEW: { label: 'Ready for Review', color: '#7C3AED', bg: '#EDE9FE' },
+  READY_FOR_REVIEW: { label: 'Ready for Review', color: '#A100FF', bg: '#F3E8FF' },
   DRAFT:            { label: 'Draft',            color: '#6B7280', bg: '#F3F4F6' },
 };
 
-const PALETTE = ['#7C3AED','#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#06B6D4','#84CC16','#EC4899','#14B8A6'];
+const PALETTE = ['#A100FF','#3B82F6','#10B981','#F59E0B','#EF4444','#B84DFF','#06B6D4','#84CC16','#EC4899','#14B8A6'];
 
 function BarChart({ data, valueKey = 'count', labelKey = 'techStack', title }) {
   const { t } = useTranslation();
@@ -82,12 +81,11 @@ function DonutChart({ data }) {
 export default function Analytics() {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const isAdmin = user?.role === 'ADMIN';
 
   const [summary, setSummary] = useState(null);
   const [byStack, setByStack] = useState([]);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [reviewerStats, setReviewerStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Date range state
@@ -97,14 +95,7 @@ export default function Analytics() {
   const [appliedTo, setAppliedTo] = useState('');
   const [exporting, setExporting] = useState(false);
 
-  // Leaderboard table state
-  const [lbSearch, setLbSearch] = useState('');
-  const [lbSortCol, setLbSortCol] = useState('reviewCount');
-  const [lbSortDir, setLbSortDir] = useState('desc');
-  const [lbPage, setLbPage] = useState(1);
-  const [lbPageSize, setLbPageSize] = useState(10);
 
-  useEffect(() => { setLbPage(1); }, [lbSearch, lbPageSize]);
 
   const fetchData = useCallback((from, to) => {
     setLoading(true);
@@ -114,13 +105,9 @@ export default function Analytics() {
     Promise.allSettled([
       API.get('/stats/summary',       { params }),
       API.get('/stats/by-tech-stack', { params }),
-      API.get('/stats/leaderboard'),
-      API.get('/stats/reviewer-stats'),
-    ]).then(([sumR, stackR, lbR, revR]) => {
+    ]).then(([sumR, stackR]) => {
       if (sumR.status === 'fulfilled')   setSummary(sumR.value.data);
       if (stackR.status === 'fulfilled') setByStack(stackR.value.data);
-      if (lbR.status === 'fulfilled')    setLeaderboard(lbR.value.data);
-      if (revR.status === 'fulfilled')   setReviewerStats(revR.value.data);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -169,26 +156,6 @@ export default function Analytics() {
     window.print();
   }
 
-  const handleLbSort = (key) => {
-    if (lbSortCol === key) setLbSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    else { setLbSortCol(key); setLbSortDir('desc'); }
-    setLbPage(1);
-  };
-
-  const lbFiltered = [...leaderboard]
-    .filter(r => !lbSearch ||
-      r.fullName?.toLowerCase().includes(lbSearch.toLowerCase()) ||
-      r.enterpriseId?.toLowerCase().includes(lbSearch.toLowerCase()))
-    .sort((a, b) => {
-      const av = typeof a[lbSortCol] === 'number' ? a[lbSortCol] : (a[lbSortCol] || '').toString().toLowerCase();
-      const bv = typeof b[lbSortCol] === 'number' ? b[lbSortCol] : (b[lbSortCol] || '').toString().toLowerCase();
-      if (av < bv) return lbSortDir === 'asc' ? -1 : 1;
-      if (av > bv) return lbSortDir === 'asc' ? 1 : -1;
-      return 0;
-    });
-  const lbTotalPages = Math.ceil(lbFiltered.length / lbPageSize);
-  const lbRows = lbFiltered.slice((lbPage - 1) * lbPageSize, lbPage * lbPageSize);
-
   const donutData = summary ? [
     { label: t('analytics.approved'),   value: summary.approved || 0,  color: '#059669' },
     { label: t('analytics.underReview'), value: summary.inReview  || 0, color: '#D97706' },
@@ -197,12 +164,12 @@ export default function Analytics() {
   ] : [];
 
   const statCards = summary ? [
-    { label: isAdmin ? t('analytics.totalQAdmin') : t('analytics.totalQMine'), value: summary.totalMcqs || 0, icon: '📚', color: '#7C3AED', bg: '#EDE9FE' },
-    { label: t('analytics.approved'),     value: summary.approved || 0, icon: '✅', color: '#059669', bg: '#D1FAE5' },
-    { label: t('analytics.inReview'),     value: summary.inReview  || 0, icon: '🔍', color: '#D97706', bg: '#FEF3C7' },
-    { label: t('analytics.rejected'),     value: summary.rejected || 0, icon: '❌', color: '#DC2626', bg: '#FEE2E2' },
-    { label: t('analytics.draft'),        value: summary.draft     || 0, icon: '📝', color: '#6B7280', bg: '#F3F4F6' },
-    { label: t('analytics.approvalRate'), value: summary.totalMcqs > 0 ? `${Math.round((summary.approved / summary.totalMcqs) * 100)}%` : '0%', icon: '📈', color: '#059669', bg: '#D1FAE5' },
+    { label: isAdmin ? t('analytics.totalQAdmin') : t('analytics.totalQMine'), value: summary.totalMcqs || 0, icon: '📚', color: '#A100FF', bg: '#F3E8FF', route: isAdmin ? '/question-bank' : '/my-questions' },
+    { label: t('analytics.approved'),     value: summary.approved || 0, icon: '✅', color: '#059669', bg: '#D1FAE5', route: isAdmin ? '/question-bank?status=APPROVED' : '/my-questions?status=APPROVED' },
+    { label: t('analytics.inReview'),     value: summary.inReview  || 0, icon: '🔍', color: '#D97706', bg: '#FEF3C7', route: isAdmin ? '/pending-reviews' : '/my-questions?status=UNDER_REVIEW' },
+    { label: t('analytics.rejected'),     value: summary.rejected || 0, icon: '❌', color: '#DC2626', bg: '#FEE2E2', route: isAdmin ? '/question-bank?status=REJECTED' : '/my-questions?status=REJECTED' },
+    { label: t('analytics.draft'),        value: summary.draft     || 0, icon: '📝', color: '#6B7280', bg: '#F3F4F6', route: isAdmin ? '/question-bank?status=DRAFT' : '/my-questions?status=DRAFT' },
+    { label: t('analytics.approvalRate'), value: summary.totalMcqs > 0 ? `${Math.round((summary.approved / summary.totalMcqs) * 100)}%` : '0%', icon: '📈', color: '#059669', bg: '#D1FAE5', route: null },
   ] : [];
 
   return (
@@ -259,16 +226,22 @@ export default function Analytics() {
 
         {!loading && summary && (
           <>
-            {/* Stat cards */}
+            {/* Stat cards — clickable, navigate to filtered views */}
             <div className="an-stat-grid">
               {statCards.map(c => (
-                <div key={c.label} className="an-stat-card" style={{ borderLeft: `4px solid ${c.color}` }}>
+                <button
+                  key={c.label}
+                  className="an-stat-card"
+                  style={{ borderLeft: `4px solid ${c.color}`, cursor: c.route ? 'pointer' : 'default' }}
+                  onClick={() => c.route && navigate(c.route)}
+                  title={c.route ? `View ${c.label}` : undefined}
+                >
                   <div className="an-stat-icon" style={{ background: c.bg }}>{c.icon}</div>
                   <div className="an-stat-body">
                     <div className="an-stat-val" style={{ color: c.color }}>{c.value}</div>
                     <div className="an-stat-label">{c.label}</div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
 
@@ -287,81 +260,18 @@ export default function Analytics() {
               </div>
             </div>
 
-            {/* My reviewer stats */}
-            {reviewerStats && (
-              <div className="an-section-card">
-                <div className="an-section-heading">{t('rd.recentActivity')}</div>
-                <div className="an-rev-stats">
-                  {[
-                    { label: t('rd.kpiTotalAssigned'), val: reviewerStats.totalAssigned, color: '#7C3AED' },
-                    { label: t('analytics.approved'),  val: reviewerStats.approved,      color: '#059669' },
-                    { label: t('analytics.rejected'),  val: reviewerStats.rejected,      color: '#DC2626' },
-                    { label: t('pr.pending'),           val: reviewerStats.pending,       color: '#D97706' },
-                    { label: t('analytics.approvalRate'), val: `${reviewerStats.approvalRate}%`, color: '#059669' },
-                  ].map(s => (
-                    <div key={s.label} className="an-rev-pill">
-                      <span className="an-rev-val" style={{ color: s.color }}>{s.val}</span>
-                      <span className="an-rev-lbl">{s.label}</span>
-                    </div>
-                  ))}
-                </div>
-                {reviewerStats.byTechStack?.length > 0 && (
-                  <BarChart data={reviewerStats.byTechStack} valueKey="count" labelKey="techStack" title={t('analytics.byStackTitle')} />
-                )}
-              </div>
-            )}
-
-            {/* Leaderboard */}
-            {leaderboard.length > 0 && (
-              <div className="an-section-card">
-                <div className="an-section-heading">{t('analytics.leaderboardTitle')}</div>
-                <div className="an-lb-toolbar">
-                  <input
-                    className="an-lb-search"
-                    placeholder={t('analytics.searchPlaceholder')}
-                    value={lbSearch}
-                    onChange={e => setLbSearch(e.target.value)}
-                  />
-                  <span className="an-lb-count">{lbFiltered.length} {t('lb.colFullName').toLowerCase()}</span>
-                </div>
-                <table className="an-lb-table">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <SortableTh colKey="fullName"     label={t('analytics.reviewer')}    sortCol={lbSortCol} sortDir={lbSortDir} onSort={handleLbSort} />
-                      <SortableTh colKey="enterpriseId" label={t('analytics.enterpriseId')} sortCol={lbSortCol} sortDir={lbSortDir} onSort={handleLbSort} />
-                      <SortableTh colKey="reviewCount"  label={t('analytics.reviewCount')}  sortCol={lbSortCol} sortDir={lbSortDir} onSort={handleLbSort} />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {lbRows.length === 0 ? (
-                      <tr><td colSpan={4} style={{ textAlign: 'center', color: '#9CA3AF', padding: '1rem' }}>No reviewers match your search.</td></tr>
-                    ) : lbRows.map((r, idx) => {
-                      const rank = (lbPage - 1) * lbPageSize + idx + 1;
-                      return (
-                        <tr key={r.userId}>
-                          <td className="an-rank">
-                            {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}
-                          </td>
-                          <td>{r.fullName}</td>
-                          <td className="an-eid">{r.enterpriseId}</td>
-                          <td><span className="an-review-count">{r.reviewCount}</span></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-                <TablePagination
-                  page={lbPage}
-                  totalPages={lbTotalPages}
-                  pageSize={lbPageSize}
-                  totalItems={lbFiltered.length}
-                  onPageChange={setLbPage}
-                  onSizeChange={setLbPageSize}
-                  pageSizeOptions={[5, 10, 20, 50]}
-                />
-              </div>
-            )}
+            {/* Quick links to related pages */}
+            <div className="an-quick-links">
+              <button className="an-quick-link" onClick={() => navigate('/reviewer-dashboard')}>
+                📊 {t('rd.title')}
+              </button>
+              <button className="an-quick-link" onClick={() => navigate('/leaderboard')}>
+                🏆 {t('analytics.leaderboardTitle')}
+              </button>
+              <button className="an-quick-link" onClick={() => navigate('/reviewer-metrics')}>
+                ⭐ {t('rm.title')}
+              </button>
+            </div>
           </>
         )}
       </div>

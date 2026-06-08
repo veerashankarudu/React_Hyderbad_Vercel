@@ -29,7 +29,7 @@
 .checklist-title { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; }
 .checklist-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.55rem 0.7rem; border-radius: 8px; cursor: pointer; font-size: 0.875rem; color: var(--text); border: 1.5px solid transparent; transition: background 0.15s, border-color 0.15s; margin-bottom: 0.35rem; }
 .checklist-item:last-child { margin-bottom: 0; }
-.checklist-item:hover { background: rgba(124,58,237,0.06); }
+.checklist-item:hover { background: rgba(161,0,255,0.06); }
 .checklist-item.checked { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.3); color: var(--text); }
 .checklist-item input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--success); flex-shrink: 0; cursor: pointer; }
 .checklist-item span { line-height: 1.4; }
@@ -46,12 +46,12 @@
 .review-comment-label { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; display: block; }
 .review-comment-label .required-badge { color: #dc2626; font-size: 0.72rem; margin-left: 0.3rem; background: rgba(220,38,38,0.1); padding: 0.1rem 0.4rem; border-radius: 4px; }
 .review-comment textarea { width: 100%; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.875rem; font-family: inherit; color: var(--text); background: var(--glass-bg); outline: none; resize: vertical; min-height: 80px; transition: border-color 0.2s; box-sizing: border-box; }
-.review-comment textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
+.review-comment textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(161,0,255,0.08); }
 
 /* ── Submit row ── */
 .review-submit-row { display: flex; gap: 0.6rem; align-items: center; }
 .review-submit-row .btn-submit-review { flex: 1; padding: 0.8rem; border-radius: 12px; border: none; font-size: 0.95rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: all 0.2s; background: var(--primary); color: white; }
-.review-submit-row .btn-submit-review:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(124,58,237,0.35); }
+.review-submit-row .btn-submit-review:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(161,0,255,0.35); }
 .review-submit-row .btn-submit-review:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
 /* ─── MOBILE ──────────────────────────────────────────── */
@@ -87,7 +87,7 @@ body.dark-mode .tab-filters {
   border-color: rgba(255,255,255,0.08) !important;
 }
 body.dark-mode .tab-btn { color: #94a3b8; background: transparent; }
-body.dark-mode .tab-btn.active { color: #818cf8; border-color: #6366f1; }
+body.dark-mode .tab-btn.active { color: #C77DFF; border-color: #A100FF; }
 
 /* Review list items / cards */
 body.dark-mode .card,
@@ -146,8 +146,8 @@ body.dark-mode .review-item:hover { background: rgba(255,255,255,0.03); }
   color: #e2e8f0 !important;
 }
 .review-comment textarea:focus {
-  border-color: #6366f1 !important;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important;
+  border-color: #A100FF !important;
+  box-shadow: 0 0 0 3px rgba(161,0,255,0.12) !important;
 }
 
 /* Empty state */

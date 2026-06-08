@@ -47,7 +47,7 @@ public class Mcq {
     @Column(name = "option_d", columnDefinition = "TEXT")
     private String optionD;
 
-    @Column(name = "correct_answer", length = 500)
+    @Column(name = "correct_answer", columnDefinition = "TEXT")
     private String correctAnswer;
 
     /** JSON payload for advanced question types (ordering items, matching pairs, code blocks, etc.) */
@@ -55,7 +55,7 @@ public class Mcq {
     private String contentJson;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "question_type", nullable = false, length = 20)
+    @Column(name = "question_type", nullable = false, length = 30)
     @Builder.Default
     private QuestionType questionType = QuestionType.SINGLE;
 

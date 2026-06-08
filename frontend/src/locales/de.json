@@ -104,11 +104,11 @@
     "answered": "Beantwortet",
     "screenshotNotAvailable": "Screenshot nicht verfügbar",
     "andMore": "+ mehr",
-    "appName": "Smart Quiz AI Hub"
+    "appName": "QuizHub AI"
   },
   "login": {
     "title": "Smart Quiz AI Hub",
-    "subtitle": "Accenture Hack-N-Stack 2026",
+    "subtitle": "by Bumble Bee 2026",
     "tagline": "KI-gestütztes MCQ-Lebenszyklusmanagement",
     "welcomeBack": "Willkommen zurück",
     "signInPrompt": "Melden Sie sich mit Ihrer Unternehmens-ID an",
@@ -124,8 +124,8 @@
     "feat2": "KI-gestützte Duplikaterkennung",
     "feat3": "Mehrstufiger Überprüfungs- und Genehmigungsworkflow",
     "feat4": "Massenimport über CSV / Excel",
-    "appName": "Smart Quiz AI Hub",
-    "hackathon": "Accenture Hack-N-Stack 2026",
+    "appName": "QuizHub AI",
+    "hackathon": "by Bumble Bee 2026",
     "passwordPlaceholder": "Passwort eingeben",
     "feature1": "MCQs erstellen und verwalten",
     "feature2": "KI-Duplikaterkennung",
@@ -502,7 +502,7 @@
   },
   "reg": {
     "title": "Smart Quiz AI Hub",
-    "hackathon": "Accenture Hack-N-Stack 2026",
+    "hackathon": "by Bumble Bee 2026",
     "submitted": "Registrierung eingereicht!",
     "createAccount": "Konto erstellen",
     "registerPrompt": "Als KMU registrieren, um loszulegen",

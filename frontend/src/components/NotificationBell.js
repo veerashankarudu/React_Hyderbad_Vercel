@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ClipboardCheck, CheckCircle2, XCircle, Send, MessageSquare, Download, Bell } from 'lucide-react';
 import API from '../api';
 import './NotificationBell.css';
 
@@ -15,12 +16,12 @@ const TYPE_FILTERS = [
 ];
 
 const TYPE_META = {
-  ASSIGNED:  { icon: '📋', labelKey: 'nb2.typeAssigned',  color: '#7C3AED' },
-  APPROVED:  { icon: '✅', labelKey: 'nb2.typeApproved',   color: '#059669' },
-  REJECTED:  { icon: '❌', labelKey: 'nb2.typeRejected',   color: '#DC2626' },
-  SUBMITTED: { icon: '📨', labelKey: 'nb2.typeSubmitted',  color: '#0284C7' },
-  MENTION:   { icon: '💬', labelKey: 'nb2.typeMention',    color: '#D97706' },
-  DOWNLOAD:  { icon: '⬇️', labelKey: 'nb2.typeDownload',   color: '#0284C7' },
+  ASSIGNED:  { icon: <ClipboardCheck size={16} />, labelKey: 'nb2.typeAssigned',  color: '#A100FF' },
+  APPROVED:  { icon: <CheckCircle2 size={16} />, labelKey: 'nb2.typeApproved',   color: '#059669' },
+  REJECTED:  { icon: <XCircle size={16} />, labelKey: 'nb2.typeRejected',   color: '#DC2626' },
+  SUBMITTED: { icon: <Send size={16} />, labelKey: 'nb2.typeSubmitted',  color: '#0284C7' },
+  MENTION:   { icon: <MessageSquare size={16} />, labelKey: 'nb2.typeMention',    color: '#D97706' },
+  DOWNLOAD:  { icon: <Download size={16} />, labelKey: 'nb2.typeDownload',   color: '#0284C7' },
 };
 
 function formatTime(dt) {
@@ -49,7 +50,7 @@ function groupByDate(notifications) {
 }
 
 function ActorAvatar({ initials, name, type }) {
-  const color = TYPE_META[type]?.color || '#7C3AED';
+  const color = TYPE_META[type]?.color || '#A100FF';
   return (
     <span
       className="notif-avatar"
@@ -150,7 +151,7 @@ export default function NotificationBell() {
   return (
     <div className="notif-bell-wrap" ref={wrapRef}>
       <button className="notif-bell-btn" onClick={openDropdown} aria-label="Notifications">
-        <span className="notif-bell-icon">🔔</span>
+        <span className="notif-bell-icon"><Bell size={20} /></span>
         {unreadCount > 0 && (
           <span className="notif-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
         )}
@@ -239,7 +240,7 @@ export default function NotificationBell() {
                     <div key={groupName} className="notif-group">
                       <div className="notif-group-label">{t(`nb.group${groupName}`)}</div>
                       {items.map((n) => {
-                        const meta = TYPE_META[n.type] || { icon: '🔔', label: n.type, color: '#6B7280' };
+                        const meta = TYPE_META[n.type] || { icon: <Bell size={16} />, label: n.type, color: '#6B7280' };
                         return (
                           <div
                             key={n.id}

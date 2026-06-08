@@ -35,13 +35,13 @@ export default function ForgotPassword() {
       <svg className="login-ai-svg" viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg">
         {AI_NODES.map(([cx, cy], i) => (
           <g key={i}>
-            <circle cx={cx} cy={cy} r="3" fill="#6366f1" opacity="0.7">
+            <circle cx={cx} cy={cy} r="3" fill="#A100FF" opacity="0.7">
               <animate attributeName="opacity" values="0.3;0.9;0.3" dur={`${2 + i * 0.4}s`} repeatCount="indefinite"/>
             </circle>
           </g>
         ))}
         {AI_LINES.map(([x1,y1,x2,y2], i) => (
-          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#6366f1" strokeWidth="0.8" opacity="0.25"/>
+          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#A100FF" strokeWidth="0.8" opacity="0.25"/>
         ))}
       </svg>
       <div className="login-right-content">

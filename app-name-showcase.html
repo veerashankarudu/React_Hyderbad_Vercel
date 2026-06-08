@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Name & Icon Showcase — Bumble Bee × Accenture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #e4e4e7;
+    min-height: 100vh;
+    padding: 3rem 2rem;
+  }
+
+  .hero {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+  .hero h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #A100FF, #C77DFF, #FFB800);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+  }
+  .hero p {
+    color: #71717a;
+    font-size: 0.95rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .hero .team-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,184,0,0.12);
+    border: 1px solid rgba(255,184,0,0.25);
+    color: #FFB800;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 1rem;
+  }
+
+  .section-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #a1a1aa;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 1.5rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid #A100FF;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3.5rem;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 1.8rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    border-color: rgba(161,0,255,0.3);
+    background: rgba(161,0,255,0.04);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(161,0,255,0.12);
+  }
+  .card.recommended {
+    border-color: rgba(161,0,255,0.4);
+    background: rgba(161,0,255,0.06);
+  }
+  .card.recommended::before {
+    content: '★ RECOMMENDED';
+    position: absolute;
+    top: 12px;
+    right: -28px;
+    background: linear-gradient(135deg, #A100FF, #7B2FBE);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 3px 32px;
+    transform: rotate(45deg);
+    letter-spacing: 1px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .icon-box {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .app-name {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .app-tagline {
+    font-size: 0.78rem;
+    color: #71717a;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  .card-desc {
+    font-size: 0.85rem;
+    color: #a1a1aa;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tag {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #a1a1aa;
+  }
+  .tag.bee { background: rgba(255,184,0,0.1); border-color: rgba(255,184,0,0.2); color: #FFB800; }
+  .tag.acc { background: rgba(161,0,255,0.1); border-color: rgba(161,0,255,0.2); color: #C77DFF; }
+  .tag.ai { background: rgba(0,200,150,0.1); border-color: rgba(0,200,150,0.2); color: #34D399; }
+
+  /* Icon themes */
+  .icon-purple { background: linear-gradient(135deg, #2E0854, #460073); box-shadow: 0 4px 16px rgba(161,0,255,0.25); }
+  .icon-gold { background: linear-gradient(135deg, #92400e, #b45309); box-shadow: 0 4px 16px rgba(255,184,0,0.25); }
+  .icon-mixed { background: linear-gradient(135deg, #1a0533, #7B2FBE); box-shadow: 0 4px 16px rgba(161,0,255,0.2); }
+  .icon-dark { background: linear-gradient(135deg, #18181b, #27272a); box-shadow: 0 4px 16px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); }
+  .icon-teal { background: linear-gradient(135deg, #064e3b, #047857); box-shadow: 0 4px 16px rgba(16,185,129,0.25); }
+
+  /* Preview bar */
+  .preview-bar {
+    margin-top: 1rem;
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .preview-icon {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+  }
+  .preview-text {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+  .preview-sub {
+    font-size: 0.65rem;
+    color: #71717a;
+    font-weight: 500;
+  }
+
+  /* SVG icons */
+  .icon-svg { width: 30px; height: 30px; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(161,0,255,0.2), transparent);
+    margin: 2rem 0;
+  }
+
+  /* Bottom recommendation */
+  .recommendation {
+    background: linear-gradient(135deg, rgba(161,0,255,0.08), rgba(255,184,0,0.05));
+    border: 1px solid rgba(161,0,255,0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .recommendation h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+  }
+  .recommendation p {
+    color: #a1a1aa;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .rec-icons {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .rec-icon-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .rec-icon-card .icon-box { width: 64px; height: 64px; font-size: 1.8rem; }
+  .rec-icon-card span { font-size: 0.75rem; color: #a1a1aa; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Application Name & Icon Showcase</h1>
+  <p>Professional naming options for your AI-powered quiz generation & tracking platform</p>
+  <div class="team-badge">🐝 Team Bumble Bee — Accenture Hack-N-Stack 2026</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section-title">🏆 Top Picks — Classic & Professional</div>
+<div class="grid">
+
+  <!-- 1. HiveMinds -->
+  <div class="card recommended">
+    <div class="card-header">
+      <div class="icon-box icon-gold">
+        <svg class="icon-svg" viewBox="0 0 40 40" fill="none">
+          <path d="M20 4L33 12V28L20 36L7 28V12L20 4Z" fill="rgba(255,184,0,0.3)" stroke="#FFB800" stroke-width="2"/>
+          <path d="M20 12L27 16V24L20 28L13 24V16L20 12Z" fill="rgba(255,184,0,0.5)" stroke="#FFB800" stroke-width="1.5"/>
+          <circle cx="20" cy="20" r="3" fill="#FFB800"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-name">HiveMinds</div>
+        <div class="app-tagline">Collective Intelligence Platform</div>
+      </div>
+    </div>
+    <div class="card-desc">
+      A perfect blend of your <strong>Bumble Bee</strong> team identity and the collaborative knowledge-building purpose. "Hive" = team/bee reference. "Minds" = intelligence/quiz/AI.
+    </div>
+    <div class="card-tags">
+      <span class="tag bee">🐝 Bee Reference</span>
+      <span class="tag ai">AI Powered</span>
+      <span class="tag acc">Enterprise</span>
+    </div>
+    <div class="preview-bar">
+      <div class="preview-icon icon-gold">
+        <svg width="16" height="16" viewBox="0 0 40 40" fill="none"><path d="M20 4L33 12V28L20 36L7 28V12L20 4Z" fill="#FFB800"/></svg>
+      </div>
+      <div>
+        <div class="preview-text">HiveMinds</div>
+        <div class="preview-sub">by Bumble Bee × Accenture</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. QuizForge AI -->
+  <div class="card recommended">
+    <div class="card-header">
+      <div class="icon-box icon-purple">
+        <svg class="icon-svg" viewBox="0 0 40 40" fill="none">
+          <rect x="8" y="14" width="24" height="18" rx="3" fill="rgba(161,0,255,0.3)" stroke="#C77DFF" stroke-width="2"/>
+          <path d="M14 8H26L30 14H10L14 8Z" fill="rgba(161,0,255,0.4)" stroke="#C77DFF" stroke-width="1.5"/>
+          <path d="M18 20L16 24H19L17 28" stroke="#FFB800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="26" cy="22" r="2" fill="#A100FF"/>
+          <circle cx="26" cy="22" r="4" fill="none" stroke="#A100FF" stroke-width="1" opacity="0.4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-name">QuizForge <span style="color:#A100FF">AI</span></div>
+        <div class="app-tagline">Forge Smarter Assessments</div>
+      </div>
+    </div>
+    <div class="card-desc">
+      "Forge" implies crafting, building, and strength. Combined with AI, it signals a powerful tool that <strong>forges</strong> quiz questions with precision. Clean, professional, memorable.
+    </div>
+    <div class="card-tags">
+      <span class="tag ai">AI Powered</span>
+      <span class="tag acc">Professional</span>
+      <span class="tag">Memorable</span>
+    </div>
+    <div class="preview-bar">
+      <div class="preview-icon icon-purple">
+        <svg width="16" height="16" viewBox="0 0 40 40" fill="none"><rect x="8" y="14" width="24" height="18" rx="3" fill="#A100FF"/><path d="M14 8H26L30 14H10L14 8Z" fill="#C77DFF"/></svg>
+      </div>
+      <div>
+        <div class="preview-text">QuizForge <span style="color:#A100FF">AI</span></div>
+        <div class="preview-sub">Accenture Hack-N-Stack 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. NectarIQ -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon-box icon-mixed">
+        <svg class="icon-svg" viewBox="0 0 40 40" fill="none">
+          <path d="M20 6C20 6 28 14 28 22C28 26.4 24.4 30 20 30C15.6 30 12 26.4 12 22C12 14 20 6 20 6Z" fill="rgba(255,184,0,0.3)" stroke="#FFB800" stroke-width="2"/>
+          <path d="M17 20C17 20 20 16 23 20" stroke="#C77DFF" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="20" cy="24" r="2.5" fill="#FFB800"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-name">Nectar<span style="color:#FFB800">IQ</span></div>
+        <div class="app-tagline">Extract Knowledge, Naturally</div>
+      </div>
+    </div>
+    <div class="card-desc">
+      Bees collect nectar → your platform collects & generates knowledge. "IQ" ties in intelligence. Unique, brandable, and subtly references your Bumble Bee identity.
+    </div>
+    <div class="card-tags">
+      <span class="tag bee">🐝 Bee Reference</span>
+      <span class="tag ai">AI Powered</span>
+      <span class="tag">Unique</span>
+    </div>
+    <div class="preview-bar">
+      <div class="preview-icon icon-mixed">
+        <svg width="16" height="16" viewBox="0 0 40 40" fill="none"><path d="M20 6C20 6 28 14 28 22C28 26.4 24.4 30 20 30C15.6 30 12 26.4 12 22C12 14 20 6 20 6Z" fill="#FFB800"/></svg>
+      </div>
+      <div>
+        <div class="preview-text">Nectar<span style="color:#FFB800">IQ</span></div>
+        <div class="preview-sub">by Bumble Bee</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. AcuAssess -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon-box icon-purple">
+        <svg class="icon-svg" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="14" fill="rgba(161,0,255,0.2)" stroke="#A100FF" stroke-width="2"/>
+          <path d="M15 20L18 23L25 16" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="20" cy="20" r="10" fill="none" stroke="#C77DFF" stroke-width="1" stroke-dasharray="3 3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-name">Acu<span style="color:#A100FF">Assess</span></div>
+        <div class="app-tagline">Precision Assessment Engine</div>
+      </div>
+    </div>
+    <div class="card-desc">
+      "Acu" nods to <strong>Accenture</strong> while meaning "sharp/precise" (like acumen). Clean enterprise branding that screams Accenture DNA. Judges will notice the connection.
+    </div>
+    <div class="card-tags">
+      <span class="tag acc">Accenture Nod</span>
+      <span class="tag">Enterprise</span>
+      <span class="tag ai">Professional</span>
+    </div>
+    <div class="preview-bar">
+      <div class="preview-icon icon-purple">
+        <svg width="16" height="16" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="14" fill="#A100FF"/><path d="M15 20L18 23L25 16" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div class="preview-text">Acu<span style="color:#A100FF">Assess</span></div>
+        <div class="preview-sub">Accenture Hack-N-Stack 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. BeeSharp -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon-box icon-gold">
+        <svg class="icon-svg" viewBox="0 0 40 40" fill="none">
+          <ellipse cx="20" cy="20" rx="10" ry="12" fill="rgba(255,184,0,0.3)" stroke="#FFB800" stroke-width="2"/>
+          <line x1="12" y1="17" x2="28" y2="17" stroke="#1a0533" stroke-width="2"/>
+          <line x1="12" y1="23" x2="28" y2="23" stroke="#1a0533" stroke-width="2"/>
+          <path d="M16 8L14 4M24 8L26 4" stroke="#FFB800" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M14 32L16 36M26 32L24 36" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-linecap="round"/>
+          <ellipse cx="20" cy="20" rx="10" ry="12" fill="none" stroke="#FFB800" stroke-width="1" opacity="0.3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-name">Bee<span style="color:#FFB800">Sharp</span></div>
+        <div class="app-tagline">Stay Sharp. Stay Assessed.</div>
+      </div>
+    </div>
+    <div class="card-desc">
+      A playful yet professional double meaning: "Be Sharp" (stay knowledgeable) + "Bee" (team identity). Musical reference to B♯ adds sophistication. Fun but still enterprise-ready.
+    </div>
+    <div class="card-tags">
+      <span class="tag bee">🐝 Bee Reference</span>
+      <span class="tag">Clever Wordplay</span>
+      <span class="tag">Memorable</span>
+    </div>
+    <div class="preview-bar">
+      <div class="preview-icon icon-gold">🐝</div>
+      <div>
+        <div class="preview-text">Bee<span style="color:#FFB800">Sharp</span></div>
+        <div class="preview-sub">by Bumble Bee</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Questify -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon-box icon-teal">
+        <svg class="icon-svg" viewBox="0 0 40 40" fill="none">
+          <rect x="10" y="8" width="20" height="26" rx="3" fill="rgba(52,211,153,0.2)" stroke="#34D399" stroke-width="2"/>
+          <path d="M16 16H28M16 21H24M16 26H20" stroke="#34D399" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+          <circle cx="13" cy="16" r="1.5" fill="#34D399"/>
+          <circle cx="13" cy="21" r="1.5" fill="#34D399" opacity="0.6"/>
+          <circle cx="13" cy="26" r="1.5" fill="#34D399" opacity="0.3"/>
+          <path d="M24 6V10" stroke="#FFB800" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 8H26" stroke="#FFB800" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-name">Questify</div>
+        <div class="app-tagline">Turn Knowledge Into Questions</div>
+      </div>
+    </div>
+    <div class="card-desc">
+      "Quest" (question/journey) + "-ify" (to make). Clean SaaS-style naming that instantly communicates the purpose. Modern, scalable, easy to remember.
+    </div>
+    <div class="card-tags">
+      <span class="tag ai">AI Powered</span>
+      <span class="tag">SaaS Style</span>
+      <span class="tag">Self-Explanatory</span>
+    </div>
+    <div class="preview-bar">
+      <div class="preview-icon icon-teal">
+        <svg width="16" height="16" viewBox="0 0 40 40" fill="none"><rect x="10" y="8" width="20" height="26" rx="3" fill="#34D399"/></svg>
+      </div>
+      <div>
+        <div class="preview-text">Questify</div>
+        <div class="preview-sub">Accenture Hack-N-Stack 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. MindHive -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon-box icon-mixed">
+        <svg class="icon-svg" viewBox="0 0 40 40" fill="none">
+          <path d="M20 6C13 6 8 11 8 17C8 21 10 24 13 26V32H27V26C30 24 32 21 32 17C32 11 27 6 20 6Z" fill="rgba(161,0,255,0.25)" stroke="#C77DFF" stroke-width="2"/>
+          <path d="M16 32H24V35H16V35Z" fill="rgba(255,184,0,0.3)" stroke="#FFB800" stroke-width="1"/>
+          <circle cx="16" cy="16" r="2" fill="#FFB800" opacity="0.7"/>
+          <circle cx="24" cy="16" r="2" fill="#A100FF" opacity="0.7"/>
+          <circle cx="20" cy="21" r="2" fill="#34D399" opacity="0.7"/>
+          <line x1="16" y1="16" x2="20" y2="21" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+          <line x1="24" y1="16" x2="20" y2="21" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+          <line x1="16" y1="16" x2="24" y2="16" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-name">Mind<span style="color:#C77DFF">Hive</span></div>
+        <div class="app-tagline">Where Knowledge Connects</div>
+      </div>
+    </div>
+    <div class="card-desc">
+      Brain + Hive = collective intelligence network. The neural-network icon inside a brain shape perfectly represents AI-powered knowledge management. Strong Bumble Bee team tie-in.
+    </div>
+    <div class="card-tags">
+      <span class="tag bee">🐝 Bee Reference</span>
+      <span class="tag ai">Neural / AI</span>
+      <span class="tag acc">Enterprise</span>
+    </div>
+    <div class="preview-bar">
+      <div class="preview-icon icon-mixed">🧠</div>
+      <div>
+        <div class="preview-text">Mind<span style="color:#C77DFF">Hive</span></div>
+        <div class="preview-sub">by Bumble Bee × Accenture</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Pollenate -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon-box icon-gold">
+        <svg class="icon-svg" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="6" fill="rgba(255,184,0,0.4)" stroke="#FFB800" stroke-width="2"/>
+          <line x1="20" y1="6" x2="20" y2="12" stroke="#FFB800" stroke-width="2" stroke-linecap="round"/>
+          <line x1="20" y1="28" x2="20" y2="34" stroke="#FFB800" stroke-width="2" stroke-linecap="round"/>
+          <line x1="6" y1="20" x2="12" y2="20" stroke="#FFB800" stroke-width="2" stroke-linecap="round"/>
+          <line x1="28" y1="20" x2="34" y2="20" stroke="#FFB800" stroke-width="2" stroke-linecap="round"/>
+          <line x1="10" y1="10" x2="14.5" y2="14.5" stroke="#C77DFF" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="25.5" y1="25.5" x2="30" y2="30" stroke="#C77DFF" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="30" y1="10" x2="25.5" y2="14.5" stroke="#C77DFF" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="14.5" y1="25.5" x2="10" y2="30" stroke="#C77DFF" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="20" cy="6" r="2" fill="#FFB800" opacity="0.5"/>
+          <circle cx="20" cy="34" r="2" fill="#FFB800" opacity="0.5"/>
+          <circle cx="6" cy="20" r="2" fill="#FFB800" opacity="0.5"/>
+          <circle cx="34" cy="20" r="2" fill="#FFB800" opacity="0.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-name">Pollen<span style="color:#FFB800">8</span></div>
+        <div class="app-tagline">Spread Knowledge, Grow Teams</div>
+      </div>
+    </div>
+    <div class="card-desc">
+      Bees pollinate → your platform spreads knowledge. The "8" replaces "ate" for a modern tech look. The flower/starburst icon represents knowledge radiating outward.
+    </div>
+    <div class="card-tags">
+      <span class="tag bee">🐝 Bee Reference</span>
+      <span class="tag">Modern</span>
+      <span class="tag">Brandable</span>
+    </div>
+    <div class="preview-bar">
+      <div class="preview-icon icon-gold">
+        <svg width="16" height="16" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="6" fill="#FFB800"/><line x1="20" y1="6" x2="20" y2="12" stroke="#FFB800" stroke-width="3" stroke-linecap="round"/><line x1="20" y1="28" x2="20" y2="34" stroke="#FFB800" stroke-width="3" stroke-linecap="round"/><line x1="6" y1="20" x2="12" y2="20" stroke="#FFB800" stroke-width="3" stroke-linecap="round"/><line x1="28" y1="20" x2="34" y2="20" stroke="#FFB800" stroke-width="3" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div class="preview-text">Pollen<span style="color:#FFB800">8</span></div>
+        <div class="preview-sub">by Bumble Bee</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section-title">🎯 Accenture-Aligned Options</div>
+<div class="grid">
+
+  <!-- 9. AcceLearn -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon-box icon-purple">
+        <svg class="icon-svg" viewBox="0 0 40 40" fill="none">
+          <path d="M8 28L20 8L32 28" fill="none" stroke="#A100FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 20L20 10L26 20" fill="rgba(161,0,255,0.3)"/>
+          <circle cx="20" cy="24" r="3" fill="#A100FF"/>
+          <path d="M20 21V16" stroke="#C77DFF" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-name">Acce<span style="color:#A100FF">Learn</span></div>
+        <div class="app-tagline">Accelerate Learning, Intelligently</div>
+      </div>
+    </div>
+    <div class="card-desc">
+      The Accenture ">" chevron as the icon. "Acce" = Accenture + Accelerate. "Learn" = education/assessment. The judges will instantly connect this to Accenture's mission.
+    </div>
+    <div class="card-tags">
+      <span class="tag acc">Accenture DNA</span>
+      <span class="tag ai">AI Powered</span>
+      <span class="tag">Enterprise Ready</span>
+    </div>
+  </div>
+
+  <!-- 10. QuizNest -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon-box icon-dark">
+        <svg class="icon-svg" viewBox="0 0 40 40" fill="none">
+          <path d="M8 26C8 26 14 30 20 30C26 30 32 26 32 26V20C32 20 28 16 20 16C12 16 8 20 8 20V26Z" fill="rgba(255,184,0,0.2)" stroke="#FFB800" stroke-width="1.5"/>
+          <circle cx="16" cy="22" r="3" fill="rgba(161,0,255,0.4)" stroke="#C77DFF" stroke-width="1"/>
+          <circle cx="24" cy="22" r="3" fill="rgba(161,0,255,0.4)" stroke="#C77DFF" stroke-width="1"/>
+          <circle cx="20" cy="11" r="4" fill="rgba(161,0,255,0.3)" stroke="#A100FF" stroke-width="1.5"/>
+          <path d="M18.5 10.5Q20 8 21.5 10.5" stroke="#C77DFF" stroke-width="1" stroke-linecap="round"/>
+          <circle cx="20" cy="12.5" r="0.8" fill="#A100FF"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-name">Quiz<span style="color:#FFB800">Nest</span></div>
+        <div class="app-tagline">Where Questions Come Home</div>
+      </div>
+    </div>
+    <div class="card-desc">
+      "Nest" = organized home for all questions (like a bee's nest). Warm, approachable yet professional. The icon shows a nest with question-mark eggs being incubated.
+    </div>
+    <div class="card-tags">
+      <span class="tag bee">🐝 Bee/Nest</span>
+      <span class="tag">Approachable</span>
+      <span class="tag">Organized</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<div class="recommendation">
+  <h3>My Top 3 Recommendations</h3>
+  <p>Based on Accenture branding, hackathon impact, and your Bumble Bee team identity:</p>
+  <div class="rec-icons">
+    <div class="rec-icon-card">
+      <div class="icon-box icon-gold" style="width:64px;height:64px;font-size:1.8rem;">
+        <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+          <path d="M20 4L33 12V28L20 36L7 28V12L20 4Z" fill="rgba(255,184,0,0.3)" stroke="#FFB800" stroke-width="2"/>
+          <path d="M20 12L27 16V24L20 28L13 24V16L20 12Z" fill="rgba(255,184,0,0.5)" stroke="#FFB800" stroke-width="1.5"/>
+          <circle cx="20" cy="20" r="3" fill="#FFB800"/>
+        </svg>
+      </div>
+      <span style="color:#FFB800;font-weight:700;">🥇 HiveMinds</span>
+      <span>Best Overall</span>
+    </div>
+    <div class="rec-icon-card">
+      <div class="icon-box icon-purple" style="width:64px;height:64px;font-size:1.8rem;">
+        <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+          <rect x="8" y="14" width="24" height="18" rx="3" fill="rgba(161,0,255,0.3)" stroke="#C77DFF" stroke-width="2"/>
+          <path d="M14 8H26L30 14H10L14 8Z" fill="rgba(161,0,255,0.4)" stroke="#C77DFF" stroke-width="1.5"/>
+          <path d="M18 20L16 24H19L17 28" stroke="#FFB800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span style="color:#C77DFF;font-weight:700;">🥈 QuizForge AI</span>
+      <span>Most Professional</span>
+    </div>
+    <div class="rec-icon-card">
+      <div class="icon-box icon-mixed" style="width:64px;height:64px;font-size:1.8rem;">🧠</div>
+      <span style="color:#34D399;font-weight:700;">🥉 MindHive</span>
+      <span>Most Unique</span>
+    </div>
+  </div>
+  <p style="font-size:0.8rem;color:#52525b;margin-top:1rem;">
+    Tell me which name you like and I'll update the entire app — sidebar logo, topbar title, page titles, and favicon!
+  </p>
+</div>
+
+</body>
+</html>

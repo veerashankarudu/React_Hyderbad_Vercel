@@ -91,7 +91,7 @@
 }
 
 .ri-file-input-wrap:hover .ri-file-label {
-  border-color: #7c3aed;
+  border-color: #A100FF;
   background: rgba(124, 58, 237, 0.04);
 }
 
@@ -108,13 +108,13 @@
 
 .ri-input:focus {
   outline: none;
-  border-color: #7c3aed;
+  border-color: #A100FF;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
 .ri-analyze-btn {
   padding: 0.85rem 2.5rem;
-  background: linear-gradient(135deg, #7c3aed, #6366f1);
+  background: linear-gradient(135deg, #A100FF, #A100FF);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -192,7 +192,7 @@
 
 .ri-tag {
   background: rgba(124, 58, 237, 0.12);
-  color: #7c3aed;
+  color: #A100FF;
   padding: 0.25rem 0.65rem;
   border-radius: 20px;
   font-size: 0.78rem;
@@ -330,12 +330,12 @@
 }
 
 .ri-tab:hover {
-  border-color: #7c3aed;
-  color: #7c3aed;
+  border-color: #A100FF;
+  color: #A100FF;
 }
 
 .ri-tab-active {
-  background: linear-gradient(135deg, #7c3aed, #6366f1);
+  background: linear-gradient(135deg, #A100FF, #A100FF);
   color: #fff !important;
   border-color: transparent;
 }
@@ -368,7 +368,7 @@
 }
 
 .ri-question-item:hover {
-  border-color: #7c3aed;
+  border-color: #A100FF;
 }
 
 .ri-q-header {
@@ -380,7 +380,7 @@
 }
 
 .ri-q-num {
-  background: #7c3aed;
+  background: #A100FF;
   color: white;
   font-size: 0.72rem;
   font-weight: 700;
@@ -444,7 +444,7 @@
 .ri-q-approach summary {
   cursor: pointer;
   font-weight: 600;
-  color: #7c3aed;
+  color: #A100FF;
 }
 
 .ri-q-approach p {
@@ -517,8 +517,8 @@ body.dark-mode .ri-tab {
 }
 
 body.dark-mode .ri-tab:hover {
-  color: #a78bfa;
-  border-color: #a78bfa;
+  color: #C77DFF;
+  border-color: #C77DFF;
 }
 
 body.dark-mode .ri-question-item {

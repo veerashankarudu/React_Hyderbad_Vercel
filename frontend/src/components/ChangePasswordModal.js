@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { CheckCircle2 } from 'lucide-react';
 import API from '../api';
 
 export default function ChangePasswordModal({ onClose }) {
@@ -42,12 +43,12 @@ export default function ChangePasswordModal({ onClose }) {
       <div style={{ background: 'var(--surface, #fff)', borderRadius: '14px', padding: '2rem', width: '100%', maxWidth: '400px', boxShadow: '0 20px 60px rgba(0,0,0,0.18)' }}>
         {success ? (
           <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>✅</div>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}><CheckCircle2 size={40} color="#059669" /></div>
             <h3 style={{ color: '#059669', marginBottom: '0.5rem' }}>{t('cp.passwordChanged')}</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
               {t('cp.passwordChangedMsg')}
             </p>
-            <button type="button" onClick={onClose} style={{ background: 'var(--primary, #7C3AED)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, cursor: 'pointer' }}>
+            <button type="button" onClick={onClose} style={{ background: 'var(--primary, #A100FF)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, cursor: 'pointer' }}>
               {t('common.close')}
             </button>
           </div>
@@ -114,7 +115,7 @@ export default function ChangePasswordModal({ onClose }) {
                 <button type="button" onClick={onClose} disabled={loading} style={{ background: 'transparent', border: '1.5px solid #D1D5DB', borderRadius: '8px', padding: '0.5rem 1.25rem', fontWeight: 600, cursor: 'pointer', color: 'var(--text-muted)' }}>
                   {t('common.cancel')}
                 </button>
-                <button type="submit" disabled={loading} style={{ background: 'var(--primary, #7C3AED)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1.25rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
+                <button type="submit" disabled={loading} style={{ background: 'var(--primary, #A100FF)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1.25rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
                   {loading ? t('common.saving') : t('cp.updatePassword')}
                 </button>
               </div>

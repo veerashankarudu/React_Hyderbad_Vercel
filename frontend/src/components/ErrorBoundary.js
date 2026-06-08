@@ -33,7 +33,7 @@ class ErrorBoundary extends React.Component {
             onClick={() => window.location.reload()}
             style={{
               padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none',
-              background: '#7c3aed', color: '#fff', cursor: 'pointer', fontSize: '1rem'
+              background: '#A100FF', color: '#fff', cursor: 'pointer', fontSize: '1rem'
             }}
           >
             Refresh Page

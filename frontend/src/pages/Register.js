@@ -60,13 +60,13 @@ export default function Register() {
         <svg style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',pointerEvents:'none',opacity:0.35}} viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg">
           {[[60,100],[180,60],[320,120],[460,80],[530,210],[500,360],[410,490],[260,530],[110,440],[50,270],[300,280],[440,180],[170,320]].map(([cx,cy],i) => (
             <g key={i}>
-              <circle cx={cx} cy={cy} r="3" fill="#8b5cf6" opacity="0.7">
+              <circle cx={cx} cy={cy} r="3" fill="#B84DFF" opacity="0.7">
                 <animate attributeName="opacity" values="0.2;0.9;0.2" dur={`${2.5+i*0.35}s`} repeatCount="indefinite"/>
               </circle>
             </g>
           ))}
           {[[60,100,180,60],[180,60,320,120],[320,120,460,80],[460,80,530,210],[530,210,500,360],[500,360,410,490],[410,490,260,530],[260,530,110,440],[110,440,50,270],[50,270,60,100],[300,280,180,60],[300,280,460,80],[300,280,500,360],[300,280,260,530],[440,180,320,120],[440,180,530,210]].map(([x1,y1,x2,y2],i) => (
-            <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#8b5cf6" strokeWidth="0.8" opacity="0.22"/>
+            <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#B84DFF" strokeWidth="0.8" opacity="0.22"/>
           ))}
         </svg>
         <div className="reg-visual-content">
@@ -94,7 +94,7 @@ export default function Register() {
                 {t('reg.pendingApproval')}<br />
                 {t('reg.pendingApprovalDetail')}
               </p>
-              <Link to="/login" style={{ display: 'inline-block', padding: '0.7rem 1.75rem', borderRadius: '10px', fontWeight: 700, textDecoration: 'none', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: 'white', boxShadow: '0 4px 18px rgba(99,102,241,0.4)' }}>
+              <Link to="/login" style={{ display: 'inline-block', padding: '0.7rem 1.75rem', borderRadius: '10px', fontWeight: 700, textDecoration: 'none', background: 'linear-gradient(135deg,#A100FF,#B84DFF)', color: 'white', boxShadow: '0 4px 18px rgba(161,0,255,0.4)' }}>
                 {t('reg.backToLogin')}
               </Link>
             </div>

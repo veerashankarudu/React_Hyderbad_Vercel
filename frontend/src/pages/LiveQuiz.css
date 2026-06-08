@@ -449,7 +449,7 @@ body.dark-mode .lq-card-footer {
   border-top-color: var(--border, #2d2b45);
 }
 body.dark-mode .lq-card-action {
-  color: #a78bfa;
+  color: #C77DFF;
 }
 body.dark-mode .lq-card-winner {
   color: #e2e8f0;
@@ -525,7 +525,7 @@ body.dark-mode .lq-toggle span {
   color: #e2e8f0;
 }
 body.dark-mode .lq-advanced-label {
-  color: #a78bfa;
+  color: #C77DFF;
   border-color: var(--border);
 }
 

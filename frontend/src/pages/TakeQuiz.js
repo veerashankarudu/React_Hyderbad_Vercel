@@ -26,7 +26,7 @@ function CircularTimer({ timeLeft, totalTime }) {
   const offset = circ * (1 - pct);
   const critical = timeLeft <= 60;
   const warn = timeLeft <= 300 && timeLeft > 60;
-  const color = critical ? '#ef4444' : warn ? '#f59e0b' : '#818cf8';
+  const color = critical ? '#ef4444' : warn ? '#f59e0b' : '#C77DFF';
 
   return (
     <div className="tq-circ-timer">
@@ -52,7 +52,7 @@ function CircularTimer({ timeLeft, totalTime }) {
 
 // ── Confetti burst for high scores ──────────────────────────────────────────
 function Confetti() {
-  const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899'];
+  const colors = ['#A100FF', '#10b981', '#f59e0b', '#ef4444', '#B84DFF', '#06b6d4', '#ec4899'];
   const pieces = Array.from({ length: 70 }, (_, i) => ({
     id: i,
     left: `${Math.random() * 100}%`,
@@ -671,7 +671,7 @@ export default function TakeQuiz() {
     const grade = pct >= 80
       ? { label: t('tq.gradeExcellent'), color: '#10b981', ring: '#34d399', bg: 'linear-gradient(135deg,#ecfdf5,#d1fae5)' }
       : pct >= 60
-      ? { label: t('tq.gradeGood'),      color: '#6366f1', ring: '#818cf8', bg: 'linear-gradient(135deg,#eef2ff,#e0e7ff)' }
+      ? { label: t('tq.gradeGood'),      color: '#A100FF', ring: '#C77DFF', bg: 'linear-gradient(135deg,#eef2ff,#e0e7ff)' }
       : pct >= 40
       ? { label: t('tq.gradeAverage'),   color: '#f59e0b', ring: '#fbbf24', bg: 'linear-gradient(135deg,#fffbeb,#fef3c7)' }
       : { label: t('tq.gradeNeedsImprovement'), color: '#ef4444', ring: '#f87171', bg: 'linear-gradient(135deg,#fef2f2,#fee2e2)' };
@@ -733,7 +733,7 @@ export default function TakeQuiz() {
                     <span className="tq-pill-lbl">{t('tq.incorrect')}</span>
                   </div>
                   <div className="tq-score-pill">
-                    <span className="tq-pill-val" style={{ color: '#6366f1' }}>{results.total}</span>
+                    <span className="tq-pill-val" style={{ color: '#A100FF' }}>{results.total}</span>
                     <span className="tq-pill-lbl">{t('tq.total')}</span>
                   </div>
                 </div>

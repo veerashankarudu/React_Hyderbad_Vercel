@@ -116,23 +116,23 @@ body:has(.qb-stats-bar) .table-card {
   border-color: rgba(255,255,255,0.1) !important;
   color: #cbd5e1 !important;
 }
-.qb-menu-btn:hover { border-color: #6366f1 !important; color: #818cf8 !important; }
+.qb-menu-btn:hover { border-color: #A100FF !important; color: #C77DFF !important; }
 .qb-dropdown {
   background: #1e293b !important;
   border-color: rgba(255,255,255,0.1) !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
 }
 .qb-dropdown button { background: #1e293b !important; color: #e2e8f0 !important; }
-.qb-dropdown button:hover { background: rgba(99,102,241,0.12) !important; color: #818cf8 !important; }
+.qb-dropdown button:hover { background: rgba(161,0,255,0.12) !important; color: #C77DFF !important; }
 .qb-dropdown-delete:hover { background: rgba(239,68,68,0.1) !important; color: #f87171 !important; }
 
 /* Outline buttons */
 .btn-outline {
   background: rgba(255,255,255,0.04) !important;
-  color: #818cf8 !important;
-  border-color: rgba(99,102,241,0.4) !important;
+  color: #C77DFF !important;
+  border-color: rgba(161,0,255,0.4) !important;
 }
-.btn-outline:hover { background: rgba(99,102,241,0.12) !important; }
+.btn-outline:hover { background: rgba(161,0,255,0.12) !important; }
 
 /* Pagination */
 .pagination button {
@@ -140,8 +140,8 @@ body:has(.qb-stats-bar) .table-card {
   border-color: rgba(255,255,255,0.08) !important;
   color: #94a3b8 !important;
 }
-.pagination button:hover { border-color: #6366f1 !important; color: #818cf8 !important; }
-.pagination button.active { background: #6366f1 !important; border-color: #6366f1 !important; color: white !important; }
+.pagination button:hover { border-color: #A100FF !important; color: #C77DFF !important; }
+.pagination button.active { background: #A100FF !important; border-color: #A100FF !important; color: white !important; }
 
 /* Status badges inside table */
 body:has(.qb-stats-bar) .status-badge,
@@ -177,5 +177,5 @@ body:has(.qb-stats-bar) .data-table td {
   border-bottom: 1px solid rgba(255,255,255,0.05) !important;
 }
 body:has(.qb-stats-bar) .data-table tr:hover td {
-  background: rgba(99,102,241,0.06) !important;
+  background: rgba(161,0,255,0.06) !important;
 }

@@ -16,9 +16,9 @@ function ContentJsonRenderer({ contentJson, questionType }) {
   let data;
   try { data = JSON.parse(contentJson); } catch { return <div className="options-list"><em>Invalid content data</em></div>; }
 
-  const boxStyle = { background: 'var(--bg-card, #f9fafb)', border: '1px solid var(--border, #e5e7eb)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.5rem' };
+  const boxStyle = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.5rem', color: 'var(--text)' };
   const codeStyle = { fontFamily: 'monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap', background: '#1e293b', color: '#e2e8f0', padding: '1rem', borderRadius: '8px', marginBottom: '0.75rem' };
-  const badgeStyle = { display: 'inline-block', background: '#6366f1', color: '#fff', borderRadius: '12px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: 600, marginRight: '0.4rem' };
+  const badgeStyle = { display: 'inline-block', background: '#A100FF', color: '#fff', borderRadius: '12px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: 600, marginRight: '0.4rem' };
 
   switch (questionType) {
     case 'DRAG_ORDER':
@@ -32,7 +32,7 @@ function ContentJsonRenderer({ contentJson, questionType }) {
       return (<div className="options-list"><label style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>➡️ Code → Output:</label>
         {(data.pairs || []).map((p, i) => <div key={i} style={boxStyle}><pre style={codeStyle}>{p.code}</pre><span style={badgeStyle}>Output</span> {p.output}</div>)}</div>);
     case 'FILL_BLANK':
-      return (<div className="options-list"><pre style={codeStyle}>{data.codeTemplate}</pre><div style={boxStyle}><strong>Answers:</strong> {data.answers}</div></div>);
+      return (<div className="options-list"><pre style={codeStyle}>{data.codeTemplate}</pre><div style={boxStyle}><strong>Answers:</strong> {Array.isArray(data.answers) ? data.answers.map((a, i) => <span key={i} style={{ ...badgeStyle, background: '#059669', marginLeft: i > 0 ? '0.3rem' : '0.4rem' }}>{i + 1}. {a}</span>) : data.answers}</div></div>);
     case 'PREDICT_OUTPUT':
       return (<div className="options-list"><pre style={codeStyle}>{data.code}</pre><div style={boxStyle}><span style={badgeStyle}>✓ Output</span> {data.correctOutput}</div>
         {data.distractors && <div style={{ ...boxStyle, opacity: 0.7 }}><strong>Distractors:</strong> {data.distractors}</div>}</div>);
@@ -308,17 +308,24 @@ export default function McqDetail() {
             <div className="question-stem"><QuestionStemRenderer text={txStem || mcq.questionStem} /></div>
 
             {/* Advanced question type renderer */}
-            {mcq.contentJson && mcq.questionType && !['SINGLE','MULTI'].includes(mcq.questionType) ? (
+            {mcq.contentJson && mcq.contentJson !== '{}' && mcq.questionType && !['SINGLE','MULTI'].includes(mcq.questionType) ? (
               <ContentJsonRenderer contentJson={mcq.contentJson} questionType={mcq.questionType} />
             ) : (
             <div className="options-list">
-              {options.map((opt) => (
+              {/* For non-standard types with empty contentJson, show correctAnswer directly */}
+              {!['SINGLE','MULTI'].includes(mcq.questionType) && mcq.correctAnswer && !['A','B','C','D'].includes(mcq.correctAnswer) ? (
+                <div style={{ background: 'var(--success-light)', border: '1px solid var(--success)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.5rem', color: 'var(--text)' }}>
+                  <strong>✅ Answer:</strong> {mcq.correctAnswer}
+                </div>
+              ) : (
+              options.map((opt) => (
                 <div key={opt.key} className={`option-row${mcq.correctAnswer === opt.key ? ' correct' : ''}`}>
                   <div className="option-key">{opt.key}</div>
                   <div className="option-text">{opt.text}</div>
                   {mcq.correctAnswer === opt.key && <span className="correct-badge">&#10003; {t('detail.correct')}</span>}
                 </div>
-              ))}
+              ))
+              )}
             </div>
             )}
 

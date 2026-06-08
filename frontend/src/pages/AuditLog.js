@@ -24,7 +24,7 @@ function getActionColor(action) {
   if (a.includes('APPROVE')) return '#059669';
   if (a.includes('REJECT') || a.includes('DEACTIVATE')) return '#dc2626';
   if (a.includes('ASSIGN')) return '#2563eb';
-  if (a.includes('REGISTER') || a.includes('REACTIVATE')) return '#7c3aed';
+  if (a.includes('REGISTER') || a.includes('REACTIVATE')) return '#A100FF';
   return '#d97706';
 }
 

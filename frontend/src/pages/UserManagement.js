@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import './MyQuestions.css';
 import './UserManagement.css';
 
-const ROLE_COLOR = { ADMIN: '#7C3AED', SME: '#059669', PENDING: '#D97706' };
+const ROLE_COLOR = { ADMIN: '#A100FF', SME: '#059669', PENDING: '#D97706' };
 
 function buildCoverageInitials(name) {
   return name.trim().split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -34,7 +34,7 @@ const ACTION_LABEL = {
   USER_REGISTERED:    { labelKey: 'um2.actSelfRegistered',  color: '#3B82F6' },
   USER_APPROVED:      { labelKey: 'um2.actApproved',        color: '#059669' },
   USER_REJECTED:      { labelKey: 'um2.actRejected',        color: '#EF4444' },
-  ROLE_CHANGED:       { labelKey: 'um2.actRoleChanged',     color: '#7C3AED' },
+  ROLE_CHANGED:       { labelKey: 'um2.actRoleChanged',     color: '#A100FF' },
   USER_ADDED_BY_ADMIN:{ labelKey: 'um2.actAddedByAdmin',    color: '#0891B2' },
 };
 
@@ -312,7 +312,7 @@ export default function UserManagement() {
             <span className="qb-stat-label">{t('um.statActive')}</span>
           </div>
           <div className="qb-stat-pill">
-            <span className="qb-stat-num" style={{ color: '#7C3AED' }}>{adminCount}</span>
+            <span className="qb-stat-num" style={{ color: '#A100FF' }}>{adminCount}</span>
             <span className="qb-stat-label">{t('um.statAdmins')}</span>
           </div>
           <div className="qb-stat-pill">
@@ -396,7 +396,7 @@ export default function UserManagement() {
                               <td>
                                 {u.techStacks && u.techStacks.length > 0
                                   ? u.techStacks.map(ts => (
-                                      <span key={ts} style={{ marginRight: '0.35rem', background: '#EDE9FE', color: '#5B21B6', borderRadius: '4px', padding: '0.1rem 0.45rem', fontSize: '0.72rem', fontWeight: 600 }}>{ts}</span>
+                                      <span key={ts} style={{ marginRight: '0.35rem', background: '#F3E8FF', color: '#7B00C0', borderRadius: '4px', padding: '0.1rem 0.45rem', fontSize: '0.72rem', fontWeight: 600 }}>{ts}</span>
                                     ))
                                   : <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>—</span>}
                               </td>
@@ -451,7 +451,7 @@ export default function UserManagement() {
                       <td>
                         {u.techStacks && u.techStacks.length > 0
                           ? u.techStacks.map(ts => (
-                              <span key={ts} style={{ marginRight: '0.35rem', background: '#EDE9FE', color: '#5B21B6', borderRadius: '4px', padding: '0.1rem 0.45rem', fontSize: '0.72rem', fontWeight: 600 }}>{ts}</span>
+                              <span key={ts} style={{ marginRight: '0.35rem', background: '#F3E8FF', color: '#7B00C0', borderRadius: '4px', padding: '0.1rem 0.45rem', fontSize: '0.72rem', fontWeight: 600 }}>{ts}</span>
                             ))
                           : <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>—</span>}
                       </td>
@@ -520,7 +520,7 @@ export default function UserManagement() {
             if (!stackMap[ts.name]) stackMap[ts.name] = [];
           });
           const stacks = Object.entries(stackMap).sort((a, b) => b[1].length - a[1].length);
-          const COLORS = ['#7C3AED','#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#06B6D4'];
+          const COLORS = ['#A100FF','#3B82F6','#10B981','#F59E0B','#EF4444','#B84DFF','#06B6D4'];
           const maxCount = Math.max(1, stacks[0]?.[1].length || 1);
           const coveredCount = stacks.filter(([, m]) => m.length > 0).length;
           return (

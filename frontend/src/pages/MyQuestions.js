@@ -9,6 +9,11 @@ import TablePagination from '../components/TablePagination';
 import { useAuth } from '../AuthContext';
 import { useTranslation } from 'react-i18next';
 import { useContentTranslation } from '../hooks/useContentTranslation';
+import {
+  PenLine, Upload, Bot, Code2, Camera, GripVertical, Link2, ArrowRightFromLine,
+  TextCursorInput, Sparkles, Bug, Puzzle, Database, Building2, Eye, Wrench,
+  BarChart3, Rocket, Shield, Brain, CheckCircle2, RefreshCw, UserRound, Circle, CheckSquare
+} from 'lucide-react';
 import './MyQuestions.css';
 
 const STATUS_TABS = [
@@ -217,22 +222,27 @@ export default function MyQuestions() {
               <div className="add-dialog-title">{t('myQ.addDialogTitle')}</div>
               <div className="add-dialog-options">
                 <button type="button" className="add-option-btn" onClick={() => { setShowAddDialog(false); navigate('/mcq/create'); }}>
-                  <span className="add-option-icon">✍️</span>
+                  <span className="add-option-icon"><PenLine size={22} /></span>
                   <span className="add-option-label">{t('myQ.addFromUi')}</span>
                   <span className="add-option-desc">{t('myQ.addFromUiDesc')}</span>
                 </button>
                 <button type="button" className="add-option-btn" onClick={() => { setShowAddDialog(false); navigate('/bulk-upload'); }}>
-                  <span className="add-option-icon">📤</span>
+                  <span className="add-option-icon"><Upload size={22} /></span>
                   <span className="add-option-label">{t('nav.bulkUpload')}</span>
                   <span className="add-option-desc">{t('myQ.bulkUploadDesc')}</span>
                 </button>
-                <button type="button" className="add-option-btn" style={{ '--hover-c': '#7C3AED' }} onClick={() => { setShowAddDialog(false); setAiResult(null); setAiError(''); setAiForm({ techStackId: '', topicId: '', count: 3, difficulty: 'MEDIUM', questionType: 'SINGLE' }); setShowAiGen(true); }}>
-                  <span className="add-option-icon">🤖</span>
+                <button type="button" className="add-option-btn" style={{ '--hover-c': '#A100FF' }} onClick={() => { setShowAddDialog(false); setAiResult(null); setAiError(''); setAiForm({ techStackId: '', topicId: '', count: 3, difficulty: 'MEDIUM', questionType: 'SINGLE' }); setShowAiGen(true); }}>
+                  <span className="add-option-icon"><Bot size={22} /></span>
                   <span className="add-option-label">{t('ai.generatorTitle')}</span>
                   <span className="add-option-desc">{t('myQ.aiGeneratorDesc')}</span>
                 </button>
+                <button type="button" className="add-option-btn" style={{ '--hover-c': '#B84DFF' }} onClick={() => { setShowAddDialog(false); navigate('/screenshot-mcq'); }}>
+                  <span className="add-option-icon"><Camera size={22} /></span>
+                  <span className="add-option-label">{t('common.screenshot')}</span>
+                  <span className="add-option-desc">{t('common.screenshotHint')}</span>
+                </button>
                 <button type="button" className="add-option-btn" style={{ '--hover-c': '#059669' }} onClick={() => { setShowAddDialog(false); navigate('/coding/create'); }}>
-                  <span className="add-option-icon">💻</span>
+                  <span className="add-option-icon"><Code2 size={22} /></span>
                   <span className="add-option-label">{t('myQ.codingQuestion')}</span>
                   <span className="add-option-desc">{t('myQ.codingQuestionDesc')}</span>
                 </button>
@@ -240,21 +250,21 @@ export default function MyQuestions() {
               <div className="add-dialog-divider">── Advanced Question Types ──</div>
               <div className="add-dialog-grid">
                 {[
-                  { id: 'DRAG_ORDER', icon: '↕️', title: 'Drag & Drop Ordering' },
-                  { id: 'MATCH_PAIRS', icon: '🔗', title: 'Match Pairs' },
-                  { id: 'CODE_OUTPUT', icon: '➡️', title: 'Code → Output' },
-                  { id: 'FILL_BLANK', icon: '✏️', title: 'Fill in the Blank' },
-                  { id: 'PREDICT_OUTPUT', icon: '🔮', title: 'Predict Output' },
-                  { id: 'DEBUG_CODE', icon: '🐛', title: 'Debug the Code' },
-                  { id: 'CODE_REARRANGE', icon: '🧩', title: 'Code Rearrange' },
-                  { id: 'SQL_BUILDER', icon: '🗃️', title: 'SQL Builder' },
-                  { id: 'ARCH_LAYERS', icon: '🏗️', title: 'Architecture Layers' },
-                  { id: 'CODE_REVIEW', icon: '👁️', title: 'Code Review' },
-                  { id: 'PIPELINE_BUILD', icon: '🔧', title: 'Pipeline Builder' },
-                  { id: 'FLOWCHART', icon: '📊', title: 'Flowchart' },
-                  { id: 'DEVOPS_PIPE', icon: '🚀', title: 'DevOps Pipeline' },
-                  { id: 'SECURE_CODE', icon: '🛡️', title: 'Secure Coding' },
-                  { id: 'RIDDLE', icon: '🧩', title: 'Tech Riddles' },
+                  { id: 'DRAG_ORDER', icon: <GripVertical size={20} />, title: 'Drag & Drop Ordering' },
+                  { id: 'MATCH_PAIRS', icon: <Link2 size={20} />, title: 'Match Pairs' },
+                  { id: 'CODE_OUTPUT', icon: <ArrowRightFromLine size={20} />, title: 'Code → Output' },
+                  { id: 'FILL_BLANK', icon: <TextCursorInput size={20} />, title: 'Fill in the Blank' },
+                  { id: 'PREDICT_OUTPUT', icon: <Sparkles size={20} />, title: 'Predict Output' },
+                  { id: 'DEBUG_CODE', icon: <Bug size={20} />, title: 'Debug the Code' },
+                  { id: 'CODE_REARRANGE', icon: <Puzzle size={20} />, title: 'Code Rearrange' },
+                  { id: 'SQL_BUILDER', icon: <Database size={20} />, title: 'SQL Builder' },
+                  { id: 'ARCH_LAYERS', icon: <Building2 size={20} />, title: 'Architecture Layers' },
+                  { id: 'CODE_REVIEW', icon: <Eye size={20} />, title: 'Code Review' },
+                  { id: 'PIPELINE_BUILD', icon: <Wrench size={20} />, title: 'Pipeline Builder' },
+                  { id: 'FLOWCHART', icon: <BarChart3 size={20} />, title: 'Flowchart' },
+                  { id: 'DEVOPS_PIPE', icon: <Rocket size={20} />, title: 'DevOps Pipeline' },
+                  { id: 'SECURE_CODE', icon: <Shield size={20} />, title: 'Secure Coding' },
+                  { id: 'RIDDLE', icon: <Brain size={20} />, title: 'Tech Riddles' },
                 ].map(qt => (
                   <button key={qt.id} type="button" className="add-grid-btn" onClick={() => { setShowAddDialog(false); navigate(`/question-type-create/${qt.id}`); }}>
                     <span className="add-grid-icon">{qt.icon}</span>
@@ -274,7 +284,7 @@ export default function MyQuestions() {
               {/* Header */}
               <div className="ai-gen-header">
                 <div className="ai-gen-header-left">
-                  <span className="ai-gen-icon">🤖</span>
+                  <span className="ai-gen-icon"><Bot size={18} /></span>
                   <div>
                     <div className="ai-gen-title">{t('ai.generatorTitle')}</div>
                     <div className="ai-gen-sub">{t('ai.generatorSub')}</div>
@@ -285,23 +295,23 @@ export default function MyQuestions() {
 
               {/* Creator info banner */}
               <div className="ai-gen-creator-bar">
-                <span className="ai-gen-creator-icon">👤</span>
+                <span className="ai-gen-creator-icon"><UserRound size={14} /></span>
                 <span>{t('ai.mcqsCreatedAs')}: <strong>{user?.fullName || user?.enterpriseId}</strong> + AI Generated</span>
-                <span className="ai-gen-badge">🤖 AI</span>
+                <span className="ai-gen-badge"><Bot size={12} /> AI</span>
               </div>
 
               {aiResult ? (
                 /* Success state */
                 <div className="ai-gen-body">
                   <div className="ai-gen-success">
-                    <div className="ai-gen-success-icon">✅</div>
+                    <div className="ai-gen-success-icon"><CheckCircle2 size={32} color="#059669" /></div>
                     <div className="ai-gen-success-title">{aiResult.generated} {t('ai.mcqsGenerated')}</div>
                     <div className="ai-gen-success-detail">
                       <strong>{aiResult.techStack}</strong> → <strong>{aiResult.topic}</strong><br />
-                      {t('ai.createdBy')}: <strong>{aiResult.creatorFullName}</strong> + 🤖 AI<br />
+                      {t('ai.createdBy')}: <strong>{aiResult.creatorFullName}</strong> + <Bot size={12} style={{verticalAlign:'middle'}} /> AI<br />
                       <span style={{ color: '#6B7280', fontSize: '0.8rem' }}>{t('ai.savedAsDraft')}</span>
                       {aiResult.replacedDuplicates > 0 && (
-                        <><br /><span style={{ color: '#D97706', fontSize: '0.8rem', fontWeight: 600 }}>🔄 {aiResult.replacedDuplicates} duplicate(s) auto-replaced with new questions</span></>
+                        <><br /><span style={{ color: '#D97706', fontSize: '0.8rem', fontWeight: 600 }}><RefreshCw size={12} style={{verticalAlign:'middle'}} /> {aiResult.replacedDuplicates} duplicate(s) auto-replaced with new questions</span></>
                       )}
                     </div>
                   </div>
@@ -347,23 +357,23 @@ export default function MyQuestions() {
                     <div className="form-group">
                       <label>Question Type</label>
                       <select value={aiForm.questionType} onChange={e => setAiForm(f => ({ ...f, questionType: e.target.value }))} disabled={aiLoading}>
-                        <option value="SINGLE">🔘 Single Choice MCQ</option>
-                        <option value="MULTI">☑️ Multiple Choice</option>
-                        <option value="DRAG_ORDER">↕️ Drag & Drop Ordering</option>
-                        <option value="MATCH_PAIRS">🔗 Match Pairs</option>
-                        <option value="CODE_OUTPUT">➡️ Code → Output</option>
-                        <option value="FILL_BLANK">✏️ Fill in the Blank</option>
-                        <option value="PREDICT_OUTPUT">🔮 Predict Output</option>
-                        <option value="DEBUG_CODE">🐛 Debug the Code</option>
-                        <option value="CODE_REARRANGE">🧩 Code Rearrange</option>
-                        <option value="SQL_BUILDER">🗃️ SQL Builder</option>
-                        <option value="ARCH_LAYERS">🏗️ Architecture Layers</option>
-                        <option value="CODE_REVIEW">👁️ Code Review</option>
-                        <option value="PIPELINE_BUILD">🔧 Pipeline Builder</option>
-                        <option value="FLOWCHART">📊 Flowchart</option>
-                        <option value="DEVOPS_PIPE">🚀 DevOps Pipeline</option>
-                        <option value="SECURE_CODE">🛡️ Secure Coding</option>
-                        <option value="RIDDLE">🧩 Tech Riddles</option>
+                        <option value="SINGLE"><Circle size={12} /> Single Choice MCQ</option>
+                        <option value="MULTI"><CheckSquare size={12} /> Multiple Choice</option>
+                        <option value="DRAG_ORDER">Drag & Drop Ordering</option>
+                        <option value="MATCH_PAIRS">Match Pairs</option>
+                        <option value="CODE_OUTPUT">Code → Output</option>
+                        <option value="FILL_BLANK">Fill in the Blank</option>
+                        <option value="PREDICT_OUTPUT">Predict Output</option>
+                        <option value="DEBUG_CODE">Debug the Code</option>
+                        <option value="CODE_REARRANGE">Code Rearrange</option>
+                        <option value="SQL_BUILDER">SQL Builder</option>
+                        <option value="ARCH_LAYERS">Architecture Layers</option>
+                        <option value="CODE_REVIEW">Code Review</option>
+                        <option value="PIPELINE_BUILD">Pipeline Builder</option>
+                        <option value="FLOWCHART">Flowchart</option>
+                        <option value="DEVOPS_PIPE">DevOps Pipeline</option>
+                        <option value="SECURE_CODE">Secure Coding</option>
+                        <option value="RIDDLE">Tech Riddles</option>
                       </select>
                     </div>
                     {aiError && <div className="error-msg">{aiError}</div>}
@@ -374,7 +384,7 @@ export default function MyQuestions() {
                       {aiLoading ? (
                         <><span className="ai-gen-spinner" />{t('ai.generating', { count: aiForm.count })}</>
                       ) : (
-                        <>🤖 {t('ai.generate', { count: aiForm.count })}</>
+                        <><Bot size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> {t('ai.generate', { count: aiForm.count })}</>
                       )}
                     </button>
                   </div>

@@ -83,7 +83,7 @@
 }
 
 .inbox-tab-btn.active {
-  background: linear-gradient(135deg, rgba(124,58,237,0.25), rgba(168,85,247,0.12));
+  background: linear-gradient(135deg, rgba(161,0,255,0.25), rgba(168,85,247,0.12));
   color: #c8b8ff;
   font-weight: 700;
   border-color: rgba(168,85,247,0.2);
@@ -91,7 +91,7 @@
 
 .inbox-badge {
   margin-left: auto;
-  background: #7c3aed;
+  background: #A100FF;
   color: #fff;
   border-radius: 99px;
   font-size: 0.65rem;
@@ -99,7 +99,7 @@
   font-weight: 800;
   min-width: 20px;
   text-align: center;
-  box-shadow: 0 0 8px rgba(124,58,237,0.6);
+  box-shadow: 0 0 8px rgba(161,0,255,0.6);
 }
 
 .inbox-compose-btn {
@@ -107,20 +107,20 @@
   padding: 12px 16px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  background: linear-gradient(135deg, #A100FF 0%, #a855f7 100%);
   color: #fff;
   font-size: 0.875rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+  box-shadow: 0 4px 16px rgba(161,0,255,0.35);
   width: 100%;
   text-align: center;
 }
 
 .inbox-compose-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(124,58,237,0.52);
+  box-shadow: 0 6px 22px rgba(161,0,255,0.52);
 }
 
 .inbox-mark-all {
@@ -234,7 +234,7 @@
 }
 
 .inbox-msg-row.unread::before {
-  background: linear-gradient(180deg, #7c3aed, #a855f7);
+  background: linear-gradient(180deg, #A100FF, #a855f7);
 }
 
 .inbox-msg-row:hover {
@@ -251,7 +251,7 @@
 }
 
 .inbox-msg-row.selected::before {
-  background: linear-gradient(180deg, #7c3aed, #a855f7);
+  background: linear-gradient(180deg, #A100FF, #a855f7);
 }
 
 /* Avatar */
@@ -259,7 +259,7 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #4c1d95, #6d28d9);
+  background: linear-gradient(135deg, #4c1d95, #8A00DD);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -531,20 +531,20 @@
   padding: 11px 28px;
   border-radius: 9px;
   border: none;
-  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  background: linear-gradient(135deg, #A100FF 0%, #a855f7 100%);
   color: #fff;
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 16px rgba(124,58,237,0.38);
+  box-shadow: 0 4px 16px rgba(161,0,255,0.38);
   letter-spacing: 0.02em;
 }
 
 .inbox-send-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
 .inbox-send-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(124,58,237,0.55);
+  box-shadow: 0 6px 22px rgba(161,0,255,0.55);
 }
 
 .inbox-discard-btn {
@@ -640,7 +640,7 @@
   width: 42px;
   height: 42px;
   border-radius: 11px;
-  background: linear-gradient(135deg, #4c1d95, #6d28d9);
+  background: linear-gradient(135deg, #4c1d95, #8A00DD);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -691,7 +691,7 @@
 }
 
 .inbox-detail-mcqref a {
-  color: #a78bfa;
+  color: #C77DFF;
   text-decoration: none;
   font-weight: 600;
 }
@@ -813,7 +813,7 @@
 
 .inbox-search-input:focus {
   border-color: rgba(168,85,247,0.45);
-  box-shadow: 0 0 0 3px rgba(124,58,237,0.08);
+  box-shadow: 0 0 0 3px rgba(161,0,255,0.08);
 }
 
 .inbox-search-input::placeholder { color: #2e2c50; }
@@ -833,7 +833,7 @@
   flex-shrink: 0;
 }
 
-.inbox-star-btn:hover { color: #a78bfa; transform: scale(1.25); }
+.inbox-star-btn:hover { color: #C77DFF; transform: scale(1.25); }
 
 .inbox-star-btn.starred {
   color: #f59e0b;
@@ -859,7 +859,7 @@ body:not(.dark-mode) .inbox-container {
 }
 body:not(.dark-mode) .inbox-header {
   background: linear-gradient(180deg, #ede9ff 0%, #f5f4ff 100%);
-  border-bottom-color: rgba(99,102,241,0.15);
+  border-bottom-color: rgba(161,0,255,0.15);
 }
 body:not(.dark-mode) .inbox-title { color: #1e1b4b; }
 body:not(.dark-mode) .inbox-subtitle { color: #6b7280; }
@@ -867,43 +867,43 @@ body:not(.dark-mode) .inbox-subtitle { color: #6b7280; }
 /* sidebar */
 body:not(.dark-mode) .inbox-sidebar {
   background: #ede9ff;
-  border-right-color: rgba(99,102,241,0.15);
+  border-right-color: rgba(161,0,255,0.15);
 }
 body:not(.dark-mode) .inbox-tab-btn { color: #4b5563; }
 body:not(.dark-mode) .inbox-tab-btn:hover {
-  background: rgba(99,102,241,0.1);
+  background: rgba(161,0,255,0.1);
   color: #4338ca;
 }
 body:not(.dark-mode) .inbox-tab-btn.active {
-  background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(139,92,246,0.1));
+  background: linear-gradient(135deg, rgba(161,0,255,0.18), rgba(139,92,246,0.1));
   color: #4338ca;
-  border-color: rgba(99,102,241,0.3);
+  border-color: rgba(161,0,255,0.3);
 }
 body:not(.dark-mode) .inbox-mark-all {
   color: #6b7280;
-  border-color: rgba(99,102,241,0.2);
+  border-color: rgba(161,0,255,0.2);
 }
 body:not(.dark-mode) .inbox-mark-all:hover {
-  background: rgba(99,102,241,0.1);
+  background: rgba(161,0,255,0.1);
   color: #4338ca;
 }
 
 /* message list panel */
 body:not(.dark-mode) .inbox-list {
   background: #fff;
-  border-right-color: rgba(99,102,241,0.15);
+  border-right-color: rgba(161,0,255,0.15);
 }
-body:not(.dark-mode) .inbox-list-header { border-bottom-color: rgba(99,102,241,0.1); }
+body:not(.dark-mode) .inbox-list-header { border-bottom-color: rgba(161,0,255,0.1); }
 body:not(.dark-mode) .inbox-list-title { color: #9ca3af; }
 body:not(.dark-mode) .inbox-list-count {
   color: #9ca3af;
-  background: rgba(99,102,241,0.07);
+  background: rgba(161,0,255,0.07);
 }
 body:not(.dark-mode) .inbox-msg-row {
   border-bottom-color: rgba(0,0,0,0.06);
 }
-body:not(.dark-mode) .inbox-msg-row:hover { background: rgba(99,102,241,0.05); }
-body:not(.dark-mode) .inbox-msg-row.selected { background: rgba(99,102,241,0.1); }
+body:not(.dark-mode) .inbox-msg-row:hover { background: rgba(161,0,255,0.05); }
+body:not(.dark-mode) .inbox-msg-row.selected { background: rgba(161,0,255,0.1); }
 body:not(.dark-mode) .inbox-msg-from { color: #9ca3af; }
 body:not(.dark-mode) .inbox-msg-row.unread .inbox-msg-from { color: #4b5563; }
 body:not(.dark-mode) .inbox-msg-subject { color: #374151; }
@@ -912,73 +912,73 @@ body:not(.dark-mode) .inbox-msg-preview { color: #9ca3af; }
 body:not(.dark-mode) .inbox-msg-time { color: #9ca3af; }
 body:not(.dark-mode) .inbox-empty-text { color: #9ca3af; }
 body:not(.dark-mode) .inbox-msg-avatar {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border-color: rgba(99,102,241,0.25);
+  background: linear-gradient(135deg, #A100FF, #B84DFF);
+  border-color: rgba(161,0,255,0.25);
 }
 
 /* search */
-body:not(.dark-mode) .inbox-search-wrap { border-bottom-color: rgba(99,102,241,0.1); }
+body:not(.dark-mode) .inbox-search-wrap { border-bottom-color: rgba(161,0,255,0.1); }
 body:not(.dark-mode) .inbox-search-input {
   background: #f5f4ff;
-  border-color: rgba(99,102,241,0.2);
+  border-color: rgba(161,0,255,0.2);
   color: #1e1b4b;
 }
 body:not(.dark-mode) .inbox-search-input::placeholder { color: #9ca3af; }
 body:not(.dark-mode) .inbox-search-input:focus {
-  border-color: rgba(99,102,241,0.5);
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+  border-color: rgba(161,0,255,0.5);
+  box-shadow: 0 0 0 3px rgba(161,0,255,0.08);
 }
 
 /* detail panel */
 body:not(.dark-mode) .inbox-detail { background: #fff; }
-body:not(.dark-mode) .inbox-detail-toolbar { border-bottom-color: rgba(99,102,241,0.12); }
+body:not(.dark-mode) .inbox-detail-toolbar { border-bottom-color: rgba(161,0,255,0.12); }
 body:not(.dark-mode) .inbox-detail-action-btn {
   color: #6b7280;
-  border-color: rgba(99,102,241,0.15);
+  border-color: rgba(161,0,255,0.15);
 }
 body:not(.dark-mode) .inbox-detail-action-btn:hover {
-  background: rgba(99,102,241,0.08);
+  background: rgba(161,0,255,0.08);
   color: #4338ca;
-  border-color: rgba(99,102,241,0.3);
+  border-color: rgba(161,0,255,0.3);
 }
 body:not(.dark-mode) .inbox-detail-subject { color: #1e1b4b; }
 body:not(.dark-mode) .inbox-detail-card {
   background: #f5f4ff;
-  border-color: rgba(99,102,241,0.15);
+  border-color: rgba(161,0,255,0.15);
 }
 body:not(.dark-mode) .inbox-detail-sender-name { color: #1e1b4b; }
 body:not(.dark-mode) .inbox-detail-sender-id { color: #6b7280; }
 body:not(.dark-mode) .inbox-detail-time { color: #9ca3af; }
 body:not(.dark-mode) .inbox-detail-body {
   background: #f9f8ff;
-  border-color: rgba(99,102,241,0.12);
+  border-color: rgba(161,0,255,0.12);
   color: #374151;
 }
 body:not(.dark-mode) .inbox-detail-placeholder p { color: #9ca3af; }
 body:not(.dark-mode) .inbox-reply-btn {
-  background: rgba(99,102,241,0.07);
-  border-color: rgba(99,102,241,0.2);
+  background: rgba(161,0,255,0.07);
+  border-color: rgba(161,0,255,0.2);
   color: #4338ca;
 }
 body:not(.dark-mode) .inbox-reply-btn:hover {
-  background: rgba(99,102,241,0.14);
-  border-color: rgba(99,102,241,0.4);
+  background: rgba(161,0,255,0.14);
+  border-color: rgba(161,0,255,0.4);
 }
 
 /* compose panel */
 body:not(.dark-mode) .inbox-compose { background: #fff; }
 body:not(.dark-mode) .inbox-compose-header {
   background: #f5f4ff;
-  border-bottom-color: rgba(99,102,241,0.12);
+  border-bottom-color: rgba(161,0,255,0.12);
 }
 body:not(.dark-mode) .inbox-compose-header-title { color: #4338ca; }
 body:not(.dark-mode) .inbox-compose-header-close { color: #9ca3af; }
 body:not(.dark-mode) .inbox-compose-form { background: #fff; }
-body:not(.dark-mode) .inbox-compose-field { border-bottom-color: rgba(99,102,241,0.1); }
+body:not(.dark-mode) .inbox-compose-field { border-bottom-color: rgba(161,0,255,0.1); }
 body:not(.dark-mode) .inbox-compose-field label {
   color: #9ca3af;
-  border-right-color: rgba(99,102,241,0.1);
-  background: rgba(99,102,241,0.03);
+  border-right-color: rgba(161,0,255,0.1);
+  background: rgba(161,0,255,0.03);
 }
 body:not(.dark-mode) .inbox-compose-field input,
 body:not(.dark-mode) .inbox-compose-field textarea {
@@ -988,11 +988,11 @@ body:not(.dark-mode) .inbox-compose-field input::placeholder,
 body:not(.dark-mode) .inbox-compose-field textarea::placeholder { color: #9ca3af; }
 body:not(.dark-mode) .inbox-compose-actions {
   background: #f5f4ff;
-  border-top-color: rgba(99,102,241,0.1);
+  border-top-color: rgba(161,0,255,0.1);
 }
 body:not(.dark-mode) .inbox-discard-btn {
   color: #6b7280;
-  border-color: rgba(99,102,241,0.2);
+  border-color: rgba(161,0,255,0.2);
 }
 body:not(.dark-mode) .inbox-discard-btn:hover {
   background: rgba(239,68,68,0.05);

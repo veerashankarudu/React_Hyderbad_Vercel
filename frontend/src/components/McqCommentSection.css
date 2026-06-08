@@ -1,6 +1,6 @@
 .mcq-comment-section {
   margin-top: 2rem;
-  border-top: 2px solid #EDE9FE;
+  border-top: 2px solid #F3E8FF;
   padding-top: 1.5rem;
 }
 
@@ -18,8 +18,8 @@
 }
 
 .mcs-count {
-  background: #EDE9FE;
-  color: #7C3AED;
+  background: #F3E8FF;
+  color: #A100FF;
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.2rem 0.6rem;
@@ -37,7 +37,7 @@
 }
 
 .comment-input-wrap:focus-within {
-  border-color: #7C3AED;
+  border-color: #A100FF;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
 }
 
@@ -61,7 +61,7 @@
 }
 
 .comment-btn-submit {
-  background: #7C3AED;
+  background: #A100FF;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -73,7 +73,7 @@
 }
 
 .comment-btn-submit:hover:not(:disabled) {
-  background: #6D28D9;
+  background: #8A00DD;
 }
 
 .comment-btn-submit:disabled {
@@ -106,7 +106,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7C3AED, #5B21B6);
+  background: linear-gradient(135deg, #A100FF, #7B00C0);
   color: #fff;
   font-size: 0.78rem;
   font-weight: 700;
@@ -170,9 +170,9 @@
 }
 
 .comment-mention {
-  color: #7C3AED;
+  color: #A100FF;
   font-weight: 600;
-  background: #EDE9FE;
+  background: #F3E8FF;
   padding: 0 3px;
   border-radius: 4px;
 }
@@ -187,7 +187,7 @@
 .comment-reply-btn {
   background: none;
   border: none;
-  color: #7C3AED;
+  color: #A100FF;
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
@@ -207,7 +207,7 @@
 .comment-replies {
   margin-top: 0.75rem;
   padding-left: 1rem;
-  border-left: 2px solid #EDE9FE;
+  border-left: 2px solid #F3E8FF;
 }
 
 .comment-replies .comment-avatar {
@@ -245,22 +245,22 @@
 
 /* ── Dark mode ── */
 body.dark-mode .mcq-comment-section {
-  border-top-color: rgba(99,102,241,0.2);
+  border-top-color: rgba(161,0,255,0.2);
 }
 body.dark-mode .mcs-title {
   color: #e2e8f0;
 }
 body.dark-mode .mcs-count {
-  background: rgba(124,58,237,0.2);
-  color: #a78bfa;
+  background: rgba(161,0,255,0.2);
+  color: #C77DFF;
 }
 body.dark-mode .comment-input-wrap {
   background: rgba(255,255,255,0.05);
-  border-color: rgba(99,102,241,0.25);
+  border-color: rgba(161,0,255,0.25);
 }
 body.dark-mode .comment-input-wrap:focus-within {
-  border-color: #818cf8;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  border-color: #C77DFF;
+  box-shadow: 0 0 0 3px rgba(161,0,255,0.15);
 }
 body.dark-mode .comment-textarea {
   color: #e2e8f0;
@@ -282,11 +282,11 @@ body.dark-mode .comment-content {
   color: #cbd5e1;
 }
 body.dark-mode .comment-mention {
-  background: rgba(124,58,237,0.2);
-  color: #a78bfa;
+  background: rgba(161,0,255,0.2);
+  color: #C77DFF;
 }
 body.dark-mode .comment-replies {
-  border-left-color: rgba(99,102,241,0.2);
+  border-left-color: rgba(161,0,255,0.2);
 }
 body.dark-mode .comment-delete-btn {
   color: #4b5563;

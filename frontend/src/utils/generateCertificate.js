@@ -17,10 +17,10 @@ export function generateCertificate({ name, score, total, percentage, rank, tech
   const title = isRanked ? 'Certificate of Achievement' : 'Certificate of Participation';
   const borderColor = isRanked
     ? rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : '#CD7F32'
-    : '#7C3AED';
+    : '#A100FF';
   const accentColor = isRanked
     ? rank === 1 ? '#B8860B' : rank === 2 ? '#6B7280' : '#92400E'
-    : '#5B21B6';
+    : '#7B00C0';
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -130,7 +130,7 @@ export function generateCertificate({ name, score, total, percentage, rank, tech
       <div class="footer-text">QuizHub AI Platform</div>
     </div>
   </div>
-  <div class="watermark">Hack-N-Stack 2026 • Powered by AI</div>
+  <div class="watermark">Bumble Bee 2026 • Powered by AI</div>
 </div>
 <script>window.addEventListener('load',function(){setTimeout(function(){window.print();},400);});<\/script>
 </body>

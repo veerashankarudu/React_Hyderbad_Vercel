@@ -9,7 +9,7 @@ import { generateCertificate } from '../utils/generateCertificate';
 import './Quiz.css';
 
 const OPTION_KEYS = ['A', 'B', 'C', 'D'];
-const OPTION_COLORS = { A: '#7C3AED', B: '#3B82F6', C: '#10B981', D: '#F59E0B' };
+const OPTION_COLORS = { A: '#A100FF', B: '#3B82F6', C: '#10B981', D: '#F59E0B' };
 
 const DIFF_COLOR = { EASY: '#059669', MEDIUM: '#D97706', HARD: '#DC2626' };
 

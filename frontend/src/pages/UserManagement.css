@@ -97,13 +97,13 @@
 }
 
 .um-chip:hover {
-  border-color: var(--primary, #7C3AED);
-  color: var(--primary, #7C3AED);
+  border-color: var(--primary, #A100FF);
+  color: var(--primary, #A100FF);
 }
 
 .um-chip.selected {
-  background: var(--primary, #7C3AED);
-  border-color: var(--primary, #7C3AED);
+  background: var(--primary, #A100FF);
+  border-color: var(--primary, #A100FF);
   color: white;
 }
 
@@ -149,7 +149,7 @@
 .um-coverage-stack { font-size: 0.8rem; font-weight: 600; color: var(--text); }
 .um-coverage-count {
   font-size: 0.72rem; font-weight: 700; color: var(--primary);
-  background: rgba(124,58,237,0.1); border-radius: 20px; padding: 1px 7px;
+  background: rgba(161,0,255,0.1); border-radius: 20px; padding: 1px 7px;
 }
 .um-coverage-track {
   flex: 1; height: 8px; background: rgba(0,0,0,0.07);

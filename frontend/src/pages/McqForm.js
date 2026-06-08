@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { Bot, Search, CheckCircle2, AlertTriangle, PenLine, ClipboardList, Sparkles, XCircle } from 'lucide-react';
 import API from '../api';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../AuthContext';
@@ -257,7 +258,7 @@ export default function McqForm({ mode }) {
       }
       const correctIdx = pool.indexOf(correct);
       setForm(f => ({ ...f, optionA: pool[0], optionB: pool[1], optionC: pool[2], optionD: pool[3], correctAnswer: ['A','B','C','D'][correctIdx] }));
-      setDistractorMsg('✅ 3 distractors generated and shuffled!');
+      setDistractorMsg('done');
     } catch { setDistractorMsg('AI distractor generation failed.'); }
     finally { setDistractorLoading(false); }
   };
@@ -357,7 +358,7 @@ export default function McqForm({ mode }) {
           <h2>{isEdit ? t('form.editMcq') : t('form.createMcq')}</h2>
           {!isEdit && (
             <button type="button" className="ai-gen-shortcut-btn" onClick={() => { setAiResult(null); setAiError(''); setAiForm({ techStackId: '', topicId: '', count: 3, difficulty: 'MEDIUM' }); setShowAiGen(true); }}>
-              🤖 {t('ai.generateWithAi')}
+              <Bot size={16} style={{marginRight:"0.35rem",verticalAlign:"middle"}} /> {t('ai.generateWithAi')}
             </button>
           )}
           {isEdit && <div />}
@@ -370,7 +371,7 @@ export default function McqForm({ mode }) {
             <dialog open className="ai-gen-dialog" onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>
               <div className="ai-gen-header">
                 <div className="ai-gen-header-left">
-                  <span className="ai-gen-icon">🤖</span>
+                  <span className="ai-gen-icon"><Bot size={18} /></span>
                   <div>
                     <div className="ai-gen-title">{t('ai.generatorTitle')}</div>
                     <div className="ai-gen-sub">{t('ai.generatorSub')}</div>
@@ -379,18 +380,18 @@ export default function McqForm({ mode }) {
                 {!aiLoading && <button className="add-dialog-close" style={{ position: 'relative', top: 0, right: 0 }} onClick={() => setShowAiGen(false)} type="button">✕</button>}
               </div>
               <div className="ai-gen-creator-bar">
-                <span className="ai-gen-creator-icon">👤</span>
+                <span className="ai-gen-creator-icon"><Bot size={14} /></span>
                 <span>{t('ai.mcqsCreatedAs')}: <strong>{user?.fullName || user?.enterpriseId}</strong> + AI Generated</span>
-                <span className="ai-gen-badge">🤖 AI</span>
+                <span className="ai-gen-badge"><Bot size={12} /> AI</span>
               </div>
               {aiResult ? (
                 <div className="ai-gen-body">
                   <div className="ai-gen-success">
-                    <div className="ai-gen-success-icon">✅</div>
+                    <div className="ai-gen-success-icon"><CheckCircle2 size={32} color="#059669" /></div>
                     <div className="ai-gen-success-title">{aiResult.generated || aiResult.saved} {t('ai.mcqsGenerated')}</div>
                     <div className="ai-gen-success-detail">
                       <strong>{aiResult.techStack}</strong> → <strong>{aiResult.topic}</strong><br />
-                      {t('ai.createdBy')}: <strong>{aiResult.creatorFullName}</strong> + 🤖 AI<br />
+                      {t('ai.createdBy')}: <strong>{aiResult.creatorFullName}</strong> + <Bot size={12} style={{verticalAlign:'middle'}} /> AI<br />
                       <span style={{ color: '#6B7280', fontSize: '0.8rem' }}>{t('ai.savedAsDraft')}</span>
                     </div>
                   </div>
@@ -415,7 +416,7 @@ export default function McqForm({ mode }) {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '0.3rem' }}>
-                              {hasDup && <span style={{ color: '#d97706', marginRight: '0.3rem' }}>⚠️ Duplicate</span>}
+                              {hasDup && <span style={{ color: '#d97706', marginRight: '0.3rem' }}><AlertTriangle size={12} style={{marginRight:'0.2rem',verticalAlign:'middle'}} /> Duplicate</span>}
                               Q{idx + 1}: {q.questionStem?.length > 100 ? q.questionStem.substring(0, 100) + '…' : q.questionStem}
                             </div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -493,7 +494,7 @@ export default function McqForm({ mode }) {
                       {aiLoading ? (
                         <><span className="ai-gen-spinner" />{t('ai.generating', { count: aiForm.count })}</>
                       ) : (
-                        <>🤖 {t('ai.generate', { count: aiForm.count })}</>
+                        <><Bot size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> {t('ai.generate', { count: aiForm.count })}</>
                       )}
                     </button>
                   </div>
@@ -506,7 +507,7 @@ export default function McqForm({ mode }) {
         {/* Rejection feedback banner */}
         {isEdit && mcqStatus === 'REJECTED' && reviewComments.length > 0 && (
           <div className="rejection-banner">
-            <div className="rejection-banner-title">📋 {t('form.reviewerFeedback')}</div>
+            <div className="rejection-banner-title"><ClipboardList size={16} style={{marginRight:'0.35rem',verticalAlign:'middle'}} /> {t('form.reviewerFeedback')}</div>
             {reviewComments.map((c) => (
               <div key={c.id ?? c.createdAt ?? c.comment} className="rejection-comment">
                 <span className="rejection-who">{c.reviewerEnterpriseId || c.authorName || c.authorEnterpriseId || c.reviewer} &bull; {new Date(c.createdAt).toLocaleDateString()}</span>
@@ -573,7 +574,7 @@ export default function McqForm({ mode }) {
               <div className="form-group" style={{ marginBottom: '0.5rem' }}>
                 <label htmlFor="questionStem">{t('form.questionStem')} *</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
-                  <button type="button" onClick={wrapCodeBlock} style={{ fontSize: '0.75rem', padding: '0.2rem 0.65rem', borderRadius: '6px', border: '1px solid rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.12)', color: '#a78bfa', cursor: 'pointer', fontWeight: 600, fontFamily: 'monospace' }}>
+                  <button type="button" onClick={wrapCodeBlock} style={{ fontSize: '0.75rem', padding: '0.2rem 0.65rem', borderRadius: '6px', border: '1px solid rgba(161,0,255,0.4)', background: 'rgba(161,0,255,0.12)', color: '#C77DFF', cursor: 'pointer', fontWeight: 600, fontFamily: 'monospace' }}>
                     &lt;/&gt; Code Block
                   </button>
                   <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Select code text then click, or click to insert template</span>
@@ -581,21 +582,21 @@ export default function McqForm({ mode }) {
                 <div className="ai-check-wrap">
                   <textarea ref={questionStemRef} id="questionStem" name="questionStem" value={form.questionStem} onChange={handleChange} placeholder="Enter the MCQ question..." required rows={4} />
                   <button type="button" className="ai-btn" onClick={handleDuplicateCheck} disabled={aiCheckLoading || !form.questionStem.trim()}>
-                    {aiCheckLoading ? '🔍 Checking...' : '🔍 Duplicate Check'}
+                    {aiCheckLoading ? <><Search size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> Checking...</> : <><Search size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> Duplicate Check</>}
                   </button>
                 </div>
               </div>
               {duplicateWarning === 'no-duplicates' && (
                 <div className="success-msg" style={{ marginBottom: '0.75rem' }}>
-                  ✅ No significant duplicates found. Question looks unique!
+                  <CheckCircle2 size={14} style={{marginRight:'0.3rem',verticalAlign:'middle',color:'#059669'}} /> No significant duplicates found. Question looks unique!
                 </div>
               )}
               {(duplicateWarning === 'blocked' || duplicateWarning === 'has-similar') && duplicateMatches.length > 0 && (
                 <div className={duplicateBlocked ? 'warning-msg duplicate-match-box blocked' : 'warning-msg duplicate-match-box'} style={{ marginBottom: '0.75rem' }}>
                   <p style={{ marginBottom: '0.4rem', fontWeight: 600 }}>
                     {duplicateBlocked
-                      ? '🚫 Duplicate detected — this question is ≥30% similar to existing questions. Please revise before submitting:'
-                      : '⚠️ Similar questions found (below 30% threshold — review recommended):'}
+                      ? <><XCircle size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> Duplicate detected — this question is ≥30% similar to existing questions. Please revise before submitting:</>
+                      : <><AlertTriangle size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> Similar questions found (below 30% threshold — review recommended):</>}
                   </p>
                   <ul className="duplicate-match-list">
                     {duplicateMatches.map((m, i) => {
@@ -612,7 +613,7 @@ export default function McqForm({ mode }) {
                   </ul>
                   {duplicateBlocked && (
                     <div style={{ marginTop: '0.5rem', padding: '0.4rem 1rem', borderRadius: '6px', border: '1px solid #dc2626', background: 'rgba(220,38,38,0.08)', color: '#991b1b', fontWeight: 600, fontSize: '0.8rem' }}>
-                      ✏️ You must edit the question to reduce similarity below 30% before sending for review.
+                      <PenLine size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> You must edit the question to reduce similarity below 30% before sending for review.
                     </div>
                   )}
                 </div>
@@ -646,10 +647,10 @@ export default function McqForm({ mode }) {
                   onClick={handleGenerateDistractors}
                   disabled={distractorLoading || !canGenerateDistractors}
                 >
-                  {distractorLoading ? '🤖 Generating...' : '🤖 AI: Generate Wrong Options (Distractors)'}
+                  {distractorLoading ? <><Bot size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> Generating...</> : <><Bot size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> AI: Generate Wrong Options (Distractors)</>}
                 </button>
                 {!canGenerateDistractors && <span className="validate-hint">Enter question + Option A (correct answer) first</span>}
-                {distractorMsg && <span className={distractorMsg.startsWith('✅') ? 'distractor-success' : 'distractor-error'}>{distractorMsg}</span>}
+                {distractorMsg && <span className={distractorMsg === 'done' ? 'distractor-success' : 'distractor-error'}>{distractorMsg === 'done' ? <><CheckCircle2 size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> 3 distractors generated and shuffled!</> : distractorMsg}</span>}
               </div>
 
                 <div className="form-group">
@@ -715,7 +716,7 @@ export default function McqForm({ mode }) {
                   onClick={handleValidateAnswer}
                   disabled={validateLoading || !canValidate}
                 >
-                  {validateLoading ? '🤖 Validating...' : '🤖 Validate Answer with AI'}
+                  {validateLoading ? <><Bot size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> Validating...</> : <><Bot size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> Validate Answer with AI</>}
                 </button>
                 <button
                   type="button"
@@ -723,7 +724,7 @@ export default function McqForm({ mode }) {
                   onClick={handleQualityCheck}
                   disabled={qualityLoading || !canValidate}
                 >
-                  {qualityLoading ? '⏳ Scoring...' : '🏅 AI Quality Check'}
+                  {qualityLoading ? <><Sparkles size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> Scoring...</> : <><Sparkles size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> AI Quality Check</>}
                 </button>
                 <button
                   type="button"
@@ -731,7 +732,7 @@ export default function McqForm({ mode }) {
                   onClick={handleGenerateExplanations}
                   disabled={explanationLoading || !canGenerateExplanations}
                 >
-                  {explanationLoading ? '🤖 Generating...' : '🤖 AI: Explain All Options'}
+                  {explanationLoading ? <><Bot size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> Generating...</> : <><Bot size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> AI: Explain All Options</>}
                 </button>
                 {!canValidate && (
                   <span className="validate-hint">Fill all options + select correct answer to validate</span>
@@ -741,7 +742,7 @@ export default function McqForm({ mode }) {
               {qualityResult && (
                 <div className="confidence-card" style={{ borderLeft: `4px solid ${qualityResult.available === false ? '#d1d5db' : qualityResult.qualityScore >= 80 ? '#059669' : qualityResult.qualityScore >= 60 ? '#d97706' : '#dc2626'}`, marginBottom: '0.75rem' }}>
                   {qualityResult.available === false ? (
-                    <div className="confidence-row"><span className="conf-icon">⚠️</span><span className="conf-text">{qualityResult.summary}</span></div>
+                    <div className="confidence-row"><span className="conf-icon"><AlertTriangle size={16} /></span><span className="conf-text">{qualityResult.summary}</span></div>
                   ) : (
                     <>
                       <div className="confidence-row" style={{ alignItems: 'center' }}>
@@ -751,7 +752,7 @@ export default function McqForm({ mode }) {
                       </div>
                       {!qualityResult.difficultyMatch && qualityResult.suggestedDifficulty && (
                         <div style={{ marginTop: '0.4rem', fontSize: '0.78rem', background: '#fef3c7', color: '#92400e', padding: '0.3rem 0.6rem', borderRadius: '6px', fontWeight: 600 }}>
-                          ⚠️ Difficulty mismatch: you selected <strong>{form.difficulty}</strong>, AI suggests <strong>{qualityResult.suggestedDifficulty}</strong>
+                          <AlertTriangle size={12} style={{marginRight:'0.25rem',verticalAlign:'middle'}} /> Difficulty mismatch: you selected <strong>{form.difficulty}</strong>, AI suggests <strong>{qualityResult.suggestedDifficulty}</strong>
                         </div>
                       )}
                       {qualityResult.issues && qualityResult.issues.length > 0 && (
@@ -778,13 +779,13 @@ export default function McqForm({ mode }) {
                   <div className={cardClass}>
                     {validateResult.available === false ? (
                     <div className="confidence-row">
-                      <span className="conf-icon">⚠️</span>
+                      <span className="conf-icon"><AlertTriangle size={16} /></span>
                       <span className="conf-text">{validateResult.explanation}</span>
                     </div>
                   ) : (
                     <>
                       <div className="confidence-row">
-                        <span className="conf-icon">{validateResult.isCorrect ? '✅' : '⚠️'}</span>
+                        <span className="conf-icon">{validateResult.isCorrect ? <CheckCircle2 size={16} color="#059669" /> : <AlertTriangle size={16} color="#d97706" />}</span>
                         <span className="conf-verdict">{validateResult.isCorrect ? 'Answer Correct' : 'Answer May Be Wrong'}</span>
                         {validateResult.confidenceScore != null && (
                           <span className="conf-score-badge" style={{ background: scoreColor }}>
@@ -801,7 +802,7 @@ export default function McqForm({ mode }) {
                         <p className="conf-explanation">{validateResult.explanation}</p>
                       )}
                       {validateResult.ambiguityWarning && (
-                        <p className="conf-ambiguity">⚠️ {validateResult.ambiguityWarning}</p>
+                        <p className="conf-ambiguity"><AlertTriangle size={12} style={{marginRight:'0.25rem',verticalAlign:'middle'}} /> {validateResult.ambiguityWarning}</p>
                       )}
                     </>
                   )}
@@ -818,13 +819,13 @@ export default function McqForm({ mode }) {
                   ) : (
                     <>
                       <div className="exp-row exp-correct">
-                        <span className="exp-label">✅ Why {form.correctAnswer} is correct:</span>
+                        <span className="exp-label"><CheckCircle2 size={14} color="#059669" style={{marginRight:'0.25rem',verticalAlign:'middle'}} /> Why {form.correctAnswer} is correct:</span>
                         <span className="exp-text">{explanations.whyCorrect}</span>
                       </div>
                       {['A','B','C','D'].filter(k => k !== form.correctAnswer).map(k => (
                         explanations[`why${k}Wrong`] && (
                           <div key={k} className="exp-row">
-                            <span className="exp-label">❌ Why {k} is wrong:</span>
+                            <span className="exp-label"><XCircle size={14} color="#dc2626" style={{marginRight:'0.25rem',verticalAlign:'middle'}} /> Why {k} is wrong:</span>
                             <span className="exp-text">{explanations[`why${k}Wrong`]}</span>
                           </div>
                         )
@@ -841,7 +842,7 @@ export default function McqForm({ mode }) {
                 </button>
                 {(!isEdit || mcqStatus === 'DRAFT' || mcqStatus === 'REJECTED') && (
                   <button type="button" className="btn-primary" disabled={loading || duplicateBlocked} title={duplicateBlocked ? 'Duplicate detected — revise the question first' : ''} onClick={(e) => handleSubmit(e, true)}>
-                    {loading ? t('common.saving') : duplicateBlocked ? '🚫 Duplicate — Revise First' : t('form.saveAndSend')}
+                    {loading ? t('common.saving') : duplicateBlocked ? <><XCircle size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> Duplicate — Revise First</> : t('form.saveAndSend')}
                   </button>
                 )}
                 {isEdit && mcqStatus !== 'REJECTED' && (

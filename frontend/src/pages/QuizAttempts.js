@@ -105,7 +105,7 @@ export default function QuizAttempts() {
         h1 { font-size: 18px; margin-bottom: 4px; }
         .meta { color: #555; font-size: 11px; margin-bottom: 16px; }
         table { width: 100%; border-collapse: collapse; }
-        th { background: #5b21b6; color: #fff; padding: 7px 6px; text-align: left; font-size: 11px; }
+        th { background: #7B00C0; color: #fff; padding: 7px 6px; text-align: left; font-size: 11px; }
         td { padding: 6px; border-bottom: 1px solid #e5e7eb; font-size: 11px; }
         tr:nth-child(even) td { background: #f9f5ff; }
         .stat { display: inline-block; margin-right: 20px; font-size: 13px; }

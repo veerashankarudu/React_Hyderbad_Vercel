@@ -1,0 +1,20 @@
+# QuizHub MCP Server Configuration
+server:
+  port: 8085
+
+spring:
+  application:
+    name: quizhub-mcp-server
+  ai:
+    mcp:
+      server:
+        name: quizhub-mcp
+        version: 1.0.0
+        description: "QuizHub AI MCP Server — Search questions, create MCQs, check duplicates, generate questions via AI"
+        type: SYNC
+
+# QuizHub Backend Connection
+quizhub:
+  backend:
+    url: http://localhost:8080
+    token: ${QUIZHUB_TOKEN:eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkaXZ5YS5tYWRoYW5hc2VrYXIiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3ODA4MTUzODYsImV4cCI6MTc4MDkwMTc4Nn0.V-3BhhcaY1J1hc0Fhpmnom4BkPRTXV-LVofhgbMoJ8Q}

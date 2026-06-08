@@ -1,4 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import {
+  PenLine, Send, Search, CheckCircle2, RotateCcw, UserRound, ClipboardCheck,
+  Scale, RefreshCw, Library, Code2, Shield, Brain, FileText, Lock,
+  Bot, Target, SlidersHorizontal, Link2, BarChart3, Zap, RefreshCcw, Users
+} from 'lucide-react';
 import Navbar from '../components/Navbar';
 import './RuleBook.css';
 
@@ -55,51 +60,51 @@ function ParticlesBg() {
 }
 
 const LIFECYCLE = [
-  { stage: 'DRAFT', color: '#6B7280', gradient: 'linear-gradient(135deg, #6B7280, #9CA3AF)', icon: '✏️', desc: 'Question being created. Only author can see & edit.' },
-  { stage: 'READY FOR REVIEW', color: '#7C3AED', gradient: 'linear-gradient(135deg, #7C3AED, #A78BFA)', icon: '📨', desc: 'Submitted for review. Admin assigns a reviewer.' },
-  { stage: 'UNDER REVIEW', color: '#D97706', gradient: 'linear-gradient(135deg, #D97706, #FBBF24)', icon: '🔎', desc: 'Reviewer evaluating. Can approve, reject, or comment.' },
-  { stage: 'APPROVED', color: '#059669', gradient: 'linear-gradient(135deg, #059669, #34D399)', icon: '✅', desc: 'Passed review! Enters Question Bank for quizzes.' },
-  { stage: 'REJECTED', color: '#DC2626', gradient: 'linear-gradient(135deg, #DC2626, #F87171)', icon: '↩️', desc: 'Needs revision. Author gets feedback & resubmits.' },
+  { stage: 'DRAFT', color: '#6B7280', gradient: 'linear-gradient(135deg, #6B7280, #9CA3AF)', icon: <PenLine size={18} />, desc: 'Question being created. Only author can see & edit.' },
+  { stage: 'READY FOR REVIEW', color: '#A100FF', gradient: 'linear-gradient(135deg, #A100FF, #C77DFF)', icon: <Send size={18} />, desc: 'Submitted for review. Admin assigns a reviewer.' },
+  { stage: 'UNDER REVIEW', color: '#D97706', gradient: 'linear-gradient(135deg, #D97706, #FBBF24)', icon: <Search size={18} />, desc: 'Reviewer evaluating. Can approve, reject, or comment.' },
+  { stage: 'APPROVED', color: '#059669', gradient: 'linear-gradient(135deg, #059669, #34D399)', icon: <CheckCircle2 size={18} />, desc: 'Passed review! Enters Question Bank for quizzes.' },
+  { stage: 'REJECTED', color: '#DC2626', gradient: 'linear-gradient(135deg, #DC2626, #F87171)', icon: <RotateCcw size={18} />, desc: 'Needs revision. Author gets feedback & resubmits.' },
 ];
 
 const REVIEW_STEPS = [
-  { icon: '✍️', title: 'Create', text: 'SME writes question and clicks "Save & Send for Review"' },
-  { icon: '🔍', title: 'Dup Check', text: 'System checks duplicates. ≥30% match → BLOCKED' },
-  { icon: '📨', title: 'Submit', text: 'Clean question → READY_FOR_REVIEW status' },
-  { icon: '👤', title: 'Assign', text: 'Admin assigns reviewer (same tech stack, not creator)' },
-  { icon: '📋', title: 'Review', text: 'Reviewer evaluates → UNDER_REVIEW status' },
-  { icon: '⚖️', title: 'Decide', text: 'Approve ✅, Reject ❌, or Comment 💬' },
-  { icon: '🔄', title: 'Revise', text: 'If rejected → SME edits and resubmits' },
-  { icon: '🏛️', title: 'Bank', text: 'If approved → enters Question Bank for quizzes' },
+  { icon: <PenLine size={16} />, title: 'Create', text: 'SME writes question and clicks "Save & Send for Review"' },
+  { icon: <Search size={16} />, title: 'Dup Check', text: 'System checks duplicates. ≥30% match → BLOCKED' },
+  { icon: <Send size={16} />, title: 'Submit', text: 'Clean question → READY_FOR_REVIEW status' },
+  { icon: <UserRound size={16} />, title: 'Assign', text: 'Admin assigns reviewer (same tech stack, not creator)' },
+  { icon: <ClipboardCheck size={16} />, title: 'Review', text: 'Reviewer evaluates → UNDER_REVIEW status' },
+  { icon: <Scale size={16} />, title: 'Decide', text: 'Approve, Reject, or Comment' },
+  { icon: <RefreshCw size={16} />, title: 'Revise', text: 'If rejected → SME edits and resubmits' },
+  { icon: <Library size={16} />, title: 'Bank', text: 'If approved → enters Question Bank for quizzes' },
 ];
 
 const ROLES = [
   {
-    role: 'SME', fullName: 'Subject Matter Expert', icon: '🧑‍💻', color: '#6366F1',
+    role: 'SME', fullName: 'Subject Matter Expert', icon: <Code2 size={20} />, color: '#A100FF',
     perms: ['Create/edit/delete own MCQs', 'Submit for review', 'Bulk upload (CSV/Excel)', 'AI-generate questions', 'View stats & leaderboard', 'Take quizzes', 'Live Quiz battles'],
   },
   {
-    role: 'Admin', fullName: 'Administrator', icon: '🛡️', color: '#8B5CF6',
+    role: 'Admin', fullName: 'Administrator', icon: <Shield size={20} />, color: '#B84DFF',
     perms: ['All SME permissions +', 'Assign reviewers', 'Manage Question Bank', 'Manage Tech Stacks & Topics', 'Manage users', 'View all analytics & audit logs', 'Build & publish assessments'],
   },
 ];
 
 const AI_FEATURES = [
-  { icon: '🧠', title: 'Smart Generation', desc: 'Generates MCQs from Tech Stack + Topic + Difficulty using local Ollama LLM' },
-  { icon: '🛡️', title: 'Auto Dup-Screen', desc: 'Each generated question auto-checked for ≥30% similarity & replaced (up to 3 retries)' },
-  { icon: '📝', title: 'Draft First', desc: 'All AI questions saved as DRAFT — human review still required before approval' },
-  { icon: '🔒', title: 'Privacy First', desc: 'Uses local Ollama model — no data leaves your machine. Zero cloud dependency' },
-  { icon: '🔄', title: 'Regenerate', desc: 'Unhappy? Regenerate individual questions or the entire batch instantly' },
-  { icon: '🤖', title: 'AI Check', desc: 'Manual duplicate scan anytime via the 🤖 button on the edit form' },
+  { icon: <Brain size={18} />, title: 'Smart Generation', desc: 'Generates MCQs from Tech Stack + Topic + Difficulty using local Ollama LLM' },
+  { icon: <Shield size={18} />, title: 'Auto Dup-Screen', desc: 'Each generated question auto-checked for ≥30% similarity & replaced (up to 3 retries)' },
+  { icon: <FileText size={18} />, title: 'Draft First', desc: 'All AI questions saved as DRAFT — human review still required before approval' },
+  { icon: <Lock size={18} />, title: 'Privacy First', desc: 'Uses local Ollama model — no data leaves your machine. Zero cloud dependency' },
+  { icon: <RefreshCcw size={18} />, title: 'Regenerate', desc: 'Unhappy? Regenerate individual questions or the entire batch instantly' },
+  { icon: <Bot size={18} />, title: 'AI Check', desc: 'Manual duplicate scan anytime via the AI button on the edit form' },
 ];
 
 const QUIZ_RULES = [
-  { icon: '✅', title: 'Approved Only', desc: 'Only APPROVED questions can be used in quizzes' },
-  { icon: '🎛️', title: 'Quiz Builder', desc: 'Set title, time limit, passing score, question count' },
-  { icon: '🔗', title: 'Unique Links', desc: 'Each assessment gets a unique token/link to share' },
-  { icon: '🛡️', title: 'Anti-Cheat', desc: 'Timer, chatbot hidden, navigation locked during exam' },
-  { icon: '📊', title: 'Auto-Grading', desc: 'Instant results: score, time, per-question breakdown' },
-  { icon: '⚡', title: 'Live Mode', desc: 'Real-time multiplayer battles with live leaderboard' },
+  { icon: <CheckCircle2 size={18} />, title: 'Approved Only', desc: 'Only APPROVED questions can be used in quizzes' },
+  { icon: <SlidersHorizontal size={18} />, title: 'Quiz Builder', desc: 'Set title, time limit, passing score, question count' },
+  { icon: <Link2 size={18} />, title: 'Unique Links', desc: 'Each assessment gets a unique token/link to share' },
+  { icon: <Shield size={18} />, title: 'Anti-Cheat', desc: 'Timer, chatbot hidden, navigation locked during exam' },
+  { icon: <BarChart3 size={18} />, title: 'Auto-Grading', desc: 'Instant results: score, time, per-question breakdown' },
+  { icon: <Zap size={18} />, title: 'Live Mode', desc: 'Real-time multiplayer battles with live leaderboard' },
 ];
 
 export default function RuleBook() {
@@ -107,12 +112,12 @@ export default function RuleBook() {
   const thresholdCount = useCountUp(30, 1500);
 
   const tabs = [
-    { id: 'lifecycle', icon: '🔄', label: 'Lifecycle' },
-    { id: 'roles', icon: '👥', label: 'Roles' },
-    { id: 'duplicate', icon: '🛡️', label: 'Duplicate' },
-    { id: 'ai', icon: '🤖', label: 'AI Rules' },
-    { id: 'review', icon: '📝', label: 'Workflow' },
-    { id: 'quiz', icon: '🎯', label: 'Quizzes' },
+    { id: 'lifecycle', icon: <RefreshCw size={15} />, label: 'Lifecycle' },
+    { id: 'roles', icon: <Users size={15} />, label: 'Roles' },
+    { id: 'duplicate', icon: <Shield size={15} />, label: 'Duplicate' },
+    { id: 'ai', icon: <Bot size={15} />, label: 'AI Rules' },
+    { id: 'review', icon: <FileText size={15} />, label: 'Workflow' },
+    { id: 'quiz', icon: <Target size={15} />, label: 'Quizzes' },
   ];
 
   return (
@@ -221,11 +226,11 @@ export default function RuleBook() {
                     </div>
                   </div>
                   <div className="rb-dup-explain">
-                    <h3>🚫 Hard Block Rule</h3>
+                    <h3>Hard Block Rule</h3>
                     <p>If any existing question matches ≥ <strong>30%</strong> similarity, you <strong>cannot</strong> send for review. Fix it first!</p>
                     <div className="rb-dup-visual">
-                      <div className="rb-dup-bar"><div className="rb-dup-bar-fill safe" style={{width:'25%'}} /><span>25% — Safe ✅</span></div>
-                      <div className="rb-dup-bar"><div className="rb-dup-bar-fill danger" style={{width:'45%'}} /><span>45% — Blocked 🚫</span></div>
+                      <div className="rb-dup-bar"><div className="rb-dup-bar-fill safe" style={{width:'25%'}} /><span>25% — Safe</span></div>
+                      <div className="rb-dup-bar"><div className="rb-dup-bar-fill danger" style={{width:'45%'}} /><span>45% — Blocked</span></div>
                     </div>
                   </div>
                 </div>
@@ -236,7 +241,7 @@ export default function RuleBook() {
                   'Similarity ≥ 30% → flagged as potential duplicate',
                   '"Save & Send for Review" with duplicates → HARD BLOCKED',
                   'Save as Draft still works — must resolve before submitting',
-                  '🤖 AI Check button for manual duplicate scan anytime',
+                  'AI Check button for manual duplicate scan anytime',
                   'Shows similar Q#ID, percentage badge, and question stem',
                 ].map((rule, i) => (
                   <AnimateIn key={i} delay={i * 100}>

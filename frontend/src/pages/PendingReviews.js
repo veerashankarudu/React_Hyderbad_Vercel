@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { PartyPopper, Bot, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import API from '../api';
 import Navbar from '../components/Navbar';
 import SortableTh from '../components/SortableTh';
@@ -184,7 +185,7 @@ export default function PendingReviews() {
         {loading ? <div className="loading">Loading reviews...</div> : null}
         {!loading && reviews.length === 0 && !selected && (
           <div className="empty-state">
-            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🎉</div>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}><PartyPopper size={40} color="#A100FF" /></div>
             <h3>{t('pr.allCaughtUp')}</h3>
             <p>{t('pr.noPending')}</p>
           </div>
@@ -270,7 +271,7 @@ export default function PendingReviews() {
                 {/* AI Reviewer Copilot */}
                 <div style={{ marginBottom: '1rem', background: '#F0F4FF', border: '1px solid #C7D7FF', borderRadius: '8px', padding: '0.85rem 1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: aiCopilot ? '0.75rem' : 0 }}>
-                    <span style={{ fontWeight: 600, fontSize: '0.875rem', color: '#3730A3' }}>🤖 {t('pr.aiCopilot')}</span>
+                    <span style={{ fontWeight: 600, fontSize: '0.875rem', color: '#3730A3' }}><Bot size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> {t('pr.aiCopilot')}</span>
                     {(() => {
                       let copilotLabel = t('pr.getAiAnalysis');
                       if (aiLoading) copilotLabel = t('pr.analyzing');
@@ -301,7 +302,7 @@ export default function PendingReviews() {
                               {score != null && <span>{t('pr.confidence')}: <strong style={{ color: riskColor[risk] }}>{score}/100 ({risk})</strong></span>}
                             </div>
                             {aiCopilot.explanation && <div style={{ color: '#374151', marginBottom: '0.25rem' }}><strong>{t('pr.analysis')}:</strong> {aiCopilot.explanation}</div>}
-                            {aiCopilot.ambiguityWarning && <div style={{ color: '#B45309' }}>⚠️ {aiCopilot.ambiguityWarning}</div>}
+                            {aiCopilot.ambiguityWarning && <div style={{ color: '#B45309' }}><AlertTriangle size={12} style={{marginRight:'0.25rem',verticalAlign:'middle'}} /> {aiCopilot.ambiguityWarning}</div>}
                           </>
                         )}
                       </div>
@@ -310,7 +311,7 @@ export default function PendingReviews() {
                 </div>
                 {/* Reviewer Checklist */}
                 <div className="reviewer-checklist">
-                  <div className="checklist-title">✅ {t('pr.checklistTitle')}</div>
+                  <div className="checklist-title"><CheckCircle2 size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> {t('pr.checklistTitle')}</div>
                   {[t('pr.check1'), t('pr.check2'), t('pr.check3'), t('pr.check4')].map((item, idx) => {
                     return (
                       <label key={item} className={`checklist-item${checklist[idx] ? ' checked' : ''}`}>

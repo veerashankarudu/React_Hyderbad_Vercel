@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { MessageSquare } from 'lucide-react';
 import API from '../api';
 import { useAuth } from '../AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -190,7 +191,7 @@ export default function McqCommentSection({ mcqId }) {
   return (
     <div className="mcq-comment-section">
       <div className="mcs-header">
-        <span className="mcs-title">💬 Discussion</span>
+        <span className="mcs-title"><MessageSquare size={16} style={{marginRight:'0.4rem',verticalAlign:'middle'}} /> Discussion</span>
         {totalCount > 0 && (
           <span className="mcs-count">{totalCount} {totalCount === 1 ? 'comment' : 'comments'}</span>
         )}

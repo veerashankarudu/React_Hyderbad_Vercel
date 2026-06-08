@@ -81,7 +81,7 @@
 .file-name-pill {
   font-size: 0.8rem;
   color: var(--primary);
-  background: #EDE9FE;
+  background: #F3E8FF;
   padding: 0.3rem 0.75rem;
   border-radius: 999px;
   font-weight: 500;
@@ -228,7 +228,7 @@
   font-weight: 600;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
-  background: #EDE9FE;
+  background: #F3E8FF;
   color: var(--primary);
 }
 
@@ -265,12 +265,12 @@ body.dark-mode .screenshot-upload-card,
 body.dark-mode .screenshot-result-card { background: #161b22; border-color: #30363d; }
 body.dark-mode .upload-card-body { background: #161b22; }
 body.dark-mode .screenshot-dropzone { background: #1c2128; border-color: #4a3f6e; }
-body.dark-mode .screenshot-dropzone:hover { background: #21262d; border-color: #6366f1; }
+body.dark-mode .screenshot-dropzone:hover { background: #21262d; border-color: #A100FF; }
 body.dark-mode .screenshot-dropzone h4 { color: #e2e8f0; }
 body.dark-mode .screenshot-dropzone p { color: #8b949e; }
 body.dark-mode .screenshot-placeholder { color: #8b949e; }
 body.dark-mode .screenshot-placeholder p { color: #6e7681; }
-body.dark-mode .file-name-pill { background: rgba(124,58,237,0.2); color: #a78bfa; }
+body.dark-mode .file-name-pill { background: rgba(161,0,255,0.2); color: #C77DFF; }
 body.dark-mode .extracted-mcq { color: #e2e8f0; }
 body.dark-mode .extracted-question { background: #1c2128; }
 body.dark-mode .extracted-question p { color: #e2e8f0; }
@@ -279,6 +279,6 @@ body.dark-mode .extracted-option.correct { background: rgba(5,150,105,0.15); bor
 body.dark-mode .opt-text { color: #c9d1d9; }
 body.dark-mode .extracted-actions { border-top-color: #30363d; }
 body.dark-mode .extracted-hint { color: #6e7681; }
-body.dark-mode .meta-pill { background: rgba(124,58,237,0.2); color: #a78bfa; }
+body.dark-mode .meta-pill { background: rgba(161,0,255,0.2); color: #C77DFF; }
 body.dark-mode .meta-pill.correct-pill { background: rgba(5,150,105,0.15); color: #34d399; }
 body.dark-mode .extraction-loading { color: #8b949e; }

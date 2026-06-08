@@ -86,7 +86,7 @@ export default function App() {
     <ErrorBoundary>
     <AuthProvider>
       <BrowserRouter>
-        <Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh'}}><div className="spinner" style={{width:40,height:40,border:'4px solid rgba(255,255,255,0.2)',borderTop:'4px solid #6366f1',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}></div></div>}>
+        <Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh'}}><div className="spinner" style={{width:40,height:40,border:'4px solid rgba(255,255,255,0.2)',borderTop:'4px solid #A100FF',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}></div></div>}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

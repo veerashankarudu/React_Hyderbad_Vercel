@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Hand, ClipboardList, Search, Bot, BarChart3, PenLine, Target, Pin, Trash2, Sparkles } from 'lucide-react';
 import API from '../api';
 import { useAuth } from '../AuthContext';
 import { translateText } from '../utils/translateContent';
@@ -27,13 +28,13 @@ function BotAvatar({ size = 32 }) {
       <rect x="14" y="24" width="12" height="2.5" rx="1.25" fill="white" opacity="0.85" />
       {/* Antenna */}
       <line x1="20" y1="10" x2="20" y2="5" stroke="white" strokeWidth="2" strokeLinecap="round" />
-      <circle cx="20" cy="4" r="2" fill="#A78BFA" className="chatbot-bot-antenna" />
+      <circle cx="20" cy="4" r="2" fill="#C77DFF" className="chatbot-bot-antenna" />
       {/* Ears */}
       <rect x="4" y="16" width="4" height="6" rx="2" fill="url(#botGrad)" />
       <rect x="32" y="16" width="4" height="6" rx="2" fill="url(#botGrad)" />
       <defs>
         <linearGradient id="botGrad" x1="8" y1="10" x2="32" y2="30" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#7C3AED" />
+          <stop offset="0%" stopColor="#A100FF" />
           <stop offset="100%" stopColor="#3B82F6" />
         </linearGradient>
       </defs>
@@ -480,7 +481,7 @@ export default function ChatBot() {
           className="chatbot-greeting-bubble"
           style={{ right: fabPos.right + 66, bottom: fabPos.bottom + 8 }}
         >
-          <span className="chatbot-greeting-wave">👋</span> {t('chatbot.greetingBubble')}
+          <span className="chatbot-greeting-wave"><Hand size={18} /></span> {t('chatbot.greetingBubble')}
           <button className="chatbot-greeting-close" onClick={() => setShowGreeting(false)} aria-label="Dismiss">✕</button>
         </div>
       )}
@@ -561,26 +562,27 @@ export default function ChatBot() {
                 className={`chatbot-header-btn chatbot-header-history-btn${showHistory ? ' active' : ''}`}
                 onClick={e => { e.stopPropagation(); setShowHistory(h => !h); setShowSearch(false); setSearchQuery(''); }}
                 title={t('chatbot.chatHistory')}
-              >📋 {t('chatbot.historyBtn')}</button>
-              <button className="chatbot-header-btn" onClick={e => { e.stopPropagation(); setShowSearch(s => !s); if (showSearch) setSearchQuery(''); setShowHistory(false); }} title="Search">🔍</button>
+              ><ClipboardList size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> {t('chatbot.historyBtn')}</button>
+              <button className="chatbot-header-btn" onClick={e => { e.stopPropagation(); setShowSearch(s => !s); if (showSearch) setSearchQuery(''); setShowHistory(false); }} title="Search"><Search size={14} /></button>
               <button className="chatbot-close" onClick={handleClose}>✕</button>
             </div>
           </div>
 
           {/* Shortcuts */}
           <div className="chatbot-shortcuts" onClick={e => e.stopPropagation()}>
-            <button className="chatbot-shortcut" onClick={() => insertMention('@bot ')}>🤖 @bot</button>
-            <button className="chatbot-shortcut chatbot-shortcut-help" onClick={() => setInput('🆘 Need help!')}>🆘 Help</button>
-            <button className="chatbot-shortcut" onClick={() => insertMention('@bot difficulty ')} title="Rate difficulty">📊 Difficulty</button>
+            <button className="chatbot-shortcut" onClick={() => insertMention('@bot ')}><Bot size={13} style={{marginRight:'0.2rem',verticalAlign:'middle'}} /> @bot</button>
+            <button className="chatbot-shortcut chatbot-shortcut-help" onClick={() => setInput('🆘 Need help!')}>? Help</button>
+            <button className="chatbot-shortcut chatbot-shortcut-gen" onClick={() => insertMention('@bot generate ')} title="Generate interactive questions"><Sparkles size={13} style={{marginRight:'0.2rem',verticalAlign:'middle'}} /> Generate</button>
+            <button className="chatbot-shortcut" onClick={() => insertMention('@bot difficulty ')} title="Rate difficulty"><BarChart3 size={13} style={{marginRight:'0.2rem',verticalAlign:'middle'}} /> Difficulty</button>
             <button className="chatbot-shortcut" onClick={() => insertMention('@bot bloom ')} title="Bloom's taxonomy">🌸 Bloom</button>
-            <button className="chatbot-shortcut" onClick={() => insertMention('@bot proofread ')} title="Proofread MCQ">✏️ Proofread</button>
-            <button className="chatbot-shortcut" onClick={() => insertMention('@bot check ')} title="Check distractors">🎯 Check</button>
+            <button className="chatbot-shortcut" onClick={() => insertMention('@bot proofread ')} title="Proofread MCQ"><PenLine size={13} style={{marginRight:'0.2rem',verticalAlign:'middle'}} /> Proofread</button>
+            <button className="chatbot-shortcut" onClick={() => insertMention('@bot check ')} title="Check distractors"><Target size={13} style={{marginRight:'0.2rem',verticalAlign:'middle'}} /> Check</button>
           </div>
 
           {/* Pinned message banner */}
           {pinnedMsg && (
             <div className="chatbot-pin-banner" onClick={e => e.stopPropagation()}>
-              <span className="chatbot-pin-icon">📌</span>
+              <span className="chatbot-pin-icon"><Pin size={14} /></span>
               <div className="chatbot-pin-content">
                 <strong>{pinnedMsg.senderName}:</strong>{' '}
                 {pinnedMsg.content.length > 65 ? pinnedMsg.content.substring(0, 65) + '…' : pinnedMsg.content}
@@ -600,7 +602,7 @@ export default function ChatBot() {
           {showHistory && (
             <div className="chatbot-history-panel" onClick={e => e.stopPropagation()}>
               <div className="chatbot-history-header">
-                <span>📋 {t('chatbot.chatHistory')}</span>
+                <span><ClipboardList size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> {t('chatbot.chatHistory')}</span>
                 <span className="chatbot-history-count">{messages.filter(m => !m.deleted).length} messages</span>
               </div>
               <div className="chatbot-history-list">
@@ -629,13 +631,13 @@ export default function ChatBot() {
           <div className="chatbot-messages" style={showHistory ? {display:'none'} : {}}>
             {filteredMessages.length === 0 && !searchQuery && (
               <div className="chatbot-empty">
-                <span>👋</span>
+                <span><Hand size={24} /></span>
                 <p>{t('chatbot.noMessages')}</p>
               </div>
             )}
             {filteredMessages.length === 0 && searchQuery && (
               <div className="chatbot-empty">
-                <span>🔍</span>
+                <span><Search size={24} /></span>
                 <p>{t('chatbot.noResults', { q: searchQuery })}</p>
               </div>
             )}
@@ -706,7 +708,7 @@ export default function ChatBot() {
                     <div className="chatbot-meta">
                       <span className="chatbot-time">{formatTime(msg.createdAt)}</span>
                       {msg.editedAt && <span className="chatbot-edited-label">{t('chatbot.edited')}</span>}
-                      {msg.pinned && <span className="chatbot-pin-label">📌</span>}
+                      {msg.pinned && <span className="chatbot-pin-label"><Pin size={12} /></span>}
                     </div>
 
                     {/* Reactions row */}
@@ -737,9 +739,9 @@ export default function ChatBot() {
                       <div className={`chatbot-msg-actions${isMe ? ' chatbot-msg-actions-left' : ' chatbot-msg-actions-right'}`} onClick={e => e.stopPropagation()}>
                         <button onClick={() => handleReply(msg)} title="Reply">↩</button>
                         <button onClick={e => { e.stopPropagation(); setEmojiPickerFor(emojiPickerFor === msg.id ? null : msg.id); }} title="React">😊</button>
-                        {isMe && !msg.deleted && <button onClick={() => startEdit(msg)} title="Edit">✏️</button>}
-                        {(isMe || isUserAdmin) && !msg.deleted && <button onClick={() => handleDelete(msg.id)} title="Delete">🗑️</button>}
-                        {isUserAdmin && !msg.deleted && <button onClick={() => handlePin(msg.id)} title={msg.pinned ? 'Unpin' : 'Pin'}>{msg.pinned ? '📌' : '📍'}</button>}
+                        {isMe && !msg.deleted && <button onClick={() => startEdit(msg)} title="Edit"><PenLine size={13} /></button>}
+                        {(isMe || isUserAdmin) && !msg.deleted && <button onClick={() => handleDelete(msg.id)} title="Delete"><Trash2 size={13} /></button>}
+                        {isUserAdmin && !msg.deleted && <button onClick={() => handlePin(msg.id)} title={msg.pinned ? 'Unpin' : 'Pin'}><Pin size={13} /></button>}
                       </div>
                     )}
                   </div>

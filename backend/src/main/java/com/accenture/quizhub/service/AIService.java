@@ -264,7 +264,25 @@ public class AIService {
             // Layer 4: Keyword containment — if ALL significant new words appear in existing
             int keywordHits = 0;
             for (String w : newWords) {
-                if (existingNormalized.contains(w)) keywordHits++;
+                // Use whole-word match for short words (<=3 chars) to avoid substring false positives
+                // e.g. "di" should NOT match "discovery", "disable", "diagram"
+                if (w.length() <= 3) {
+                    // For short abbreviations, check if the word itself OR any of its expanded synonyms appear
+                    if (existingWords.contains(w)) {
+                        keywordHits++;
+                    } else {
+                        // Check if any synonym/expansion of this word exists in the existing question
+                        Set<String> expanded = expandConcepts(Set.of(w));
+                        boolean found = false;
+                        for (String syn : expanded) {
+                            if (syn.length() > 3 && existingNormalized.contains(syn)) { found = true; break; }
+                            if (existingWords.contains(syn)) { found = true; break; }
+                        }
+                        if (found) keywordHits++;
+                    }
+                } else {
+                    if (existingNormalized.contains(w)) keywordHits++;
+                }
             }
             double keywordScore = newWords.isEmpty() ? 0 : (keywordHits * 100.0 / newWords.size());
 
@@ -722,8 +740,8 @@ public class AIService {
             int start = raw.indexOf('[');
             int end = raw.lastIndexOf(']');
             if (start >= 0 && end > start) raw = raw.substring(start, end + 1);
-            List<Map<String, Object>> questions = objectMapper.readValue(raw, new TypeReference<List<Map<String, Object>>>() {});
-            return questions;
+            List<Object> parsed = objectMapper.readValue(raw, new TypeReference<List<Object>>() {});
+            return unwrapNestedArray(parsed);
         } catch (Exception e) {
             List<Map<String, Object>> fallback = new ArrayList<>();
             Map<String, Object> err = new HashMap<>();
@@ -761,15 +779,32 @@ public class AIService {
     public List<Map<String, Object>> generateInteractiveQuestions(String userPrompt) {
         String prompt = String.format(
             "Generate quiz questions. Request: \"%s\"\n\n" +
-            "Rules: If no count specified, generate 5. Match the topic exactly. Use VARIED types (mix them). Keep all text SHORT.\n\n" +
+            "Rules: If no count specified, generate 5. Match the topic exactly. If user specifies a type, use ONLY that type. Otherwise mix types. Keep all text SHORT.\n\n" +
             "JSON formats (respond ONLY with a JSON array, no markdown):\n" +
             "SINGLE_MCQ: {\"type\":\"SINGLE_MCQ\",\"question\":\"?\",\"code\":null,\"options\":[{\"letter\":\"A\",\"text\":\"..\"},{\"letter\":\"B\",\"text\":\"..\"},{\"letter\":\"C\",\"text\":\"..\"},{\"letter\":\"D\",\"text\":\"..\"}],\"correct\":\"B\",\"explanation\":\"..\"}\n" +
             "MULTI_MCQ: {\"type\":\"MULTI_MCQ\",\"question\":\"?\",\"options\":[{\"letter\":\"A\",\"text\":\"..\"},{\"letter\":\"B\",\"text\":\"..\"},{\"letter\":\"C\",\"text\":\"..\"},{\"letter\":\"D\",\"text\":\"..\"}],\"correctSet\":[\"A\",\"C\"],\"explanation\":\"..\"}\n" +
             "DRAG_ORDER: {\"type\":\"DRAG_ORDER\",\"question\":\"Arrange in order:\",\"items\":[\"s1\",\"s2\",\"s3\",\"s4\"],\"correctOrder\":[0,1,2,3]}\n" +
+            "FILL_BLANK: {\"type\":\"FILL_BLANK\",\"question\":\"The ___ keyword is used for...\",\"blank\":\"final\",\"hint\":\"Think about immutability\"}\n" +
             "PREDICT_OUTPUT: {\"type\":\"PREDICT_OUTPUT\",\"question\":\"Output?\",\"code\":\"short code\",\"expectedOutput\":\"x\",\"explanation\":\"..\"}\n" +
             "DEBUG_CODE: {\"type\":\"DEBUG_CODE\",\"question\":\"Bug?\",\"code\":\"code\",\"options\":[{\"id\":\"A\",\"text\":\"..\"},{\"id\":\"B\",\"text\":\"..\"},{\"id\":\"C\",\"text\":\"..\"},{\"id\":\"D\",\"text\":\"..\"}],\"correct\":\"A\",\"explanation\":\"..\"}\n" +
-            "RIDDLE: {\"type\":\"RIDDLE\",\"riddle\":\"Creative puzzle text\",\"hints\":[\"h1\",\"h2\"],\"options\":[{\"letter\":\"A\",\"text\":\"..\"},{\"letter\":\"B\",\"text\":\"..\"},{\"letter\":\"C\",\"text\":\"..\"},{\"letter\":\"D\",\"text\":\"..\"}],\"correct\":\"A\",\"explanation\":\"..\"}\n\n" +
-            "IMPORTANT: Use SINGLE_MCQ as default. Only use RIDDLE if user says 'riddle'. Mix 2-3 different types for variety. Keep options under 6 words. Keep explanations under 12 words. Keep code under 3 lines. Output ONLY the JSON array.\n",
+            "SQL_BUILDER: {\"type\":\"SQL_BUILDER\",\"question\":\"Build query to...\",\"clauses\":[{\"id\":\"c1\",\"text\":\"SELECT *\",\"cat\":\"keyword\"},{\"id\":\"c2\",\"text\":\"FROM users\",\"cat\":\"table\"}],\"correctIds\":[\"c1\",\"c2\"]}\n" +
+            "RIDDLE: {\"type\":\"RIDDLE\",\"riddle\":\"Creative puzzle text\",\"hints\":[\"h1\",\"h2\"],\"options\":[{\"letter\":\"A\",\"text\":\"..\"},{\"letter\":\"B\",\"text\":\"..\"},{\"letter\":\"C\",\"text\":\"..\"},{\"letter\":\"D\",\"text\":\"..\"}],\"correct\":\"A\",\"explanation\":\"..\"}\n" +
+            "MATCH_PAIRS: {\"type\":\"MATCH_PAIRS\",\"question\":\"Match concepts to definitions:\",\"pairs\":[{\"left\":\"Term1\",\"right\":\"Def1\"},{\"left\":\"Term2\",\"right\":\"Def2\"}]}\n" +
+            "CODE_OUTPUT: {\"type\":\"CODE_OUTPUT\",\"question\":\"Match code to output:\",\"snippets\":[{\"id\":\"s1\",\"code\":\"code1\"},{\"id\":\"s2\",\"code\":\"code2\"}],\"outputs\":[{\"id\":\"o1\",\"text\":\"out1\"},{\"id\":\"o2\",\"text\":\"out2\"}],\"correctMap\":{\"s1\":\"o1\",\"s2\":\"o2\"}}\n" +
+            "CODE_REARRANGE: {\"type\":\"CODE_REARRANGE\",\"question\":\"Arrange code:\",\"blocks\":[{\"id\":\"b1\",\"code\":\"line1\"},{\"id\":\"b2\",\"code\":\"line2\"}],\"correctOrder\":[\"b1\",\"b2\"]}\n" +
+            "ARCH_LAYERS: {\"type\":\"ARCH_LAYERS\",\"question\":\"Place in correct layer:\",\"layers\":[\"Presentation\",\"Service\",\"Data\"],\"items\":[{\"text\":\"Controller\",\"layer\":\"Presentation\"},{\"text\":\"Repository\",\"layer\":\"Data\"}]}\n" +
+            "CODE_REVIEW: {\"type\":\"CODE_REVIEW\",\"question\":\"Find the issue:\",\"code\":\"code\",\"options\":[{\"id\":\"A\",\"text\":\"..\"},{\"id\":\"B\",\"text\":\"..\"},{\"id\":\"C\",\"text\":\"..\"},{\"id\":\"D\",\"text\":\"..\"}],\"correct\":\"A\",\"explanation\":\"..\"}\n" +
+            "PIPELINE_BUILD: {\"type\":\"PIPELINE_BUILD\",\"question\":\"Build the pipeline:\",\"clauses\":[{\"id\":\"p1\",\"text\":\".filter()\",\"cat\":\"intermediate\"},{\"id\":\"p2\",\"text\":\".collect()\",\"cat\":\"terminal\"}],\"correctIds\":[\"p1\",\"p2\"]}\n" +
+            "FLOWCHART: {\"type\":\"FLOWCHART\",\"question\":\"What happens at decision point?\",\"options\":[{\"letter\":\"A\",\"text\":\"..\"},{\"letter\":\"B\",\"text\":\"..\"},{\"letter\":\"C\",\"text\":\"..\"},{\"letter\":\"D\",\"text\":\"..\"}],\"correct\":\"B\",\"explanation\":\"..\"}\n" +
+            "DEVOPS_PIPE: {\"type\":\"DEVOPS_PIPE\",\"question\":\"Order CI/CD stages:\",\"items\":[\"Build\",\"Test\",\"Deploy\",\"Monitor\"]}\n" +
+            "SECURE_CODE: {\"type\":\"SECURE_CODE\",\"question\":\"Find the vulnerability:\",\"code\":\"code\",\"options\":[{\"id\":\"A\",\"text\":\"..\"},{\"id\":\"B\",\"text\":\"..\"},{\"id\":\"C\",\"text\":\"..\"},{\"id\":\"D\",\"text\":\"..\"}],\"correct\":\"A\",\"explanation\":\"..\"}\n\n" +
+            "TYPE DETECTION: 'fill in the blank/cloze/word bank'→FILL_BLANK, 'drag/order/arrange/sequence'→DRAG_ORDER, 'match pair/concept'→MATCH_PAIRS, " +
+            "'code output/match code'→CODE_OUTPUT, 'rearrange/reorder code'→CODE_REARRANGE, 'architecture/layer'→ARCH_LAYERS, " +
+            "'code review/PR review'→CODE_REVIEW, 'stream pipeline/pipeline build'→PIPELINE_BUILD, 'flowchart/diagram'→FLOWCHART, " +
+            "'devops/ci-cd/deploy pipeline'→DEVOPS_PIPE, 'secure/owasp/vulnerability/xss/injection'→SECURE_CODE, " +
+            "'predict output/trace'→PREDICT_OUTPUT, 'debug/find bug'→DEBUG_CODE, 'sql build'→SQL_BUILDER, 'riddle/enigma'→RIDDLE, " +
+            "'multi select/checkbox/select all'→MULTI_MCQ. Default→SINGLE_MCQ.\n" +
+            "Output ONLY the JSON array.\n",
             userPrompt
         );
         try {
@@ -783,12 +818,15 @@ public class AIService {
             }
             // Try parsing as-is first
             try {
-                List<Map<String, Object>> questions = objectMapper.readValue(raw, List.class);
+                List<Object> parsed = objectMapper.readValue(raw, List.class);
+                // Unwrap nested array: [[{...}]] → [{...}]
+                List<Map<String, Object>> questions = unwrapNestedArray(parsed);
                 return questions;
             } catch (Exception parseErr) {
                 // JSON truncated — try to recover by finding last complete object
                 String repaired = repairTruncatedJsonArray(raw);
-                List<Map<String, Object>> questions = objectMapper.readValue(repaired, List.class);
+                List<Object> parsed = objectMapper.readValue(repaired, List.class);
+                List<Map<String, Object>> questions = unwrapNestedArray(parsed);
                 if (questions.isEmpty()) throw parseErr;
                 return questions;
             }
@@ -799,6 +837,30 @@ public class AIService {
             fallback.add(err);
             return fallback;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> unwrapNestedArray(List<Object> parsed) {
+        List<Map<String, Object>> questions = new ArrayList<>();
+        for (Object item : parsed) {
+            if (item instanceof List) {
+                // Nested array — merge all inner objects into ONE question
+                // Ollama sometimes splits a single question across multiple objects like:
+                // [{questionStem: "..."}, {riddle: "...", hints: [...], answer: "..."}]
+                Map<String, Object> merged = new java.util.LinkedHashMap<>();
+                for (Object inner : (List<?>) item) {
+                    if (inner instanceof Map) {
+                        merged.putAll((Map<String, Object>) inner);
+                    }
+                }
+                if (!merged.isEmpty()) {
+                    questions.add(merged);
+                }
+            } else if (item instanceof Map) {
+                questions.add((Map<String, Object>) item);
+            }
+        }
+        return questions;
     }
 
     private String repairTruncatedJsonArray(String raw) {
@@ -833,26 +895,33 @@ public class AIService {
         if (userMessage == null || userMessage.isBlank()) {
             return "Hi! I'm QuizHub AI 🤖\n\n" +
                    "💡 Commands:\n" +
+                   "• `@bot generate [N] [type] questions on [topic]` — Generate interactive questions\n" +
                    "• `@bot difficulty [MCQ]` — Rate difficulty\n" +
                    "• `@bot bloom [MCQ]` — Bloom's taxonomy level\n" +
                    "• `@bot proofread [MCQ]` — Grammar & clarity check\n" +
                    "• `@bot check [MCQ]` — Distractor quality\n" +
                    "• `@bot hint [MCQ]` — Teaching hint\n" +
                    "• `@bot leaderboard` — Top performers tip\n" +
-                   "• `@bot history` — Show recent chat messages";
+                   "• `@bot history` — Show recent chat messages\n\n" +
+                   "🎲 Question types: MCQ, fill in the blank, drag & order, predict output, debug code, " +
+                   "riddle, match pairs, code review, secure code, flowchart, DevOps pipeline & more!";
         }
 
         String lower = userMessage.toLowerCase().trim();
 
         if (lower.equals("help") || lower.equals("/help")) {
             return "🤖 **QuizHub AI Commands:**\n" +
+                   "• `@bot generate 3 fill in the blank questions on Java` — Generate any question type!\n" +
                    "• `@bot difficulty [MCQ text]` — Rate EASY/MEDIUM/HARD\n" +
                    "• `@bot bloom [MCQ text]` — Bloom's taxonomy classification\n" +
                    "• `@bot proofread [MCQ text]` — Grammar & clarity fix\n" +
                    "• `@bot check [MCQ text]` — Are distractors plausible?\n" +
                    "• `@bot hint [MCQ text]` — Pedagogical hint for learners\n" +
-                   "• `@bot history` — Show recent chat messages\n" +
-                   "• Or just ask any technical question!";
+                   "• `@bot history` — Show recent chat messages\n\n" +
+                   "🎲 **Supported question types:** MCQ, multi-select MCQ, fill in the blank, drag & order, " +
+                   "predict output, debug code, SQL builder, riddle, match pairs, code-to-output matching, " +
+                   "code rearrange, architecture layers, code review, pipeline build, flowchart, DevOps pipeline, secure code\n\n" +
+                   "Or just ask any technical question!";
         }
 
         if (lower.equals("history") || lower.equals("/history")) {
@@ -897,6 +966,48 @@ public class AIService {
             if (!isApiKeyConfigured()) return noKeyMessage();
             try { return "💡 **Hint:** " + generateHint(null, userMessage.substring(5).trim()); }
             catch (Exception e) { return "Sorry, couldn't generate a hint right now."; }
+        }
+
+        // @bot generate → interactive question generation
+        if (lower.startsWith("generate ") || lower.startsWith("create ") ||
+            lower.matches(".*\\d+\\s+(\\w+\\s+)*(mcq|question|quiz|fill|blank|drag|riddle|match|code|debug|predict|secure|review|pipeline|flowchart|devops|architect|rearrange|output|cicd).*")) {
+            String genPrompt = userMessage;
+            if (lower.startsWith("generate ")) genPrompt = userMessage.substring(9).trim();
+            else if (lower.startsWith("create ")) genPrompt = userMessage.substring(7).trim();
+            if (genPrompt.isBlank()) return "🎲 Usage: `@bot generate 3 fill in the blank questions on Spring Boot`\n\n" +
+                    "Supported types: MCQ, fill in the blank, drag & order, predict output, debug code, riddle, " +
+                    "match pairs, code output, code rearrange, architecture layers, code review, pipeline build, " +
+                    "flowchart, DevOps pipeline, secure code";
+            if (!isApiKeyConfigured()) return noKeyMessage();
+            try {
+                List<Map<String, Object>> questions = generateInteractiveQuestions(genPrompt);
+                if (questions.isEmpty() || (questions.size() == 1 && questions.get(0).containsKey("error"))) {
+                    return "❌ Couldn't generate questions. Try: `@bot generate 3 Java MCQ questions`";
+                }
+                StringBuilder sb = new StringBuilder();
+                sb.append("🎲 **Generated ").append(questions.size()).append(" Interactive Question").append(questions.size() > 1 ? "s" : "").append(":**\n\n");
+                for (int i = 0; i < questions.size(); i++) {
+                    Map<String, Object> q = questions.get(i);
+                    String type = String.valueOf(q.getOrDefault("type", "SINGLE_MCQ"));
+                    sb.append("**Q").append(i + 1).append(".** [").append(type.replace("_", " ")).append("]\n");
+                    if (q.containsKey("question")) sb.append(q.get("question")).append("\n");
+                    else if (q.containsKey("riddle")) sb.append(q.get("riddle")).append("\n");
+                    if (q.containsKey("code") && q.get("code") != null) sb.append("```\n").append(q.get("code")).append("\n```\n");
+                    if (q.containsKey("options")) {
+                        List<Map<String, Object>> opts = (List<Map<String, Object>>) q.get("options");
+                        if (opts != null) opts.forEach(o -> sb.append("  ").append(o.getOrDefault("letter", o.getOrDefault("id", "•"))).append(". ").append(o.get("text")).append("\n"));
+                    }
+                    if (q.containsKey("items")) sb.append("  Items: ").append(q.get("items")).append("\n");
+                    if (q.containsKey("pairs")) sb.append("  Pairs: ").append(q.get("pairs")).append("\n");
+                    if (q.containsKey("correct")) sb.append("  ✅ Answer: ").append(q.get("correct")).append("\n");
+                    if (q.containsKey("explanation")) sb.append("  💡 ").append(q.get("explanation")).append("\n");
+                    sb.append("\n");
+                }
+                sb.append("💡 *Try these on the **Question Types** page for interactive play!*");
+                return sb.toString().trim();
+            } catch (Exception e) {
+                return "❌ Generation failed: " + e.getMessage() + "\n\nTry: `@bot generate 3 Spring Boot MCQ`";
+            }
         }
 
         // General chat fallback
@@ -1161,8 +1272,11 @@ public class AIService {
             "to","of","in","and","or","not","it","its","that","this","for","on","with","what",
             "which","how","when","where","does","do","can","will","should","would","could",
             "have","has","had","if","as","at","by","from","into","about","than","more","any");
+        // Known short abbreviations that should NOT be filtered out
+        Set<String> knownAbbreviations = Set.of("di","jpa","orm","aop","mvc","sql","api","jvm",
+            "jdk","jre","ci","cd","ui","ux","ai","ml","db","io","gc");
         return Arrays.stream(text.toLowerCase().replaceAll("[^a-z0-9\\s]", " ").split("\\s+"))
-            .filter(w -> w.length() > 2 && !stopWords.contains(w))
+            .filter(w -> !stopWords.contains(w) && (w.length() > 2 || knownAbbreviations.contains(w)))
             .collect(Collectors.toSet());
     }
 

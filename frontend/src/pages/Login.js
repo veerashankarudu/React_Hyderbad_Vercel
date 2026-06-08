@@ -97,7 +97,7 @@ export default function Login() {
             {t('login.newSme')} <Link to="/register">{t('login.createAccount')}</Link>
           </div>
           <div className="login-signup-link" style={{ marginTop: '0.4rem', fontSize: '0.85rem' }}>
-            <Link to="/forgot-password" style={{ color: '#6366f1' }}>Forgot your password?</Link>
+            <Link to="/forgot-password" style={{ color: '#A100FF' }}>Forgot your password?</Link>
           </div>
         </div>
       </div>
@@ -107,26 +107,26 @@ export default function Login() {
         <svg className="login-ai-svg" viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg">
           {[[80,120],[200,80],[350,140],[480,90],[540,220],[490,360],[400,480],[250,520],[120,440],[60,280],[300,300],[420,200],[180,340]].map(([cx,cy],i) => (
             <g key={i}>
-              <circle cx={cx} cy={cy} r="3" fill="#6366f1" opacity="0.7">
+              <circle cx={cx} cy={cy} r="3" fill="#A100FF" opacity="0.7">
                 <animate attributeName="opacity" values="0.3;0.9;0.3" dur={`${2+i*0.4}s`} repeatCount="indefinite"/>
               </circle>
             </g>
           ))}
           {[[80,120,200,80],[200,80,350,140],[350,140,480,90],[480,90,540,220],[540,220,490,360],[490,360,400,480],[400,480,250,520],[250,520,120,440],[120,440,60,280],[60,280,80,120],[300,300,200,80],[300,300,480,90],[300,300,490,360],[300,300,250,520],[300,300,120,440],[420,200,350,140],[420,200,540,220],[180,340,60,280],[180,340,250,520]].map(([x1,y1,x2,y2],i) => (
-            <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#6366f1" strokeWidth="0.8" opacity="0.25"/>
+            <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#A100FF" strokeWidth="0.8" opacity="0.25"/>
           ))}
         </svg>
         <div className="login-right-content">
           <div className="login-acc-orb">
             <span className="login-acc-orb-icon">{'>'}</span>
           </div>
-          <div className="login-ai-badge-tag">ACCENTURE × AI</div>
+          <div className="login-ai-badge-tag">BUMBLE BEE × AI</div>
           <h2 className="login-ai-title">{t('login.aiTitle')}</h2>
           <p className="login-ai-desc">{t('login.aiDesc')}</p>
           <div className="login-ai-stats">
-            <div className="login-ai-stat"><span className="las-num">10K+</span><span className="las-lbl">{t('login.statQuestions')}</span></div>
-            <div className="login-ai-stat"><span className="las-num">500+</span><span className="las-lbl">{t('login.statSmeExperts')}</span></div>
-            <div className="login-ai-stat"><span className="las-num">99%</span><span className="las-lbl">{t('login.statAiAccuracy')}</span></div>
+            <div className="login-ai-stat"><span className="las-num">200+</span><span className="las-lbl">{t('login.statQuestions')}</span></div>
+            <div className="login-ai-stat"><span className="las-num">6</span><span className="las-lbl">{t('login.statSmeExperts')}</span></div>
+            <div className="login-ai-stat"><span className="las-num">92%</span><span className="las-lbl">{t('login.statAiAccuracy')}</span></div>
           </div>
         </div>
       </div>

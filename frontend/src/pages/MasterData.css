@@ -89,11 +89,11 @@
 
 .md-panel-subtitle {
   font-weight: 400;
-  color: #6366f1;
+  color: #A100FF;
 }
 
 .md-badge {
-  background: #6366f1;
+  background: #A100FF;
   color: #fff;
   border-radius: 12px;
   padding: 1px 9px;
@@ -126,7 +126,7 @@
 }
 
 .md-input:focus {
-  border-color: #6366f1;
+  border-color: #A100FF;
 }
 
 .md-input-sm {
@@ -148,7 +148,7 @@
 
 .md-btn:active { transform: scale(0.97); }
 
-.md-btn-primary  { background: #6366f1; color: #fff; }
+.md-btn-primary  { background: #A100FF; color: #fff; }
 .md-btn-primary:hover { background: #4f46e5; }
 
 .md-btn-success  { background: #22c55e; color: #fff; }
@@ -189,12 +189,12 @@
 }
 
 .md-list-item--selected {
-  background: #ede9fe;
+  background: #F3E8FF;
   border-color: #a5b4fc;
 }
 
 .md-list-item--selected:hover {
-  background: #ede9fe;
+  background: #F3E8FF;
 }
 
 .md-list-item-inner {
@@ -263,7 +263,7 @@
 .md-stat-value {
   font-size: 1.75rem;
   font-weight: 800;
-  color: #6366f1;
+  color: #A100FF;
   line-height: 1;
 }
 .md-stat-label {
@@ -273,16 +273,16 @@
 }
 
 /* ── Dark mode ───────────────────────────────────────────────────────── */
-body.dark-mode .md-stat-card { background: rgba(22,20,45,0.72); border-color: rgba(99,102,241,0.18); }
+body.dark-mode .md-stat-card { background: rgba(22,20,45,0.72); border-color: rgba(161,0,255,0.18); }
 body.dark-mode .md-stat-value { color: #a5b4fc; }
 body.dark-mode .md-stat-label { color: #94a3b8; }
 body.dark-mode .md-title { color: #e2e8f0; }
 body.dark-mode .md-subtitle { color: #94a3b8; }
-body.dark-mode .md-panel { background: rgba(22,20,45,0.72); border-color: rgba(99,102,241,0.18); }
+body.dark-mode .md-panel { background: rgba(22,20,45,0.72); border-color: rgba(161,0,255,0.18); }
 body.dark-mode .md-panel-header h2 { color: #e2e8f0; }
 body.dark-mode .md-item-name { color: #e2e8f0; }
 body.dark-mode .md-item-sub { color: #94a3b8; }
-body.dark-mode .md-input { background: rgba(255,255,255,0.07); border-color: rgba(99,102,241,0.3); color: #e2e8f0; }
+body.dark-mode .md-input { background: rgba(255,255,255,0.07); border-color: rgba(161,0,255,0.3); color: #e2e8f0; }
 body.dark-mode .md-input::placeholder { color: #64748b; }
-body.dark-mode .md-list-item:hover { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.2); }
-body.dark-mode .md-list-item--selected { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.5); }
+body.dark-mode .md-list-item:hover { background: rgba(161,0,255,0.1); border-color: rgba(161,0,255,0.2); }
+body.dark-mode .md-list-item--selected { background: rgba(161,0,255,0.2); border-color: rgba(161,0,255,0.5); }

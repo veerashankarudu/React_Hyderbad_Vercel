@@ -104,11 +104,11 @@
     "answered": "ಉತ್ತರಿಸಿದರು",
     "screenshotNotAvailable": "ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಲಭ್ಯವಿಲ್ಲ",
     "andMore": "+ ಹೆಚ್ಚು",
-    "appName": "Smart Quiz AI Hub"
+    "appName": "QuizHub AI"
   },
   "login": {
     "title": "ಸ್ಮಾರ್ಟ್ ಕ್ವಿಜ್ AI ಹಬ್",
-    "subtitle": "Accenture Hack-N-Stack 2026",
+    "subtitle": "by Bumble Bee 2026",
     "tagline": "AI-ಚಾಲಿತ MCQ ಜೀವನಚಕ್ರ ನಿರ್ವಹಣೆ",
     "welcomeBack": "ಮತ್ತೆ ಸ್ವಾಗತ",
     "signInPrompt": "ಮುಂದುವರೆಯಲು ನಿಮ್ಮ ಎಂಟರ್‌ಪ್ರೈಸ್ IDಯೊಂದಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ",
@@ -125,7 +125,7 @@
     "feat3": "ಬಹು-ಹಂತ ಪರಿಶೀಲನೆ & ಅನುಮೋದನೆ ವರ್ಕ್‌ಫ್ಲೋ",
     "feat4": "CSV / Excel ಮೂಲಕ ಬಲ್ಕ್ ಆಮದು",
     "appName": "ಸ್ಮಾರ್ಟ್ ಕ್ವಿಜ್ AI ಹಬ್",
-    "hackathon": "Accenture Hack-N-Stack 2026",
+    "hackathon": "by Bumble Bee 2026",
     "passwordPlaceholder": "ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ",
     "feature1": "MCQಗಳನ್ನು ರಚಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ",
     "feature2": "AI ನಕಲು ಪತ್ತೆ",
@@ -502,7 +502,7 @@
   },
   "reg": {
     "title": "ಸ್ಮಾರ್ಟ್ ಕ್ವಿಜ್ AI ಹಬ್",
-    "hackathon": "Accenture Hack-N-Stack 2026",
+    "hackathon": "by Bumble Bee 2026",
     "submitted": "ನೋಂದಣಿ ಸಲ್ಲಿಸಲಾಗಿದೆ!",
     "createAccount": "ಖಾತೆ ರಚಿಸಿ",
     "registerPrompt": "ಪ್ರಾರಂಭಿಸಲು SME ಆಗಿ ನೋಂದಾಯಿಸಿ",

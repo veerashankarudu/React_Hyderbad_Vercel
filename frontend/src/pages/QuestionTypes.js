@@ -23,6 +23,7 @@ const QUESTION_TYPES = [
   { id: 'DEVOPS_PIPE', icon: '🚀', title: 'DevOps Pipeline', badge: 'CI/CD', desc: 'Arrange CI/CD stages in correct order.', tags: ['DevOps', 'Docker', 'Kubernetes'] },
   { id: 'SECURE_CODE', icon: '🛡️', title: 'Secure Coding', badge: 'Security', desc: 'Identify OWASP vulnerabilities and write secure fixes.', tags: ['XSS', 'SQL Injection', 'OWASP'] },
   { id: 'RIDDLE', icon: '🧩', title: 'Tech Riddles', badge: 'Fun', desc: 'Solve creative riddles about programming concepts.', tags: ['Java', 'Angular', 'Spring Boot', 'All Topics'] },
+  { id: 'CROSSWORD', icon: '✚', title: 'Crossword Puzzle', badge: 'Puzzle', desc: 'Fill the crossword grid with tech terms from clues.', tags: ['Java', 'Spring Boot', 'SQL', 'All Topics'] },
 ];
 
 // ─── DEMO COMPONENTS ──────────────────────────────────────────────────────────
@@ -100,7 +101,7 @@ function DemoMultiMCQ() {
             className={`qt-option ${selected.has(o.letter) ? 'selected' : ''} ${submitted && correctSet.has(o.letter) ? 'correct' : ''} ${submitted && selected.has(o.letter) && !correctSet.has(o.letter) ? 'wrong' : ''}`}
             onClick={() => toggle(o.letter)}
           >
-            <input type="checkbox" checked={selected.has(o.letter)} readOnly style={{ accentColor: '#6366f1' }} />
+            <input type="checkbox" checked={selected.has(o.letter)} readOnly style={{ accentColor: '#A100FF' }} />
             <span>{o.text}</span>
             {submitted && correctSet.has(o.letter) && <span style={{ marginLeft: 'auto', color: '#10b981' }}>✓</span>}
           </div>
@@ -990,6 +991,7 @@ const QUESTION_BANK = {
     { type: 'FLOWCHART', question: 'Spring request flow: Client -> Filter -> DispatcherServlet -> Controller. If Filter throws, what happens?', options: [{ letter: 'A', text: 'Request never reaches DispatcherServlet' }, { letter: 'B', text: 'Controller handles error' }, { letter: 'C', text: '@ControllerAdvice catches it' }, { letter: 'D', text: 'Spring retries' }], correct: 'A', explanation: 'Filters execute before DispatcherServlet. If a filter throws, the chain stops.' },
     { type: 'DEVOPS_PIPE', question: 'Arrange Spring Boot CI/CD pipeline stages:', items: ['Compile source code', 'Run unit tests', 'Build Docker image', 'Push to registry', 'Deploy to Kubernetes'], correctOrder: [0, 1, 2, 3, 4] },
     { type: 'SECURE_CODE', question: 'What OWASP vulnerability does this expose?', code: '@GetMapping("/profile")\npublic User getProfile(@RequestParam Long userId) {\n    return userRepository.findById(userId).orElseThrow();\n}', options: [{ id: 'A', text: 'Broken Access Control (IDOR)' }, { id: 'B', text: 'XSS' }, { id: 'C', text: 'CSRF' }, { id: 'D', text: 'Insecure deserialization' }], correct: 'A', explanation: 'Any user can access any profile by changing userId — this is IDOR.' },
+    { type: 'CROSSWORD', question: '✚ Spring Boot Crossword — Fill in the tech terms!', words: [{ word: 'BEAN', clue: 'Object managed by Spring IoC container', row: 0, col: 0, direction: 'across' }, { word: 'BOOT', clue: 'Framework for rapid Spring app development', row: 0, col: 0, direction: 'down' }, { word: 'API', clue: 'Application programming interface', row: 0, col: 2, direction: 'down' }, { word: 'REST', clue: 'Architectural style for web APIs', row: 3, col: 1, direction: 'across' }, { word: 'YAML', clue: 'Config file format (application.___)', row: 5, col: 0, direction: 'across' }] },
   ],
   'java': [
     { type: 'SINGLE_MCQ', question: 'What is the output of: System.out.println("Hello" == "Hello");', code: null, options: [{ letter: 'A', text: 'true' }, { letter: 'B', text: 'false' }, { letter: 'C', text: 'Error' }, { letter: 'D', text: 'null' }], correct: 'A', explanation: 'String literals are interned, so == returns true for same literal.' },
@@ -1013,10 +1015,13 @@ const QUESTION_BANK = {
     { type: 'FLOWCHART', question: 'Exception handling: try -> catch -> finally. If both try and finally return, which wins?', options: [{ letter: 'A', text: 'finally block return wins' }, { letter: 'B', text: 'try block return wins' }, { letter: 'C', text: 'Compilation error' }, { letter: 'D', text: 'Runtime exception' }], correct: 'A', explanation: 'finally always executes last — its return overrides try.' },
     { type: 'DEVOPS_PIPE', question: 'Arrange Java Maven build phases:', items: ['mvn clean', 'mvn compile', 'mvn test', 'mvn package', 'mvn deploy'], correctOrder: [0, 1, 2, 3, 4] },
     { type: 'SECURE_CODE', question: 'What vulnerability exists?', code: 'ObjectInputStream ois = new ObjectInputStream(request.getInputStream());\nObject obj = ois.readObject();\nUser user = (User) obj;', options: [{ id: 'A', text: 'Insecure deserialization of untrusted data' }, { id: 'B', text: 'Missing try-catch' }, { id: 'C', text: 'Wrong cast' }, { id: 'D', text: 'Stream not closed' }], correct: 'A', explanation: 'Deserializing untrusted input can execute arbitrary code. Use allowlists or JSON.' },
+    { type: 'CROSSWORD', question: '✚ Java Crossword — Fill in the keywords!', words: [{ word: 'CLASS', clue: 'Blueprint for creating objects', row: 0, col: 0, direction: 'across' }, { word: 'CATCH', clue: 'Block that handles exceptions', row: 0, col: 0, direction: 'down' }, { word: 'ARRAY', clue: 'Fixed-size indexed data structure', row: 0, col: 2, direction: 'down' }, { word: 'VOID', clue: 'Return type meaning "nothing"', row: 1, col: 4, direction: 'across' }, { word: 'FINAL', clue: 'Keyword preventing reassignment', row: 5, col: 0, direction: 'across' }] },
   ],
   'sql': [
     { type: 'SINGLE_MCQ', question: 'Which SQL clause is used to filter grouped results?', code: null, options: [{ letter: 'A', text: 'WHERE' }, { letter: 'B', text: 'HAVING' }, { letter: 'C', text: 'GROUP BY' }, { letter: 'D', text: 'ORDER BY' }], correct: 'B', explanation: 'HAVING filters after GROUP BY; WHERE filters before grouping.' },
     { type: 'SQL_BUILDER', question: 'Build a query to find departments with more than 5 employees:', clauses: [{ id: '1', text: 'SELECT department, COUNT(*)', cat: 'select' }, { id: '2', text: 'FROM employees', cat: 'from' }, { id: '3', text: 'GROUP BY department', cat: 'where' }, { id: '4', text: 'HAVING COUNT(*) > 5', cat: 'orderby' }, { id: '5', text: 'WHERE salary > 0', cat: 'distractor' }, { id: '6', text: 'LIMIT 10', cat: 'distractor' }], correctIds: ['1', '2', '3', '4'] },
+    { type: 'SQL_BUILDER', question: 'Build a query to find the top 3 highest-paid employees:', clauses: [{ id: '1', text: 'SELECT name, salary', cat: 'select' }, { id: '2', text: 'FROM employees', cat: 'from' }, { id: '3', text: 'ORDER BY salary DESC', cat: 'orderby' }, { id: '4', text: 'LIMIT 3', cat: 'limit' }, { id: '5', text: 'GROUP BY name', cat: 'distractor' }, { id: '6', text: 'HAVING salary > 50000', cat: 'distractor' }], correctIds: ['1', '2', '3', '4'] },
+    { type: 'SQL_BUILDER', question: 'Build a query to find employees who joined in 2024:', clauses: [{ id: '1', text: 'SELECT name, join_date', cat: 'select' }, { id: '2', text: 'FROM employees', cat: 'from' }, { id: '3', text: 'WHERE YEAR(join_date) = 2024', cat: 'where' }, { id: '4', text: 'ORDER BY join_date ASC', cat: 'orderby' }, { id: '5', text: 'HAVING COUNT(*) > 1', cat: 'distractor' }, { id: '6', text: 'GROUP BY department', cat: 'distractor' }], correctIds: ['1', '2', '3', '4'] },
     { type: 'SINGLE_MCQ', question: 'What does INNER JOIN return?', code: null, options: [{ letter: 'A', text: 'All rows from both tables' }, { letter: 'B', text: 'Only matching rows from both tables' }, { letter: 'C', text: 'All rows from left table' }, { letter: 'D', text: 'All rows from right table' }], correct: 'B', explanation: 'INNER JOIN returns only rows where the join condition matches in both tables.' },
     { type: 'PREDICT_OUTPUT', question: 'How many rows will this return?', code: 'CREATE TABLE t (id INT);\nINSERT INTO t VALUES (1),(2),(3),(NULL),(NULL);\nSELECT COUNT(*) FROM t;\nSELECT COUNT(id) FROM t;', expectedOutput: '5\n3', explanation: 'COUNT(*) counts all rows (5). COUNT(id) counts non-NULL values (3).' },
     { type: 'FILL_BLANK', question: 'Complete the SQL to find second highest salary:', codeParts: ['SELECT MAX(salary) FROM employees\nWHERE salary < (\n    SELECT ', { blank: true, answer: 'MAX' }, '(salary) FROM employees\n);'] },
@@ -1034,6 +1039,7 @@ const QUESTION_BANK = {
     { type: 'FLOWCHART', question: 'Transaction: BEGIN -> UPDATE -> error. What happens with ROLLBACK?', options: [{ letter: 'A', text: 'All changes since BEGIN are undone' }, { letter: 'B', text: 'Only failed statement rolls back' }, { letter: 'C', text: 'Changes commit anyway' }, { letter: 'D', text: 'Database crashes' }], correct: 'A', explanation: 'ROLLBACK reverts all changes within the transaction to maintain atomicity.' },
     { type: 'DEVOPS_PIPE', question: 'Arrange database migration pipeline:', items: ['Backup current database', 'Run migration scripts', 'Validate schema changes', 'Run integration tests', 'Deploy application'], correctOrder: [0, 1, 2, 3, 4] },
     { type: 'SECURE_CODE', question: 'What vulnerability does this code expose?', code: 'String query = "SELECT * FROM users WHERE name = \'" + userInput + "\'";\nStatement stmt = conn.createStatement();\nResultSet rs = stmt.executeQuery(query);', options: [{ id: 'A', text: 'SQL Injection — use PreparedStatement' }, { id: 'B', text: 'Connection leak' }, { id: 'C', text: 'Wrong ResultSet usage' }, { id: 'D', text: 'Missing transaction' }], correct: 'A', explanation: 'String concatenation enables SQL injection. Use PreparedStatement with ? placeholders.' },
+    { type: 'CROSSWORD', question: '✚ SQL Crossword — Database terminology!', words: [{ word: 'INDEX', clue: 'Structure that speeds up queries', row: 0, col: 0, direction: 'across' }, { word: 'INSERT', clue: 'DML command to add rows', row: 0, col: 0, direction: 'down' }, { word: 'JOIN', clue: 'Combines rows from two tables', row: 2, col: 2, direction: 'across' }, { word: 'NULL', clue: 'Represents missing data', row: 4, col: 2, direction: 'across' }, { word: 'TABLE', clue: 'Basic storage structure in RDBMS', row: 0, col: 6, direction: 'down' }] },
   ],
   'react': [
     { type: 'SINGLE_MCQ', question: 'Which hook is used for side effects in React?', code: null, options: [{ letter: 'A', text: 'useState' }, { letter: 'B', text: 'useEffect' }, { letter: 'C', text: 'useContext' }, { letter: 'D', text: 'useMemo' }], correct: 'B', explanation: 'useEffect handles side effects like API calls, subscriptions, and DOM manipulation.' },
@@ -1052,6 +1058,7 @@ const QUESTION_BANK = {
     { type: 'FLOWCHART', question: 'React render cycle: State change -> ? -> DOM update. What is the middle step?', options: [{ letter: 'A', text: 'Virtual DOM diffing (reconciliation)' }, { letter: 'B', text: 'Full page reload' }, { letter: 'C', text: 'CSS recalculation' }, { letter: 'D', text: 'Garbage collection' }], correct: 'A', explanation: 'React compares new Virtual DOM with previous (diffing) and updates only changed DOM parts.' },
     { type: 'DEVOPS_PIPE', question: 'Arrange React CI/CD pipeline:', items: ['npm install', 'npm run lint', 'npm test', 'npm run build', 'Deploy to CDN'], correctOrder: [0, 1, 2, 3, 4] },
     { type: 'SECURE_CODE', question: 'What XSS vulnerability exists?', code: 'function Comment({ text }) {\n    return <div dangerouslySetInnerHTML={{ __html: text }} />;\n}', options: [{ id: 'A', text: 'XSS — dangerouslySetInnerHTML renders unsanitized HTML' }, { id: 'B', text: 'Missing PropTypes' }, { id: 'C', text: 'Memory leak' }, { id: 'D', text: 'Invalid JSX' }], correct: 'A', explanation: 'dangerouslySetInnerHTML can execute injected scripts. Sanitize with DOMPurify.' },
+    { type: 'CROSSWORD', question: '✚ React Crossword — Frontend concepts!', words: [{ word: 'HOOK', clue: 'Function starting with "use" for state/effects', row: 0, col: 0, direction: 'across' }, { word: 'HTML', clue: 'Markup language JSX compiles to', row: 0, col: 0, direction: 'down' }, { word: 'KEY', clue: 'Unique identifier for list items', row: 0, col: 3, direction: 'down' }, { word: 'STATE', clue: 'Component data that triggers re-render', row: 2, col: 4, direction: 'across' }, { word: 'PROPS', clue: 'Data passed from parent to child', row: 4, col: 0, direction: 'across' }] },
   ],
   'devops': [
     { type: 'DRAG_ORDER', question: 'Arrange a typical CI/CD pipeline:', items: ['Code Commit & Push', 'Build & Compile', 'Run Unit Tests', 'Docker Image Build', 'Deploy to Staging', 'Integration Tests', 'Deploy to Production'], correctOrder: [0, 1, 2, 3, 4, 5, 6] },
@@ -1070,6 +1077,7 @@ const QUESTION_BANK = {
     { type: 'FLOWCHART', question: 'Canary deployment: Deploy canary -> Monitor -> Decision. If error rate > 5%?', options: [{ letter: 'A', text: 'Automatic rollback' }, { letter: 'B', text: 'Scale canary to 100%' }, { letter: 'C', text: 'Alert and wait' }, { letter: 'D', text: 'Restart pods' }], correct: 'A', explanation: 'Canary deployments auto-rollback if metrics exceed thresholds.' },
     { type: 'DEVOPS_PIPE', question: 'Arrange Kubernetes deployment stages:', items: ['Create Docker image', 'Push to container registry', 'Apply K8s manifests', 'Rolling update pods', 'Health check passes'], correctOrder: [0, 1, 2, 3, 4] },
     { type: 'SECURE_CODE', question: 'What security issue in this K8s manifest?', code: 'containers:\n  - name: app\n    image: myapp:latest\n    securityContext:\n      privileged: true\n      runAsUser: 0', options: [{ id: 'A', text: 'Running as root with privileged — container escape risk' }, { id: 'B', text: 'Missing resource limits' }, { id: 'C', text: 'Wrong image format' }, { id: 'D', text: 'Missing probe' }], correct: 'A', explanation: 'Root + privileged allows container escape. Use non-root users.' },
+    { type: 'CROSSWORD', question: '✚ DevOps Crossword — Infrastructure terms!', words: [{ word: 'DOCKER', clue: 'Container runtime platform', row: 0, col: 0, direction: 'across' }, { word: 'DEPLOY', clue: 'Release code to production', row: 0, col: 0, direction: 'down' }, { word: 'NODE', clue: 'Worker machine in a cluster', row: 1, col: 2, direction: 'down' }, { word: 'POD', clue: 'Smallest K8s deployable unit', row: 2, col: 4, direction: 'across' }, { word: 'HELM', clue: 'K8s package manager', row: 4, col: 1, direction: 'across' }] },
   ],
   'design patterns': [
     { type: 'SINGLE_MCQ', question: 'Which pattern ensures only one instance of a class?', code: null, options: [{ letter: 'A', text: 'Factory' }, { letter: 'B', text: 'Singleton' }, { letter: 'C', text: 'Observer' }, { letter: 'D', text: 'Strategy' }], correct: 'B', explanation: 'Singleton restricts a class to a single instance, often using private constructor + static method.' },
@@ -1217,7 +1225,7 @@ function GeneratedMCQ({ q, index }) {
       <div className="qt-demo-question"><strong>Q{index}.</strong> {q.question}</div>
       {q.code && <div className="qt-demo-code">{q.code}</div>}
       <div className="qt-options">
-        {q.options.map(o => (
+        {(q.options || []).map(o => (
           <div key={o.letter} className={`qt-option ${selected === o.letter ? 'selected' : ''} ${submitted && o.letter === q.correct ? 'correct' : ''} ${submitted && selected === o.letter && o.letter !== q.correct ? 'wrong' : ''}`} onClick={() => !submitted && setSelected(o.letter)}>
             <span className="qt-option-letter">{o.letter}.</span><span>{o.text}</span>
             {submitted && o.letter === q.correct && <span style={{ marginLeft: 'auto' }}>✓</span>}
@@ -1243,9 +1251,9 @@ function GeneratedMultiMCQ({ q, index }) {
     <div className="qt-generated-q">
       <div className="qt-demo-question"><strong>Q{index}.</strong> {q.question}</div>
       <div className="qt-options">
-        {q.options.map(o => (
+        {(q.options || []).map(o => (
           <div key={o.letter} className={`qt-option ${selected.has(o.letter) ? 'selected' : ''} ${submitted && correctSet.has(o.letter) ? 'correct' : ''} ${submitted && selected.has(o.letter) && !correctSet.has(o.letter) ? 'wrong' : ''}`} onClick={() => toggle(o.letter)}>
-            <input type="checkbox" checked={selected.has(o.letter)} readOnly style={{ accentColor: '#6366f1' }} />
+            <input type="checkbox" checked={selected.has(o.letter)} readOnly style={{ accentColor: '#A100FF' }} />
             <span>{o.text}</span>
           </div>
         ))}
@@ -1287,24 +1295,108 @@ function GeneratedDragOrder({ q, index }) {
 }
 
 function GeneratedFillBlank({ q, index }) {
-  const blanks = q.codeParts.filter(p => typeof p === 'object');
+  // Support two formats:
+  // 1. codeParts array: ['text', { blank: true, answer: 'x' }, 'text']
+  // 2. AI format: { question: "The ___ is used...", blank: "answer" } or { question: "...", blanks: ["a","b"] }
+  let parts = q.codeParts || [];
+  if (parts.length === 0 && q.question) {
+    const blankAnswers = q.blanks || (q.blank ? [q.blank] : []);
+    const segments = q.question.split(/_{2,}/);
+    if (segments.length > 1 && blankAnswers.length > 0) {
+      parts = [];
+      segments.forEach((seg, i) => {
+        if (seg) parts.push(seg);
+        if (i < segments.length - 1 && i < blankAnswers.length) {
+          parts.push({ blank: true, answer: blankAnswers[i] });
+        }
+      });
+    } else if (blankAnswers.length > 0) {
+      parts = [q.question + ' → ', { blank: true, answer: blankAnswers[0] }];
+    }
+  }
+  const blanks = parts.filter(p => typeof p === 'object');
+
+  // Build word bank: correct answers + auto-generated distractors, shuffled
+  const correctAnswers = blanks.map(b => b.answer);
+  const distractorPool = ['void', 'static', 'public', 'return', 'class', 'import', 'extends', 'implements',
+    'final', 'abstract', 'interface', 'throws', 'new', 'this', 'super', 'try', 'catch', 'break',
+    'continue', 'default', 'switch', 'for', 'while', 'do', 'if', 'else', 'null', 'true', 'false',
+    'String', 'int', 'boolean', 'Map', 'List', 'Set', 'Optional', 'Stream', 'Object', 'Runnable',
+    'Override', 'Bean', 'Autowired', 'Controller', 'Service', 'Repository', 'Component',
+    'RequestMapping', 'PathVariable', 'RequestBody', 'PostMapping', 'PutMapping', 'DeleteMapping',
+    'WHERE', 'FROM', 'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'JOIN', 'GROUP BY', 'ORDER BY',
+    'useState', 'useEffect', 'useRef', 'useMemo', 'useCallback', 'useContext', 'useReducer',
+    'COPY', 'RUN', 'CMD', 'EXPOSE', 'WORKDIR', 'ADD', 'ENV', 'ARG', 'VOLUME', 'FROM'];
+  const distractors = q.distractors || distractorPool
+    .filter(d => !correctAnswers.some(a => a.toLowerCase() === d.toLowerCase()))
+    .sort(() => Math.random() - 0.5)
+    .slice(0, Math.max(3, blanks.length * 2));
+  const wordBank = [...correctAnswers, ...distractors].sort(() => Math.random() - 0.5);
+
   const [answers, setAnswers] = useState(blanks.map(() => ''));
   const [submitted, setSubmitted] = useState(false);
+  const [usedWords, setUsedWords] = useState([]);
+  // Use a ref so word bank order is stable across re-renders
+  const [shuffledBank] = useState(wordBank);
+
+  const handleWordClick = (word) => {
+    if (submitted) return;
+    // Find first empty blank
+    const emptyIdx = answers.findIndex(a => !a);
+    if (emptyIdx === -1) return;
+    const newAnswers = [...answers];
+    newAnswers[emptyIdx] = word;
+    setAnswers(newAnswers);
+    setUsedWords([...usedWords, word]);
+  };
+
+  const handleBlankClick = (idx) => {
+    if (submitted || !answers[idx]) return;
+    const word = answers[idx];
+    const newAnswers = [...answers];
+    newAnswers[idx] = '';
+    setAnswers(newAnswers);
+    setUsedWords(usedWords.filter(w => w !== word));
+  };
+
   let blankIdx = 0;
   return (
     <div className="qt-generated-q">
-      <div className="qt-demo-question"><strong>Q{index}.</strong> {q.question}</div>
+      <div className="qt-demo-question"><strong>Q{index}.</strong> {q.question && parts.length > 0 ? q.question : ''}</div>
+      {/* Word Bank */}
+      <div className="qt-word-bank">
+        <div className="qt-word-bank-label">📦 Word Bank — click to place:</div>
+        <div className="qt-word-bank-options">
+          {shuffledBank.map((word, i) => (
+            <button key={i}
+              className={`qt-word-chip ${usedWords.includes(word) ? 'used' : ''}`}
+              onClick={() => handleWordClick(word)}
+              disabled={submitted || usedWords.includes(word)}>
+              {word}
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* Code with blanks */}
       <div className="qt-fill-code">
-        {q.codeParts.map((part, i) => {
+        {parts.map((part, i) => {
           if (typeof part === 'string') return <span key={i}>{part}</span>;
           const idx = blankIdx++;
-          const isCorrect = submitted && answers[idx].trim().toLowerCase() === part.answer.toLowerCase();
-          const isWrong = submitted && !isCorrect;
-          return <input key={i} className={`qt-fill-input ${isCorrect ? 'correct' : ''} ${isWrong ? 'wrong' : ''}`} value={answers[idx]} onChange={e => { const a = [...answers]; a[idx] = e.target.value; setAnswers(a); }} placeholder="______" disabled={submitted} />;
+          const isCorrect = submitted && answers[idx] && answers[idx].trim().toLowerCase() === part.answer.toLowerCase();
+          const isWrong = submitted && answers[idx] && !isCorrect;
+          const isEmpty = !answers[idx];
+          return (
+            <span key={i}
+              className={`qt-fill-slot ${isCorrect ? 'correct' : ''} ${isWrong ? 'wrong' : ''} ${isEmpty ? 'empty' : 'filled'}`}
+              onClick={() => handleBlankClick(idx)}
+              title={answers[idx] ? 'Click to remove' : ''}>
+              {answers[idx] || '______'}
+            </span>
+          );
         })}
       </div>
       {!submitted ? (
-        <div className="qt-actions"><button className="qt-btn qt-btn-primary" disabled={answers.some(a => !a.trim())} onClick={() => setSubmitted(true)}>Submit</button></div>
+        <div className="qt-actions"><button className="qt-btn qt-btn-primary" disabled={answers.some(a => !a)} onClick={() => setSubmitted(true)}>Submit</button></div>
       ) : (
         <div className={`qt-result ${answers.every((a, i) => a.trim().toLowerCase() === blanks[i].answer.toLowerCase()) ? 'success' : 'error'}`}>
           {answers.every((a, i) => a.trim().toLowerCase() === blanks[i].answer.toLowerCase()) ? '✓ All blanks correct!' : `Expected: ${blanks.map(b => b.answer).join(', ')}`}
@@ -1422,6 +1514,445 @@ function GeneratedRiddle({ q, index }) {
   );
 }
 
+// ─── MATCH PAIRS RENDERER ─────────────────────────────────────────────────────
+function GeneratedMatchPairs({ q, index }) {
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [matches, setMatches] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const pairs = q.pairs || [];
+  const shuffledRight = q.shuffledRight || pairs.map(p => p.right).sort(() => Math.random() - 0.5);
+  const handleLeftClick = (left) => { if (!submitted) setSelectedLeft(left); };
+  const handleRightClick = (right) => { if (submitted || !selectedLeft) return; setMatches(prev => ({ ...prev, [selectedLeft]: right })); setSelectedLeft(null); };
+  const score = submitted ? pairs.filter(p => matches[p.left] === p.right).length / pairs.length : 0;
+  return (
+    <div className="qt-generated-q">
+      <div className="qt-demo-question"><strong>Q{index}.</strong> {q.question}</div>
+      <div className="qt-match-container">
+        <div className="qt-match-col">
+          <h4>Concepts</h4>
+          {pairs.map(p => (
+            <div key={p.left} className={`qt-match-item ${selectedLeft === p.left ? 'active' : ''} ${matches[p.left] ? 'matched' : ''}`} onClick={() => handleLeftClick(p.left)}>
+              {p.left} {matches[p.left] && <span style={{ float: 'right', opacity: 0.6 }}>→ {matches[p.left]}</span>}
+            </div>
+          ))}
+        </div>
+        <div className="qt-match-col">
+          <h4>Definitions</h4>
+          {shuffledRight.map(r => (
+            <div key={r} className={`qt-match-item ${Object.values(matches).includes(r) ? 'matched' : ''}`} onClick={() => handleRightClick(r)}>{r}</div>
+          ))}
+        </div>
+      </div>
+      {!submitted ? (
+        <div className="qt-actions">
+          <button className="qt-btn qt-btn-primary" disabled={Object.keys(matches).length < pairs.length} onClick={() => setSubmitted(true)}>Check Matches</button>
+          {Object.keys(matches).length > 0 && <button className="qt-btn qt-btn-outline" onClick={() => { setMatches({}); setSelectedLeft(null); }}>Reset</button>}
+        </div>
+      ) : (
+        <div className={`qt-result ${score === 1 ? 'success' : score >= 0.5 ? 'partial' : 'error'}`}>Score: {Math.round(score * 100)}% — {pairs.filter(p => matches[p.left] === p.right).length}/{pairs.length} correct.</div>
+      )}
+    </div>
+  );
+}
+
+// ─── CODE OUTPUT RENDERER ─────────────────────────────────────────────────────
+function GeneratedCodeOutput({ q, index }) {
+  const [matches, setMatches] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [selectedSnippet, setSelectedSnippet] = useState(null);
+  const snippets = q.snippets || [];
+  const outputs = q.outputs || [];
+  const correctMap = q.correctMap || {};
+  const handleSnippetClick = (id) => { if (!submitted) setSelectedSnippet(id); };
+  const handleOutputClick = (id) => { if (submitted || !selectedSnippet) return; setMatches(prev => ({ ...prev, [selectedSnippet]: id })); setSelectedSnippet(null); };
+  const score = submitted ? Object.keys(correctMap).filter(k => matches[k] === correctMap[k]).length / Object.keys(correctMap).length : 0;
+  return (
+    <div className="qt-generated-q">
+      <div className="qt-demo-question"><strong>Q{index}.</strong> {q.question}</div>
+      <div className="qt-match-container">
+        <div className="qt-match-col">
+          <h4>Code</h4>
+          {snippets.map(s => (
+            <div key={s.id} className={`qt-match-item ${selectedSnippet === s.id ? 'active' : ''} ${matches[s.id] ? 'matched' : ''}`} onClick={() => handleSnippetClick(s.id)}>
+              <code style={{ fontSize: '0.8rem' }}>{s.code}</code>
+              {matches[s.id] && <span style={{ float: 'right', opacity: 0.6 }}>→ {matches[s.id]}</span>}
+            </div>
+          ))}
+        </div>
+        <div className="qt-match-col">
+          <h4>Output</h4>
+          {outputs.map(o => (
+            <div key={o.id} className={`qt-match-item ${Object.values(matches).includes(o.id) ? 'matched' : ''}`} onClick={() => handleOutputClick(o.id)}>{o.id}. {o.text}</div>
+          ))}
+        </div>
+      </div>
+      {!submitted ? (
+        <div className="qt-actions">
+          <button className="qt-btn qt-btn-primary" disabled={Object.keys(matches).length < snippets.length} onClick={() => setSubmitted(true)}>Check</button>
+          {Object.keys(matches).length > 0 && <button className="qt-btn qt-btn-outline" onClick={() => { setMatches({}); setSelectedSnippet(null); }}>Reset</button>}
+        </div>
+      ) : (
+        <div className={`qt-result ${score === 1 ? 'success' : score >= 0.5 ? 'partial' : 'error'}`}>Score: {Math.round(score * 100)}%</div>
+      )}
+    </div>
+  );
+}
+
+// ─── CODE REARRANGE RENDERER ──────────────────────────────────────────────────
+function GeneratedCodeRearrange({ q, index }) {
+  const shuffled = useMemo(() => [...(q.blocks || [])].sort(() => Math.random() - 0.5), [q]);
+  const [items, setItems] = useState(shuffled);
+  const [submitted, setSubmitted] = useState(false);
+  const [dragIdx, setDragIdx] = useState(null);
+  const correctOrder = q.correctOrder || [];
+  const handleDragStart = (idx) => setDragIdx(idx);
+  const handleDragOver = (e, idx) => { e.preventDefault(); if (dragIdx === null || dragIdx === idx) return; const n = [...items]; const [d] = n.splice(dragIdx, 1); n.splice(idx, 0, d); setItems(n); setDragIdx(idx); };
+  const score = submitted ? items.filter((item, idx) => item.id === correctOrder[idx]).length / items.length : 0;
+  return (
+    <div className="qt-generated-q">
+      <div className="qt-demo-question"><strong>Q{index}.</strong> {q.question}</div>
+      <div className="qt-sortable-list">
+        {items.map((item, idx) => (
+          <div key={item.id} className={`qt-sortable-item ${dragIdx === idx ? 'dragging' : ''} ${submitted && item.id === correctOrder[idx] ? 'correct-pos' : ''} ${submitted && item.id !== correctOrder[idx] ? 'wrong-pos' : ''}`} draggable={!submitted} onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={() => setDragIdx(null)}>
+            <span className="qt-drag-handle">⠿</span><span className="qt-pos">{idx + 1}</span><code style={{ fontSize: '0.82rem' }}>{item.code}</code>
+          </div>
+        ))}
+      </div>
+      {!submitted ? (
+        <div className="qt-actions"><button className="qt-btn qt-btn-primary" onClick={() => setSubmitted(true)}>Check Order</button></div>
+      ) : (
+        <div className={`qt-result ${score === 1 ? 'success' : score >= 0.5 ? 'partial' : 'error'}`}>{score === 1 ? '✓ Perfect arrangement!' : `Score: ${Math.round(score * 100)}%`}</div>
+      )}
+    </div>
+  );
+}
+
+// ─── ARCHITECTURE LAYERS RENDERER ─────────────────────────────────────────────
+function GeneratedArchLayers({ q, index }) {
+  const [placed, setPlaced] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const layers = q.layers || [];
+  const items = q.items || [];
+  const [selectedItem, setSelectedItem] = useState(null);
+  const handleItemClick = (text) => { if (!submitted) setSelectedItem(text); };
+  const handleLayerClick = (layer) => { if (submitted || !selectedItem) return; setPlaced(prev => ({ ...prev, [selectedItem]: layer })); setSelectedItem(null); };
+  const score = submitted ? items.filter(it => placed[it.text] === it.layer).length / items.length : 0;
+  return (
+    <div className="qt-generated-q">
+      <div className="qt-demo-question"><strong>Q{index}.</strong> 🏗️ {q.question}</div>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+        {items.map(it => (
+          <div key={it.text} className={`qt-sql-clause ${selectedItem === it.text ? 'select' : ''}`} onClick={() => handleItemClick(it.text)} style={{ opacity: placed[it.text] ? 0.4 : 1, cursor: placed[it.text] ? 'default' : 'pointer', border: selectedItem === it.text ? '2px solid #A100FF' : '1px solid rgba(255,255,255,0.15)' }}>{it.text}</div>
+        ))}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${layers.length}, 1fr)`, gap: '0.5rem' }}>
+        {layers.map(layer => (
+          <div key={layer} onClick={() => handleLayerClick(layer)} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px dashed rgba(161,0,255,0.3)', background: 'rgba(161,0,255,0.04)', cursor: selectedItem ? 'pointer' : 'default', minHeight: '80px', textAlign: 'center' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#A100FF', marginBottom: '0.4rem', textTransform: 'uppercase' }}>{layer}</div>
+            {items.filter(it => placed[it.text] === layer).map(it => (
+              <div key={it.text} style={{ fontSize: '0.78rem', padding: '0.2rem 0.5rem', margin: '0.15rem 0', borderRadius: '4px', background: submitted ? (it.layer === layer ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)') : 'rgba(255,255,255,0.06)', color: submitted ? (it.layer === layer ? '#10b981' : '#ef4444') : 'inherit' }}>{it.text}</div>
+            ))}
+          </div>
+        ))}
+      </div>
+      {!submitted ? (
+        <div className="qt-actions" style={{ marginTop: '0.75rem' }}>
+          <button className="qt-btn qt-btn-primary" disabled={Object.keys(placed).length < items.length} onClick={() => setSubmitted(true)}>Check Layers</button>
+          {Object.keys(placed).length > 0 && <button className="qt-btn qt-btn-outline" onClick={() => { setPlaced({}); setSelectedItem(null); }}>Reset</button>}
+        </div>
+      ) : (
+        <div className={`qt-result ${score === 1 ? 'success' : score >= 0.5 ? 'partial' : 'error'}`}>Score: {Math.round(score * 100)}% — {items.filter(it => placed[it.text] === it.layer).length}/{items.length} correct placements.</div>
+      )}
+    </div>
+  );
+}
+
+// ─── CODE REVIEW RENDERER ─────────────────────────────────────────────────────
+function GeneratedCodeReview({ q, index }) {
+  const [selected, setSelected] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+  return (
+    <div className="qt-generated-q">
+      <div className="qt-demo-question"><strong>Q{index}.</strong> 👁️ {q.question}</div>
+      <div className="qt-demo-code">{q.code}</div>
+      <div className="qt-options">
+        {(q.options || []).map(o => (
+          <div key={o.id} className={`qt-option ${selected === o.id ? 'selected' : ''} ${submitted && o.id === q.correct ? 'correct' : ''} ${submitted && selected === o.id && o.id !== q.correct ? 'wrong' : ''}`} onClick={() => !submitted && setSelected(o.id)}>
+            <span className="qt-option-letter">{o.id}.</span><span>{o.text}</span>
+          </div>
+        ))}
+      </div>
+      {!submitted ? (
+        <div className="qt-actions"><button className="qt-btn qt-btn-primary" disabled={!selected} onClick={() => setSubmitted(true)}>Submit Review</button></div>
+      ) : (
+        <div className={`qt-result ${selected === q.correct ? 'success' : 'error'}`}>{selected === q.correct ? `✓ Good eye! ${q.explanation}` : `✗ ${q.explanation}`}</div>
+      )}
+    </div>
+  );
+}
+
+// ─── PIPELINE BUILD RENDERER ──────────────────────────────────────────────────
+function GeneratedPipelineBuild({ q, index }) {
+  const [canvas, setCanvas] = useState([]);
+  const [submitted, setSubmitted] = useState(false);
+  const clauses = q.clauses || [];
+  const correctIds = q.correctIds || [];
+  const addToCanvas = (clause) => { if (submitted || canvas.find(c => c.id === clause.id)) return; setCanvas([...canvas, clause]); };
+  const removeFromCanvas = (id) => { if (submitted) return; setCanvas(canvas.filter(c => c.id !== id)); };
+  const isCorrect = submitted && canvas.length === correctIds.length && canvas.every((c, i) => c.id === correctIds[i]);
+  return (
+    <div className="qt-generated-q">
+      <div className="qt-demo-question"><strong>Q{index}.</strong> 🔧 {q.question}</div>
+      <div className="qt-sql-palette">
+        {clauses.map(c => (
+          <div key={c.id} className={`qt-sql-clause ${c.cat}`} onClick={() => addToCanvas(c)} style={{ opacity: canvas.find(x => x.id === c.id) ? 0.4 : 1, cursor: canvas.find(x => x.id === c.id) ? 'default' : 'pointer' }}>{c.text}</div>
+        ))}
+      </div>
+      <div className={`qt-sql-canvas ${canvas.length > 0 ? 'has-items' : ''}`}>
+        {canvas.length === 0 && <span style={{ color: '#475569', fontSize: '0.8rem' }}>Click operators to build pipeline...</span>}
+        {canvas.map(c => (<div key={c.id} className={`qt-sql-clause ${c.cat}`} onClick={() => removeFromCanvas(c.id)} style={{ cursor: 'pointer' }}>{c.text} ×</div>))}
+      </div>
+      {!submitted ? (
+        <div className="qt-actions">
+          <button className="qt-btn qt-btn-primary" disabled={canvas.length === 0} onClick={() => setSubmitted(true)}>Build</button>
+          {canvas.length > 0 && <button className="qt-btn qt-btn-outline" onClick={() => setCanvas([])}>Clear</button>}
+        </div>
+      ) : (
+        <div className={`qt-result ${isCorrect ? 'success' : 'error'}`}>{isCorrect ? '✓ Perfect pipeline!' : 'Not quite — check the order and remove distractors.'}</div>
+      )}
+    </div>
+  );
+}
+
+// ─── FLOWCHART RENDERER ───────────────────────────────────────────────────────
+function GeneratedFlowchart({ q, index }) {
+  const [selected, setSelected] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+  return (
+    <div className="qt-generated-q">
+      <div className="qt-demo-question"><strong>Q{index}.</strong> 📊 {q.question}</div>
+      <div className="qt-options">
+        {(q.options || []).map(o => (
+          <div key={o.letter} className={`qt-option ${selected === o.letter ? 'selected' : ''} ${submitted && o.letter === q.correct ? 'correct' : ''} ${submitted && selected === o.letter && o.letter !== q.correct ? 'wrong' : ''}`} onClick={() => !submitted && setSelected(o.letter)}>
+            <span className="qt-option-letter">{o.letter}.</span><span>{o.text}</span>
+            {submitted && o.letter === q.correct && <span style={{ marginLeft: 'auto' }}>✓</span>}
+          </div>
+        ))}
+      </div>
+      {!submitted ? (
+        <div className="qt-actions"><button className="qt-btn qt-btn-primary" disabled={!selected} onClick={() => setSubmitted(true)}>Submit</button></div>
+      ) : (
+        <div className={`qt-result ${selected === q.correct ? 'success' : 'error'}`}>{selected === q.correct ? `✓ Correct! ${q.explanation}` : `✗ ${q.explanation}`}</div>
+      )}
+    </div>
+  );
+}
+
+// ─── DEVOPS PIPELINE RENDERER ─────────────────────────────────────────────────
+function GeneratedDevOpsPipe({ q, index }) {
+  const shuffled = useMemo(() => [...(q.items || [])].map((text, i) => ({ id: String(i), text, correctPos: i })).sort(() => Math.random() - 0.5), [q]);
+  const [items, setItems] = useState(shuffled);
+  const [submitted, setSubmitted] = useState(false);
+  const [dragIdx, setDragIdx] = useState(null);
+  const handleDragStart = (idx) => setDragIdx(idx);
+  const handleDragOver = (e, idx) => { e.preventDefault(); if (dragIdx === null || dragIdx === idx) return; const n = [...items]; const [d] = n.splice(dragIdx, 1); n.splice(idx, 0, d); setItems(n); setDragIdx(idx); };
+  const score = submitted ? items.filter((item, idx) => item.correctPos === idx).length / items.length : 0;
+  return (
+    <div className="qt-generated-q">
+      <div className="qt-demo-question"><strong>Q{index}.</strong> 🚀 {q.question}</div>
+      <div className="qt-sortable-list">
+        {items.map((item, idx) => (
+          <div key={item.id + item.text} className={`qt-sortable-item ${dragIdx === idx ? 'dragging' : ''} ${submitted && item.correctPos === idx ? 'correct-pos' : ''} ${submitted && item.correctPos !== idx ? 'wrong-pos' : ''}`} draggable={!submitted} onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={() => setDragIdx(null)}>
+            <span className="qt-drag-handle">⠿</span><span className="qt-pos">{idx + 1}</span><span>{item.text}</span>
+          </div>
+        ))}
+      </div>
+      {!submitted ? (
+        <div className="qt-actions"><button className="qt-btn qt-btn-primary" onClick={() => setSubmitted(true)}>Check Pipeline</button></div>
+      ) : (
+        <div className={`qt-result ${score === 1 ? 'success' : score >= 0.5 ? 'partial' : 'error'}`}>{score === 1 ? '✓ Perfect pipeline order!' : `Score: ${Math.round(score * 100)}%`}</div>
+      )}
+    </div>
+  );
+}
+
+// ─── SECURE CODE RENDERER ─────────────────────────────────────────────────────
+function GeneratedSecureCode({ q, index }) {
+  const [selected, setSelected] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+  return (
+    <div className="qt-generated-q">
+      <div className="qt-demo-question"><strong>Q{index}.</strong> 🛡️ {q.question}</div>
+      <div className="qt-demo-code">{q.code}</div>
+      <div className="qt-options">
+        {(q.options || []).map(o => (
+          <div key={o.id} className={`qt-option ${selected === o.id ? 'selected' : ''} ${submitted && o.id === q.correct ? 'correct' : ''} ${submitted && selected === o.id && o.id !== q.correct ? 'wrong' : ''}`} onClick={() => !submitted && setSelected(o.id)}>
+            <span className="qt-option-letter">{o.id}.</span><span>{o.text}</span>
+          </div>
+        ))}
+      </div>
+      {!submitted ? (
+        <div className="qt-actions"><button className="qt-btn qt-btn-primary" disabled={!selected} onClick={() => setSubmitted(true)}>Identify Vulnerability</button></div>
+      ) : (
+        <div className={`qt-result ${selected === q.correct ? 'success' : 'error'}`}>{selected === q.correct ? `✓ Correct! ${q.explanation}` : `✗ ${q.explanation}`}</div>
+      )}
+    </div>
+  );
+}
+
+// Renders a generated crossword puzzle
+function GeneratedCrossword({ q, index }) {
+  // Build grid from word definitions
+  const buildGrid = () => {
+    let maxRow = 0, maxCol = 0;
+    (q.words || []).forEach(w => {
+      const len = w.word.length;
+      if (w.direction === 'across') {
+        maxRow = Math.max(maxRow, w.row);
+        maxCol = Math.max(maxCol, w.col + len - 1);
+      } else {
+        maxRow = Math.max(maxRow, w.row + len - 1);
+        maxCol = Math.max(maxCol, w.col);
+      }
+    });
+    const rows = maxRow + 1;
+    const cols = maxCol + 1;
+    // Create empty grid
+    const grid = Array.from({ length: rows }, () => Array.from({ length: cols }, () => ({ letter: '', active: false, number: null })));
+    // Place words
+    (q.words || []).forEach((w) => {
+      for (let i = 0; i < w.word.length; i++) {
+        const r = w.direction === 'across' ? w.row : w.row + i;
+        const c = w.direction === 'across' ? w.col + i : w.col;
+        grid[r][c].letter = w.word[i].toUpperCase();
+        grid[r][c].active = true;
+      }
+    });
+    // Assign numbers sequentially by position (top-to-bottom, left-to-right)
+    const startCells = new Set();
+    (q.words || []).forEach(w => startCells.add(`${w.row}-${w.col}`));
+    let num = 1;
+    const cellNumbers = {};
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const key = `${r}-${c}`;
+        if (startCells.has(key)) {
+          cellNumbers[key] = num;
+          grid[r][c].number = num;
+          num++;
+        }
+      }
+    }
+    // Map word index to cell number for clues
+    const wordNumbers = (q.words || []).map(w => cellNumbers[`${w.row}-${w.col}`]);
+    return { grid, rows, cols, wordNumbers };
+  };
+
+  const { grid, rows, cols, wordNumbers } = useMemo(buildGrid, [q.words]);
+  const [userGrid, setUserGrid] = useState(() =>
+    Array.from({ length: rows }, () => Array.from({ length: cols }, () => ''))
+  );
+  const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
+  const inputRefs = useRef({});
+
+  const handleInput = (r, c, val) => {
+    if (submitted) return;
+    const ch = val.slice(-1).toUpperCase();
+    setUserGrid(prev => {
+      const next = prev.map(row => [...row]);
+      next[r][c] = ch;
+      return next;
+    });
+    // Auto-advance to next cell
+    if (ch) {
+      // Find next active cell in reading order
+      const allCells = [];
+      for (let ri = 0; ri < rows; ri++) {
+        for (let ci = 0; ci < cols; ci++) {
+          if (grid[ri][ci].active) allCells.push(`${ri}-${ci}`);
+        }
+      }
+      const currentIdx = allCells.indexOf(`${r}-${c}`);
+      if (currentIdx < allCells.length - 1) {
+        const nextKey = allCells[currentIdx + 1];
+        if (inputRefs.current[nextKey]) inputRefs.current[nextKey].focus();
+      }
+    }
+  };
+
+  const handleSubmit = () => {
+    let correct = 0, total = 0;
+    for (let r2 = 0; r2 < rows; r2++) {
+      for (let c2 = 0; c2 < cols; c2++) {
+        if (grid[r2][c2].active) {
+          total++;
+          if (userGrid[r2][c2] === grid[r2][c2].letter) correct++;
+        }
+      }
+    }
+    setScore(Math.round((correct / total) * 100));
+    setSubmitted(true);
+  };
+
+  const handleReveal = () => {
+    setUserGrid(grid.map(row => row.map(cell => cell.active ? cell.letter : '')));
+    setSubmitted(true);
+    setScore(0);
+  };
+
+  return (
+    <div className="qt-generated-q qt-crossword">
+      <div className="qt-demo-question"><strong>Q{index}.</strong> {q.question}</div>
+      <div className="qt-crossword-layout">
+        <div className="qt-crossword-grid" style={{ gridTemplateColumns: `repeat(${cols}, 44px)`, gridTemplateRows: `repeat(${rows}, 44px)` }}>
+          {grid.map((row, ri) => row.map((cell, ci) => (
+            <div key={`${ri}-${ci}`} className={`qt-crossword-cell ${cell.active ? 'active' : 'empty'} ${submitted && cell.active && userGrid[ri][ci] === cell.letter ? 'correct' : ''} ${submitted && cell.active && userGrid[ri][ci] !== cell.letter ? 'wrong' : ''}`}>
+              {cell.number && <span className="qt-crossword-number">{cell.number}</span>}
+              {cell.active && (
+                <input
+                  ref={el => { inputRefs.current[`${ri}-${ci}`] = el; }}
+                  type="text"
+                  maxLength={1}
+                  value={userGrid[ri][ci]}
+                  onChange={e => handleInput(ri, ci, e.target.value)}
+                  disabled={submitted}
+                  className="qt-crossword-input"
+                  autoComplete="off"
+                />
+              )}
+            </div>
+          )))}
+        </div>
+        <div className="qt-crossword-clues">
+          <div className="qt-crossword-clue-section">
+            <strong>Across</strong>
+            {(q.words || []).map((w, i) => w.direction === 'across' ? (
+              <div key={i} className="qt-crossword-clue">{wordNumbers[i]}. {w.clue}</div>
+            ) : null)}
+          </div>
+          <div className="qt-crossword-clue-section">
+            <strong>Down</strong>
+            {(q.words || []).map((w, i) => w.direction === 'down' ? (
+              <div key={i} className="qt-crossword-clue">{wordNumbers[i]}. {w.clue}</div>
+            ) : null)}
+          </div>
+        </div>
+      </div>
+      {!submitted ? (
+        <div className="qt-actions">
+          <button className="qt-btn qt-btn-primary" onClick={handleSubmit}>Check Crossword</button>
+          <button className="qt-btn qt-btn-outline" onClick={handleReveal}>Reveal Answers</button>
+        </div>
+      ) : (
+        <div className={`qt-result ${score === 100 ? 'success' : score >= 50 ? 'warning' : 'error'}`}>
+          {score === 100 ? '✓ Perfect! All letters correct!' : score > 0 ? `Score: ${score}% — ${score >= 50 ? 'Good effort!' : 'Try again!'}` : 'Answers revealed!'}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Renders a generated question by its type
 function RenderGeneratedQuestion({ q, index }) {
   switch (q.type) {
@@ -1433,6 +1964,16 @@ function RenderGeneratedQuestion({ q, index }) {
     case 'DEBUG_CODE': return <GeneratedDebugCode q={q} index={index} />;
     case 'SQL_BUILDER': return <GeneratedSQLBuilder q={q} index={index} />;
     case 'RIDDLE': return <GeneratedRiddle q={q} index={index} />;
+    case 'MATCH_PAIRS': return <GeneratedMatchPairs q={q} index={index} />;
+    case 'CODE_OUTPUT': return <GeneratedCodeOutput q={q} index={index} />;
+    case 'CODE_REARRANGE': return <GeneratedCodeRearrange q={q} index={index} />;
+    case 'ARCH_LAYERS': return <GeneratedArchLayers q={q} index={index} />;
+    case 'CODE_REVIEW': return <GeneratedCodeReview q={q} index={index} />;
+    case 'PIPELINE_BUILD': return <GeneratedPipelineBuild q={q} index={index} />;
+    case 'FLOWCHART': return <GeneratedFlowchart q={q} index={index} />;
+    case 'DEVOPS_PIPE': return <GeneratedDevOpsPipe q={q} index={index} />;
+    case 'SECURE_CODE': return <GeneratedSecureCode q={q} index={index} />;
+    case 'CROSSWORD': return <GeneratedCrossword q={q} index={index} />;
     default: return <GeneratedMCQ q={q} index={index} />;
   }
 }
@@ -1440,52 +1981,194 @@ function RenderGeneratedQuestion({ q, index }) {
 // ─── PROMPT PARSER ────────────────────────────────────────────────────────────
 function parsePrompt(prompt) {
   const lower = prompt.toLowerCase();
-  // Extract count
-  const countMatch = lower.match(/(\d+)\s*(question|q|mcq|quiz)/);
+  // Extract count — number near question keywords, leading number, or any standalone number
+  const countMatch = lower.match(/(\d+)\s*(question|q\b|mcq|quiz)/) || lower.match(/^(\d+)\s/) || lower.match(/\b(\d+)\b/);
   const count = countMatch ? Math.min(parseInt(countMatch[1]), 10) : 5;
-  // Extract topic
+  // Extract topic — extensive keyword mapping to bank topics
   const topics = Object.keys(QUESTION_BANK);
   let matchedTopic = null;
+  let displayTopic = null; // what the user actually asked for
+  // Direct match against bank keys first
   for (const topic of topics) {
     if (lower.includes(topic)) { matchedTopic = topic; break; }
   }
-  // Fallback keywords
+  // Extensive keyword → bank topic mapping (covers 100+ technologies)
   if (!matchedTopic) {
-    if (lower.includes('spring') || lower.includes('boot')) matchedTopic = 'spring boot';
-    else if (lower.includes('jpa') || lower.includes('hibernate')) matchedTopic = 'spring boot';
-    else if (lower.includes('angular') || lower.includes('ng') || lower.includes('rxjs') || lower.includes('ngrx')) matchedTopic = 'angular';
-    else if (lower.includes('python') || lower.includes('django') || lower.includes('flask') || lower.includes('pip')) matchedTopic = 'python';
-    else if (lower.includes('typescript') || lower.includes('interface') || lower.includes('generic') || lower.includes('type')) matchedTopic = 'typescript';
-    else if (lower.includes('node') || lower.includes('express') || lower.includes('npm') || lower.includes('event loop')) matchedTopic = 'node';
-    else if (lower.includes('stream') || lower.includes('lambda') || lower.includes('collection')) matchedTopic = 'java';
-    else if (lower.includes('docker') || lower.includes('kubernetes') || lower.includes('k8s') || lower.includes('ci/cd') || lower.includes('pipeline')) matchedTopic = 'devops';
-    else if (lower.includes('query') || lower.includes('database') || lower.includes('join') || lower.includes('select')) matchedTopic = 'sql';
-    else if (lower.includes('hook') || lower.includes('component') || lower.includes('jsx') || lower.includes('redux') || lower.includes('react')) matchedTopic = 'react';
-    else if (lower.includes('pattern') || lower.includes('singleton') || lower.includes('factory') || lower.includes('solid')) matchedTopic = 'design patterns';
-    else if (lower.includes('xss') || lower.includes('injection') || lower.includes('owasp') || lower.includes('auth') || lower.includes('jwt')) matchedTopic = 'security';
-    else if (lower.includes('micro') || lower.includes('gateway') || lower.includes('circuit') || lower.includes('kafka')) matchedTopic = 'microservices';
-    else matchedTopic = 'java'; // default
+    const TOPIC_MAP = {
+      // Java ecosystem
+      'spring': 'spring boot', 'boot': 'spring boot', 'jpa': 'spring boot', 'hibernate': 'spring boot',
+      'spring cloud': 'spring boot', 'spring mvc': 'spring boot', 'thymeleaf': 'spring boot',
+      'maven': 'java', 'gradle': 'java', 'junit': 'java', 'mockito': 'java', 'lombok': 'java',
+      'servlet': 'java', 'jdbc': 'java', 'jvm': 'java', 'jdk': 'java', 'jre': 'java',
+      'collections': 'java', 'streams': 'java', 'multithreading': 'java', 'concurrency': 'java',
+      'generics': 'java', 'enum': 'java', 'annotations': 'java', 'reflection': 'java',
+      // JavaScript / Frontend
+      'javascript': 'react', 'js': 'react', 'es6': 'react', 'es2015': 'react',
+      'vue': 'react', 'vuejs': 'react', 'vue.js': 'react', 'nuxt': 'react', 'svelte': 'react',
+      'next': 'react', 'nextjs': 'react', 'next.js': 'react', 'gatsby': 'react',
+      'html': 'react', 'css': 'react', 'sass': 'react', 'tailwind': 'react', 'bootstrap': 'react',
+      'webpack': 'react', 'vite': 'react', 'babel': 'react', 'esbuild': 'react',
+      'dom': 'react', 'ajax': 'react', 'fetch': 'react', 'promise': 'react', 'async': 'react',
+      'hook': 'react', 'component': 'react', 'jsx': 'react', 'redux': 'react', 'zustand': 'react',
+      // Angular
+      'angular': 'angular', 'ng': 'angular', 'rxjs': 'angular', 'ngrx': 'angular',
+      'ionic': 'angular', 'material': 'angular',
+      // TypeScript
+      'typescript': 'typescript', 'ts': 'typescript', 'interface': 'typescript', 'generic': 'typescript',
+      'zod': 'typescript', 'prisma': 'typescript',
+      // Python
+      'python': 'python', 'django': 'python', 'flask': 'python', 'fastapi': 'python',
+      'pip': 'python', 'pandas': 'python', 'numpy': 'python', 'pytorch': 'python',
+      'tensorflow': 'python', 'scikit': 'python', 'celery': 'python', 'airflow': 'python',
+      'jupyter': 'python', 'matplotlib': 'python', 'seaborn': 'python',
+      // Node.js
+      'node': 'node', 'nodejs': 'node', 'node.js': 'node', 'express': 'node', 'npm': 'node',
+      'yarn': 'node', 'pnpm': 'node', 'deno': 'node', 'bun': 'node', 'nestjs': 'node',
+      'nest': 'node', 'koa': 'node', 'fastify': 'node', 'event loop': 'node', 'socket': 'node',
+      'socket.io': 'node', 'websocket': 'node',
+      // DevOps / Cloud / Infra
+      'docker': 'devops', 'kubernetes': 'devops', 'k8s': 'devops', 'ci/cd': 'devops',
+      'jenkins': 'devops', 'gitlab': 'devops', 'github actions': 'devops', 'terraform': 'devops',
+      'ansible': 'devops', 'aws': 'devops', 'azure': 'devops', 'gcp': 'devops',
+      'cloud': 'devops', 'linux': 'devops', 'nginx': 'devops', 'apache': 'devops',
+      'helm': 'devops', 'prometheus': 'devops', 'grafana': 'devops', 'datadog': 'devops',
+      'splunk': 'devops', 'elk': 'devops', 'logstash': 'devops', 'kibana': 'devops',
+      'vagrant': 'devops', 'puppet': 'devops', 'chef': 'devops', 'argo': 'devops',
+      'argocd': 'devops', 'sonarqube': 'devops', 'sonar': 'devops',
+      'n8n': 'devops', 'zapier': 'devops', 'make': 'devops',
+      // Database / SQL
+      'sql': 'sql', 'mysql': 'sql', 'postgres': 'sql', 'postgresql': 'sql', 'oracle': 'sql',
+      'mongodb': 'sql', 'mongo': 'sql', 'redis': 'sql', 'cassandra': 'sql',
+      'dynamodb': 'sql', 'elasticsearch': 'sql', 'query': 'sql', 'database': 'sql',
+      'nosql': 'sql', 'sqlite': 'sql', 'mariadb': 'sql', 'couchdb': 'sql',
+      'neo4j': 'sql', 'graphql': 'sql', 'plsql': 'sql',
+      // Security
+      'xss': 'security', 'owasp': 'security', 'jwt': 'security', 'oauth': 'security',
+      'cors': 'security', 'csrf': 'security', 'ssl': 'security', 'tls': 'security',
+      'encryption': 'security', 'hashing': 'security', 'penetration': 'security',
+      'firewall': 'security', 'cybersecurity': 'security', 'cyber': 'security',
+      // Design patterns / Architecture
+      'pattern': 'design patterns', 'singleton': 'design patterns', 'factory': 'design patterns',
+      'solid': 'design patterns', 'observer': 'design patterns', 'strategy': 'design patterns',
+      'decorator': 'design patterns', 'adapter': 'design patterns', 'proxy': 'design patterns',
+      'mvc': 'design patterns', 'mvvm': 'design patterns', 'clean code': 'design patterns',
+      'ddd': 'design patterns', 'domain driven': 'design patterns', 'hexagonal': 'design patterns',
+      // Microservices
+      'micro': 'microservices', 'microservice': 'microservices', 'gateway': 'microservices',
+      'circuit': 'microservices', 'kafka': 'microservices', 'rabbitmq': 'microservices',
+      'grpc': 'microservices', 'eureka': 'microservices', 'consul': 'microservices',
+      'service mesh': 'microservices', 'istio': 'microservices', 'envoy': 'microservices',
+      'saga': 'microservices', 'cqrs': 'microservices', 'event sourcing': 'microservices',
+      // Other languages → closest bank
+      'c++': 'java', 'cpp': 'java', 'c#': 'java', 'csharp': 'java', 'dotnet': 'java', '.net': 'java',
+      'golang': 'java', 'go': 'java', 'rust': 'java', 'kotlin': 'java', 'scala': 'java',
+      'swift': 'java', 'objective-c': 'java', 'r ': 'python', 'matlab': 'python',
+      'ruby': 'node', 'rails': 'node', 'php': 'node', 'laravel': 'node', 'perl': 'node',
+      'dart': 'react', 'flutter': 'react',
+      // AI/ML
+      'ai': 'python', 'ml': 'python', 'machine learning': 'python', 'deep learning': 'python',
+      'nlp': 'python', 'openai': 'python', 'gpt': 'python', 'llm': 'python',
+      'langchain': 'python', 'hugging': 'python', 'transformers': 'python',
+      // Data engineering
+      'spark': 'python', 'hadoop': 'python', 'hive': 'sql', 'etl': 'sql',
+      'dbt': 'sql', 'snowflake': 'sql', 'bigquery': 'sql', 'redshift': 'sql',
+      // Mobile
+      'android': 'java', 'ios': 'typescript', 'react native': 'react', 'expo': 'react',
+      // Testing
+      'selenium': 'java', 'cypress': 'react', 'playwright': 'typescript',
+      'jest': 'react', 'mocha': 'node', 'chai': 'node', 'vitest': 'react',
+    };
+    // Find match — try longest keywords first
+    const sortedKeys = Object.keys(TOPIC_MAP).sort((a, b) => b.length - a.length);
+    for (const kw of sortedKeys) {
+      if (lower.includes(kw)) {
+        // Extract what the user actually said as display topic
+        displayTopic = kw;
+        matchedTopic = TOPIC_MAP[kw];
+        break;
+      }
+    }
   }
-  // Extract type preference
-  let preferredType = null;
-  if (lower.includes('drag') || lower.includes('order') || lower.includes('arrange') || lower.includes('sequence')) preferredType = 'DRAG_ORDER';
-  else if (lower.includes('fill') || lower.includes('blank') || lower.includes('complete')) preferredType = 'FILL_BLANK';
-  else if (lower.includes('output') || lower.includes('predict') || lower.includes('trace')) preferredType = 'PREDICT_OUTPUT';
-  else if (lower.includes('debug') || lower.includes('bug') || lower.includes('fix')) preferredType = 'DEBUG_CODE';
-  else if (lower.includes('sql') && lower.includes('build')) preferredType = 'SQL_BUILDER';
-  else if (lower.includes('riddle') || lower.includes('puzzle') || lower.includes('enigma')) preferredType = 'RIDDLE';
-  else if (lower.includes('multi') || lower.includes('select all')) preferredType = 'MULTI_MCQ';
-  // "interactive" or "animation" or "mix" means variety
-  const wantsMix = lower.includes('interactive') || lower.includes('mix') || lower.includes('animation') || lower.includes('varied') || lower.includes('different');
-  return { count, topic: matchedTopic, preferredType, wantsMix };
+  // If still no match, try to extract a noun/word as display topic, default bank to java
+  if (!matchedTopic) {
+    // Try to find a capitalized or quoted word the user mentioned as their topic
+    const topicWordMatch = prompt.match(/(?:about|for|on|in)\s+([A-Za-z0-9#+.]+)/i) || prompt.match(/\b([A-Z][a-z]+(?:\.[a-z]+)?)\b/);
+    if (topicWordMatch) displayTopic = topicWordMatch[1].toLowerCase();
+    matchedTopic = 'java'; // default bank
+  }
+  // displayTopic = what we show in the tag. If not set, use matchedTopic
+  if (!displayTopic) displayTopic = matchedTopic;
+  // Detect ALL mentioned types (support mixed requests like "fill blank and drag drop")
+  const detectedTypes = [];
+  if (lower.includes('fill') || lower.includes('blank') || lower.includes('cloze') || lower.includes('word bank') || lower.includes('word-bank') || lower.includes('gap')) detectedTypes.push('FILL_BLANK');
+  if (lower.includes('rearrange') || lower.includes('reorder') || (lower.includes('code') && lower.includes('puzzle'))) detectedTypes.push('CODE_REARRANGE');
+  if (lower.includes('drag') || lower.includes('sequence') || (lower.includes('arrange') && !lower.includes('rearrange'))) detectedTypes.push('DRAG_ORDER');
+  if ((lower.includes('predict') && lower.includes('output')) || lower.includes('trace')) detectedTypes.push('PREDICT_OUTPUT');
+  if (lower.includes('debug') || lower.includes('bug') || lower.includes('find the error')) detectedTypes.push('DEBUG_CODE');
+  if (lower.includes('sql') && lower.includes('build')) detectedTypes.push('SQL_BUILDER');
+  if (lower.includes('riddle') || lower.includes('enigma')) detectedTypes.push('RIDDLE');
+  if (lower.includes('multi') || lower.includes('select all') || lower.includes('checkbox')) detectedTypes.push('MULTI_MCQ');
+  if (lower.includes('match') && (lower.includes('concept') || lower.includes('definition') || lower.includes('pair'))) detectedTypes.push('MATCH_PAIRS');
+  if ((lower.includes('match') && (lower.includes('code') || lower.includes('output') || lower.includes('snippet'))) || (lower.includes('code') && lower.includes('output') && !lower.includes('predict'))) detectedTypes.push('CODE_OUTPUT');
+  if (lower.includes('code review') || lower.includes('review challenge') || lower.includes('pr review')) detectedTypes.push('CODE_REVIEW');
+  if (lower.includes('stream') && lower.includes('pipeline')) detectedTypes.push('PIPELINE_BUILD');
+  if (lower.includes('flowchart') || lower.includes('flow chart') || lower.includes('diagram')) detectedTypes.push('FLOWCHART');
+  if (lower.includes('devops') && lower.includes('pipe')) detectedTypes.push('DEVOPS_PIPE');
+  if (lower.includes('ci/cd') || lower.includes('cicd') || lower.includes('deploy')) detectedTypes.push('DEVOPS_PIPE');
+  if (lower.includes('secure') || (lower.includes('vulnerab') && !detectedTypes.length)) detectedTypes.push('SECURE_CODE');
+  if (lower.includes('architect') || lower.includes('layer')) detectedTypes.push('ARCH_LAYERS');
+  if (lower.includes('crossword') || lower.includes('cross word') || lower.includes('crossword puzzle')) detectedTypes.push('CROSSWORD');
+  if ((lower.includes('single') || lower.includes('mcq') || lower.includes('multiple choice')) && !detectedTypes.includes('MULTI_MCQ')) detectedTypes.push('SINGLE_MCQ');
+
+  // Primary preferred type (first detected)
+  const preferredType = detectedTypes.length === 1 ? detectedTypes[0] : null;
+  // "interactive", "mix", or multiple types detected means variety
+  const wantsMix = lower.includes('interactive') || lower.includes('mix') || lower.includes('animation') || lower.includes('varied') || lower.includes('different') || detectedTypes.length > 1;
+  return { count, topic: matchedTopic, displayTopic, preferredType, wantsMix, detectedTypes };
 }
 
 function generateQuestions(parsed) {
-  const bank = QUESTION_BANK[parsed.topic] || QUESTION_BANK['java'];
-  let pool = [...bank];
-  // If preferred type and not mix, filter
+  const allBanks = Object.values(QUESTION_BANK).flat();
+  const topicBank = QUESTION_BANK[parsed.topic] || QUESTION_BANK['java'];
+  let pool = [...topicBank];
+
+  // If multiple types detected, pull one of each from any topic, then fill remaining
+  if (parsed.detectedTypes && parsed.detectedTypes.length > 1) {
+    const result = [];
+    const usedIds = new Set();
+    // First: one question per detected type
+    for (const type of parsed.detectedTypes) {
+      // Prefer from requested topic first
+      let q = topicBank.find(q => q.type === type && !usedIds.has(q.question));
+      if (!q) q = allBanks.find(q => q.type === type && !usedIds.has(q.question));
+      if (q) { result.push(q); usedIds.add(q.question); }
+    }
+    // Fill remaining count with variety from topic
+    let fillPool = [...topicBank].filter(q => !usedIds.has(q.question));
+    for (let i = fillPool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [fillPool[i], fillPool[j]] = [fillPool[j], fillPool[i]]; }
+    while (result.length < parsed.count && fillPool.length > 0) {
+      result.push(fillPool.shift());
+    }
+    // Still not enough? Pull from all topics
+    if (result.length < parsed.count) {
+      let morePool = allBanks.filter(q => !usedIds.has(q.question) && !result.includes(q));
+      for (let i = morePool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [morePool[i], morePool[j]] = [morePool[j], morePool[i]]; }
+      while (result.length < parsed.count && morePool.length > 0) result.push(morePool.shift());
+    }
+    return result.slice(0, parsed.count);
+  }
+
+  // If single preferred type and not mix, filter — pull from all topics if not enough
   if (parsed.preferredType && !parsed.wantsMix) {
-    const filtered = pool.filter(q => q.type === parsed.preferredType);
+    let filtered = pool.filter(q => q.type === parsed.preferredType);
+    if (filtered.length < parsed.count) {
+      const otherTopics = Object.keys(QUESTION_BANK).filter(t => t !== parsed.topic);
+      for (const t of otherTopics) {
+        if (filtered.length >= parsed.count) break;
+        const extras = QUESTION_BANK[t].filter(q => q.type === parsed.preferredType && !filtered.includes(q));
+        filtered = filtered.concat(extras);
+      }
+    }
     if (filtered.length > 0) pool = filtered;
   }
   // Shuffle
@@ -1670,9 +2353,9 @@ function CertificateModal({ show, onClose, data }) {
     grad.addColorStop(0, '#1a1a2e'); grad.addColorStop(1, '#16213e');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, 800, 560);
     // Border
-    ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 4;
+    ctx.strokeStyle = '#A100FF'; ctx.lineWidth = 4;
     ctx.strokeRect(20, 20, 760, 520);
-    ctx.strokeStyle = 'rgba(99,102,241,0.3)'; ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(161,0,255,0.3)'; ctx.lineWidth = 2;
     ctx.strokeRect(30, 30, 740, 500);
     // Title
     ctx.fillStyle = '#a5b4fc'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center';
@@ -2336,14 +3019,33 @@ export default function QuestionTypes() {
     setGeneratedQuestions(null);
     setGenMeta({ topic: prompt.trim(), wantsMix: true, preferredType: null });
 
+    const parsed = parsePrompt(prompt);
+
     try {
-      // Call real AI backend
-      const res = await API.post('/ai/generate-interactive', { prompt: prompt.trim() });
+      // Call real AI backend with a short timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const res = await API.post('/ai/generate-interactive', { prompt: prompt.trim() }, { signal: controller.signal });
+      clearTimeout(timeoutId);
       if (res.data && res.data.questions && res.data.questions.length > 0) {
-        setGenMeta({ topic: prompt.trim(), wantsMix: true, preferredType: null, source: 'AI' });
-        setGeneratedQuestions(res.data.questions);
-        setGenerating(false);
-        return;
+        // Validate AI returned the correct type if user specified one
+        const aiQuestions = res.data.questions;
+        if (parsed.preferredType) {
+          const matchingType = aiQuestions.filter(q => q.type === parsed.preferredType);
+          if (matchingType.length > 0) {
+            setGenMeta({ ...parsed, source: 'AI' });
+            setGeneratedQuestions(matchingType.slice(0, parsed.count));
+            setGenerating(false);
+            return;
+          }
+          // AI didn't return correct type — fall through to local bank
+          console.warn('AI returned wrong types, falling back to local bank');
+        } else {
+          setGenMeta({ topic: prompt.trim(), wantsMix: true, preferredType: null, source: 'AI' });
+          setGeneratedQuestions(aiQuestions);
+          setGenerating(false);
+          return;
+        }
       }
     } catch (err) {
       // AI unavailable — fall back to local bank
@@ -2351,7 +3053,6 @@ export default function QuestionTypes() {
     }
 
     // Fallback: use local question bank
-    const parsed = parsePrompt(prompt);
     const questions = generateQuestions(parsed);
     setGenMeta({ ...parsed, source: 'local' });
     setGeneratedQuestions(questions);
@@ -2431,7 +3132,7 @@ export default function QuestionTypes() {
         <div className="qt-page-header">
           <div>
             <h1>Interactive Question Types</h1>
-            <p className="qt-subtitle">17 interactive assessment formats • Challenge Mode with timers & leaderboard</p>
+            <p className="qt-subtitle">18 interactive assessment formats • Challenge Mode with timers & leaderboard</p>
           </div>
           <div className="qt-header-actions">
             <button className="qt-btn qt-btn-outline" onClick={() => setShowLeaderboard(true)}>🏆 Leaderboard</button>
@@ -2521,8 +3222,10 @@ export default function QuestionTypes() {
                 {genMeta.source === 'AI' && <span className="qt-tag qt-tag-ai">🤖 AI Generated</span>}
                 {genMeta.source === 'local' && <span className="qt-tag">📦 Local Bank</span>}
                 {genMeta.wantsMix && <span className="qt-tag">Mixed Types</span>}
-                {genMeta.preferredType && <span className="qt-tag">{genMeta.preferredType.replace('_', ' ')}</span>}
-                <span className="qt-tag">{genMeta.topic}</span>
+                {genMeta.detectedTypes && genMeta.detectedTypes.length > 1
+                  ? genMeta.detectedTypes.map(t => <span key={t} className="qt-tag">{t.replace('_', ' ')}</span>)
+                  : genMeta.preferredType && <span className="qt-tag">{genMeta.preferredType.replace('_', ' ')}</span>}
+                <span className="qt-tag">{genMeta.displayTopic || genMeta.topic}</span>
               </div>
               <button className="qt-btn qt-btn-outline" onClick={clearGenerated}>✕ Clear</button>
             </div>
