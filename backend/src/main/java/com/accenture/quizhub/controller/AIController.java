@@ -103,6 +103,20 @@ public class AIController {
             return pct != null && ((Number) pct).intValue() >= 30;
         });
 
+        // Enrich matches with full option details (PPT mockup: show similar question's options A–D)
+        Map<Long, Mcq> poolById = pool.stream().collect(Collectors.toMap(Mcq::getId, m -> m, (a, b) -> a));
+        for (Map<String, Object> r : similar) {
+            Object idObj = r.get("id");
+            if (idObj == null) continue;
+            Mcq match = poolById.get(Long.valueOf(idObj.toString()));
+            if (match != null) {
+                r.put("optionA", match.getOptionA());
+                r.put("optionB", match.getOptionB());
+                r.put("optionC", match.getOptionC());
+                r.put("optionD", match.getOptionD());
+            }
+        }
+
         return ResponseEntity.ok(Map.of(
             "blocked", blocked,
             "similarQuestions", similar
@@ -152,6 +166,29 @@ public class AIController {
      * AI MCQ Generator PREVIEW: generates N MCQs and returns them with duplicate info (no saving).
      * Frontend shows each question with matching existing questions so user can keep/remove.
      */
+    private static boolean isBlockedDuplicate(List<Map<String, Object>> simResults) {
+        return simResults != null && simResults.stream().anyMatch(r -> {
+            Object pct = r.get("similarityPercent");
+            return pct != null && ((Number) pct).intValue() >= 30;
+        });
+    }
+
+    /** Cheap intra-batch dedup: word-overlap Jaccard ≥ 60% against already-accepted stems. */
+    private static boolean isIntraBatchDuplicate(String stem, List<String> acceptedStems) {
+        java.util.Set<String> words = java.util.Arrays.stream(stem.toLowerCase().split("\\W+"))
+                .filter(w -> w.length() > 3).collect(Collectors.toSet());
+        if (words.isEmpty()) return false;
+        for (String prev : acceptedStems) {
+            java.util.Set<String> prevWords = java.util.Arrays.stream(prev.toLowerCase().split("\\W+"))
+                    .filter(w -> w.length() > 3).collect(Collectors.toSet());
+            if (prevWords.isEmpty()) continue;
+            long inter = words.stream().filter(prevWords::contains).count();
+            double jaccard = (double) inter / (words.size() + prevWords.size() - inter);
+            if (jaccard >= 0.6) return true;
+        }
+        return false;
+    }
+
     @PostMapping("/generate-mcqs-preview")
     public ResponseEntity<Map<String, Object>> generateMcqsPreview(
             @RequestBody Map<String, Object> body,
@@ -171,15 +208,7 @@ public class AIController {
         Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Topic not found"));
 
-        List<Map<String, Object>> generated = aiService.generateMcqs(
-                techStack.getName(), topic.getName(), count, diff);
-
-        if (generated.size() == 1 && generated.get(0).containsKey("error")) {
-            return ResponseEntity.status(500)
-                    .body(Map.of("error", generated.get(0).get("error").toString()));
-        }
-
-        // Pre-fetch existing MCQs for duplicate checking
+        // Pre-fetch existing MCQs for duplicate checking (also used to steer generation away)
         List<Mcq> existingMcqs = mcqRepository.findAll().stream()
             .filter(m -> m.getStatus() != McqStatus.REJECTED)
             .filter(m -> m.getTechStack() != null && m.getTechStack().getId().equals(techStackId))
@@ -187,23 +216,89 @@ public class AIController {
             .limit(50)
             .collect(Collectors.toList());
 
-        // Build preview list with duplicate match info
+        // Initial generation already avoids existing stems (prevention > cure)
+        List<String> existingStems = existingMcqs.stream()
+                .map(Mcq::getQuestionStem)
+                .filter(s -> s != null && !s.isBlank())
+                .limit(15)
+                .collect(Collectors.toList());
+
+        List<Map<String, Object>> generated = aiService.generateMcqs(
+                techStack.getName(), topic.getName(), count, diff, existingStems);
+
+        if (generated.size() == 1 && generated.get(0).containsKey("error")) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", generated.get(0).get("error").toString()));
+        }
+
+        // Build preview list with duplicate match info.
+        // If a generated question is a duplicate (≥30%), auto-regenerate a replacement
+        // (up to 2 retries each) and re-check it before showing — PPT Level 2 Slide 6.
         List<Map<String, Object>> previewQuestions = new ArrayList<>();
+        List<String> acceptedStems = new ArrayList<>();
         for (Map<String, Object> q : generated) {
-            Map<String, Object> preview = new java.util.LinkedHashMap<>(q);
-            String stem = q.getOrDefault("questionStem", "").toString();
+            Map<String, Object> current = q;
+            String stem = current.getOrDefault("questionStem", "").toString();
+            List<Map<String, Object>> simResults = List.of();
+            boolean hasDuplicate = false;
+            boolean wasReplaced = false;
+            String replacedOriginalStem = null;                 // the AI question that was discarded
+            List<Map<String, Object>> replacedOriginalMatches = null; // what it matched in the DB
             try {
-                List<Map<String, Object>> simResults = aiService.checkDuplicateAgainstDb(stem, existingMcqs);
-                boolean hasDuplicate = simResults.stream().anyMatch(r -> {
-                    Object pct = r.get("similarityPercent");
-                    return pct != null && ((Number) pct).intValue() >= 30;
-                });
-                preview.put("duplicateMatches", simResults);
-                preview.put("isDuplicate", hasDuplicate);
+                simResults = aiService.checkDuplicateAgainstDb(stem, existingMcqs);
+                hasDuplicate = isBlockedDuplicate(simResults) || isIntraBatchDuplicate(stem, acceptedStems);
+
+                int retries = 0;
+                while (hasDuplicate && retries < 2) {
+                    retries++;
+                    // Steer the AI away from the matched existing stems + already-accepted batch stems
+                    List<String> avoid = new ArrayList<>(acceptedStems);
+                    simResults.stream()
+                            .map(r -> String.valueOf(r.getOrDefault("questionStem", "")))
+                            .filter(s -> !s.isBlank())
+                            .limit(10)
+                            .forEach(avoid::add);
+                    List<Map<String, Object>> replacement = aiService.generateMcqs(
+                            techStack.getName(), topic.getName(), 1, diff, avoid);
+                    if (replacement == null || replacement.isEmpty()
+                            || !(replacement.get(0) instanceof Map)
+                            || replacement.get(0).containsKey("error")) {
+                        break; // AI failed — keep flagged original
+                    }
+                    Map<String, Object> repQ = replacement.get(0);
+                    String repStem = repQ.getOrDefault("questionStem", "").toString();
+                    if (repStem.isBlank()) break;
+                    List<Map<String, Object>> repSim = aiService.checkDuplicateAgainstDb(repStem, existingMcqs);
+                    if (!isBlockedDuplicate(repSim) && !isIntraBatchDuplicate(repStem, acceptedStems)) {
+                        // Remember what was discarded and why (shown in preview UI)
+                        replacedOriginalStem = stem;
+                        replacedOriginalMatches = simResults.stream()
+                                .filter(r -> {
+                                    Object pct = r.get("similarityPercent");
+                                    return pct != null && ((Number) pct).intValue() >= 30;
+                                })
+                                .limit(3)
+                                .collect(Collectors.toList());
+                        current = repQ;
+                        stem = repStem;
+                        simResults = repSim;
+                        hasDuplicate = false;
+                        wasReplaced = true;
+                    }
+                }
             } catch (Exception e) {
-                preview.put("duplicateMatches", List.of());
-                preview.put("isDuplicate", false);
+                simResults = List.of();
+                hasDuplicate = false;
             }
+            Map<String, Object> preview = new java.util.LinkedHashMap<>(current);
+            preview.put("duplicateMatches", simResults);
+            preview.put("isDuplicate", hasDuplicate);
+            preview.put("wasReplaced", wasReplaced);
+            if (wasReplaced) {
+                preview.put("replacedOriginalStem", replacedOriginalStem);
+                preview.put("replacedOriginalMatches", replacedOriginalMatches == null ? List.of() : replacedOriginalMatches);
+            }
+            acceptedStems.add(stem);
             previewQuestions.add(preview);
         }
 
@@ -757,6 +852,30 @@ public class AIController {
         return ResponseEntity.ok(aiService.ragQuery(question));
     }
 
+    /**
+     * Agentic / Self-RAG — 2-step LLM pipeline.
+     *
+     * Request body:
+     *   { "question": "...", "threshold": 70 }   (threshold optional, default 70)
+     *
+     * Response includes:
+     *   relevanceScore   — LLM #1 score (0-100) for how well context covers the question
+     *   threshold        — minimum score to use grounded answer
+     *   judgeReasoning   — LLM #1 explanation of the score
+     *   contextUsed      — true if relevanceScore >= threshold
+     *   answerMode       — "grounded (RAG context used)" or "fallback (general knowledge)"
+     *   answer           — LLM #2 final answer
+     *   sources          — vector store document sources used
+     */
+    @PostMapping("/smart-rag-query")
+    public ResponseEntity<Map<String, Object>> smartRagQuery(@RequestBody Map<String, Object> body) {
+        String question = (String) body.getOrDefault("question", "What is QuizHub?");
+        int threshold = body.containsKey("threshold")
+            ? ((Number) body.get("threshold")).intValue()
+            : 70;
+        return ResponseEntity.ok(aiService.smartRagQuery(question, threshold));
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════
     // TOOL CALLING — Spring AI Pattern #4
     // ═══════════════════════════════════════════════════════════════════════════
@@ -773,15 +892,23 @@ public class AIController {
      * Free-form prompt-based interactive question generation.
      * Takes a natural language prompt (e.g., "5 Angular interactive questions")
      * and returns diverse question types (MCQ, multi-select, drag-order, fill-blank, predict-output, debug-code).
+     * Optional fields:
+     *   questionType — if set, ALL returned questions will be of that type only (e.g. "DRAG_ORDER")
+     *   count        — how many questions to generate (1-10, default 5)
      */
     @PostMapping("/generate-interactive")
-    public ResponseEntity<Map<String, Object>> generateInteractive(@RequestBody Map<String, String> body) {
-        String prompt = body.getOrDefault("prompt", "");
+    public ResponseEntity<Map<String, Object>> generateInteractive(@RequestBody Map<String, Object> body) {
+        String prompt = body.getOrDefault("prompt", "") != null ? body.get("prompt").toString() : "";
         if (prompt.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "prompt is required"));
         }
+        String questionType = body.containsKey("questionType") ? body.get("questionType").toString() : null;
+        int count = 5;
+        if (body.containsKey("count")) {
+            try { count = Math.min(10, Math.max(1, ((Number) body.get("count")).intValue())); } catch (Exception ignored) {}
+        }
         try {
-            List<Map<String, Object>> questions = aiService.generateInteractiveQuestions(prompt);
+            List<Map<String, Object>> questions = aiService.generateInteractiveQuestions(prompt, questionType, count);
             if (questions.size() == 1 && questions.get(0).containsKey("error")) {
                 return ResponseEntity.status(500).body(Map.of("error", questions.get(0).get("error").toString()));
             }

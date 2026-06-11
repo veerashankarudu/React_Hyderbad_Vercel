@@ -20,7 +20,7 @@ export default function Quiz() {
 
   // Setup phase
   const [techStacks, setTechStacks] = useState([]);
-  const [config, setConfig] = useState({ techStackId: '', count: 10, difficulty: '' });
+  const [config, setConfig] = useState({ techStackId: '', count: 10, difficulty: '', adaptive: false });
 
   // Quiz phase
   const [phase, setPhase] = useState('setup'); // setup | playing | result
@@ -32,6 +32,11 @@ export default function Quiz() {
   const [error, setError] = useState('');
   const [timeLeft, setTimeLeft] = useState(null);
   const [timerActive, setTimerActive] = useState(false);
+
+  // Adaptive mode state
+  const [adaptiveResults, setAdaptiveResults] = useState([]);
+  const [nextDiff, setNextDiff] = useState('MEDIUM');
+  const [grading, setGrading] = useState(false);
 
   // Result phase
   const [result, setResult] = useState(null);
@@ -62,6 +67,23 @@ export default function Quiz() {
   const startQuiz = async () => {
     setLoading(true); setError('');
     try {
+      if (config.adaptive) {
+        // Adaptive: fetch first question at MEDIUM
+        const params = { difficulty: 'MEDIUM' };
+        if (config.techStackId) params.techStackId = config.techStackId;
+        const { data } = await API.get('/quiz/adaptive-question', { params });
+        if (data.exhausted) { setError(t('quiz.noQuestions')); setLoading(false); return; }
+        setQuestions([data]);
+        setAdaptiveResults([]);
+        setNextDiff('MEDIUM');
+        setAnswers({});
+        setSelected(null);
+        setCurrent(0);
+        setPhase('playing');
+        setTimerActive(true);
+        setLoading(false);
+        return;
+      }
       const params = { count: config.count };
       if (config.techStackId) params.techStackId = config.techStackId;
       const { data } = await API.get('/quiz/questions', { params });
@@ -77,14 +99,86 @@ export default function Quiz() {
     } finally { setLoading(false); }
   };
 
+  // Adaptive: grade one answer immediately, record result, learn next difficulty
+  const gradeAdaptive = useCallback(async (answerKey) => {
+    const q = questions[current];
+    if (!q) return null;
+    setGrading(true);
+    try {
+      const { data } = await API.post('/quiz/adaptive-answer', { mcqId: q.id, answer: answerKey || '' });
+      const entry = {
+        mcqId: q.id,
+        questionStem: q.questionStem,
+        yourAnswer: answerKey || null,
+        correctAnswer: data.correctAnswer,
+        correct: data.correct,
+        difficulty: q.difficulty,
+      };
+      setAdaptiveResults(prev => [...prev, entry]);
+      setNextDiff(data.nextDifficulty || 'MEDIUM');
+      return entry;
+    } catch {
+      return null;
+    } finally { setGrading(false); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questions, current]);
+
   const handleSelect = (key) => {
     if (selected) return; // already answered
     setSelected(key);
     setTimerActive(false);
+    if (config.adaptive) {
+      gradeAdaptive(key);
+      return;
+    }
     setAnswers(prev => ({ ...prev, [questions[current].id]: key }));
   };
 
+  const finishAdaptive = useCallback((resultsArr) => {
+    const score = resultsArr.filter(r => r.correct).length;
+    setResult({
+      score,
+      total: resultsArr.length,
+      percentage: resultsArr.length ? Math.round((score * 100) / resultsArr.length) : 0,
+      results: resultsArr,
+    });
+    setPhase('result');
+  }, []);
+
   const handleNext = useCallback((auto = false) => {
+    if (config.adaptive) {
+      // Adaptive flow: grade-on-timeout, then fetch next at adjusted difficulty or finish
+      const proceed = async () => {
+        let resultsArr = adaptiveResults;
+        if (auto && !selected) {
+          const entry = await gradeAdaptive('');
+          if (entry) resultsArr = [...adaptiveResults, entry];
+        }
+        setTimerActive(false);
+        if (resultsArr.length >= config.count) {
+          finishAdaptive(resultsArr);
+          return;
+        }
+        try {
+          const params = {
+            difficulty: nextDiff,
+            excludeIds: questions.map(q => q.id).join(','),
+          };
+          if (config.techStackId) params.techStackId = config.techStackId;
+          const { data } = await API.get('/quiz/adaptive-question', { params });
+          if (data.exhausted) { finishAdaptive(resultsArr); return; }
+          setQuestions(prev => [...prev, data]);
+          setCurrent(c => c + 1);
+          setSelected(null);
+          setTimerActive(true);
+        } catch {
+          finishAdaptive(resultsArr);
+        }
+      };
+      if (!auto && !selected) return;
+      proceed();
+      return;
+    }
     if (!auto && !selected) return; // require selection unless auto-advance
     setTimerActive(false);
     setTimeout(() => {
@@ -97,7 +191,7 @@ export default function Quiz() {
       }
     }, auto ? 0 : 600);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, questions, selected, answers]);
+  }, [current, questions, selected, answers, adaptiveResults, nextDiff, config]);
 
   const submitQuiz = async () => {
     setTimerActive(false);
@@ -119,10 +213,14 @@ export default function Quiz() {
     setCurrent(0);
     setResult(null);
     setError('');
+    setAdaptiveResults([]);
+    setNextDiff('MEDIUM');
   };
 
   const q = questions[current];
-  const progress = questions.length ? Math.round(((current) / questions.length) * 100) : 0;
+  const progress = config.adaptive
+    ? Math.round((adaptiveResults.length / config.count) * 100)
+    : (questions.length ? Math.round(((current) / questions.length) * 100) : 0);
 
   // Translate current question content
   const currentQTexts = q
@@ -168,6 +266,16 @@ export default function Quiz() {
                   ))}
                 </div>
               </div>
+              <div className="quiz-setup-row">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={config.adaptive}
+                    onChange={e => setConfig(c => ({ ...c, adaptive: e.target.checked }))}
+                  />
+                  🧠 {t('quiz.adaptiveMode', 'Adaptive Mode')} — {t('quiz.adaptiveModeDesc', 'difficulty adjusts to your performance')}
+                </label>
+              </div>
               {error && <div className="quiz-error">{error}</div>}
               <button
                 className="quiz-start-btn"
@@ -190,8 +298,13 @@ export default function Quiz() {
 
             {/* Header row */}
             <div className="quiz-play-header">
-              <span className="quiz-qnum">{t('quiz.questionOf', { n: current + 1, total: questions.length })}</span>
+              <span className="quiz-qnum">{t('quiz.questionOf', { n: current + 1, total: config.adaptive ? config.count : questions.length })}</span>
               <div className="quiz-meta-pills">
+                {config.adaptive && (
+                  <span className="quiz-diff-pill" style={{ background: '#7C3AED22', color: '#7C3AED' }}>
+                    🧠 ADAPTIVE
+                  </span>
+                )}
                 <span className="quiz-diff-pill" style={{ background: `${DIFF_COLOR[q.difficulty]}22`, color: DIFF_COLOR[q.difficulty] }}>
                   {q.difficulty}
                 </span>
@@ -247,9 +360,11 @@ export default function Quiz() {
                   className="quiz-next-btn"
                   type="button"
                   onClick={() => handleNext(false)}
-                  disabled={!selected || submitting}
+                  disabled={!selected || submitting || grading}
                 >
-                  {current + 1 === questions.length ? (submitting ? t('quiz.submitting') : t('quiz.finish')) : t('quiz.next')}
+                  {(config.adaptive ? adaptiveResults.length >= config.count : current + 1 === questions.length)
+                    ? (submitting ? t('quiz.submitting') : t('quiz.finish'))
+                    : t('quiz.next')}
                 </button>
               </div>
             </div>

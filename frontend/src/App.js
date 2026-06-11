@@ -49,6 +49,7 @@ const AIStudio = lazy(() => import('./pages/AIStudio'));
 const QuestionTypes = lazy(() => import('./pages/QuestionTypes'));
 const QuestionTypeCreator = lazy(() => import('./pages/QuestionTypeCreator'));
 const RuleBook = lazy(() => import('./pages/RuleBook'));
+const AdminSettings = lazy(() => import('./pages/AdminSettings'));
 
 // Hide the chatbot while a quiz is in progress so it cannot be used to cheat
 function ChatBotGuard() {
@@ -108,6 +109,7 @@ export default function App() {
           <Route path="/reviewer-metrics" element={<PrivateRoute requiredRole="ADMIN"><ReviewerMetrics /></PrivateRoute>} />
           <Route path="/audit-log" element={<PrivateRoute requiredRole="ADMIN"><AuditLog /></PrivateRoute>} />
           <Route path="/master-data" element={<PrivateRoute requiredRole="ADMIN"><MasterData /></PrivateRoute>} />
+          <Route path="/admin-settings" element={<PrivateRoute requiredRole="ADMIN"><AdminSettings /></PrivateRoute>} />
           <Route path="/kanban" element={<PrivateRoute><KanbanBoard /></PrivateRoute>} />
           <Route path="/quiz" element={<PrivateRoute><Quiz /></PrivateRoute>} />
           <Route path="/analytics" element={<PrivateRoute><Analytics /></PrivateRoute>} />

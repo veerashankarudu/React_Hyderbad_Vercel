@@ -6,6 +6,7 @@ import com.accenture.quizhub.enums.McqStatus;
 import com.accenture.quizhub.exception.ResourceNotFoundException;
 import com.accenture.quizhub.repository.McqRepository;
 import com.accenture.quizhub.repository.UserRepository;
+import com.accenture.quizhub.service.AppConfigService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -33,6 +34,7 @@ public class StatsController {
 
     private final McqRepository mcqRepository;
     private final UserRepository userRepository;
+    private final AppConfigService appConfigService;
 
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -72,6 +74,7 @@ public class StatsController {
                 result.put("inReview",  mcqRepository.countByStatusAndDateRange(McqStatus.UNDER_REVIEW, start, end)
                                       + mcqRepository.countByStatusAndDateRange(McqStatus.READY_FOR_REVIEW, start, end));
                 result.put("rejected",  mcqRepository.countByStatusAndDateRange(McqStatus.REJECTED, start, end));
+                result.put("permanentlyRejected", mcqRepository.countByStatusAndDateRange(McqStatus.PERMANENTLY_REJECTED, start, end));
                 result.put("draft",     mcqRepository.countByStatusAndDateRange(McqStatus.DRAFT, start, end));
             } else {
                 result.put("totalMcqs", mcqRepository.count());
@@ -79,6 +82,7 @@ public class StatsController {
                 result.put("inReview",  mcqRepository.countByStatus(McqStatus.UNDER_REVIEW)
                                       + mcqRepository.countByStatus(McqStatus.READY_FOR_REVIEW));
                 result.put("rejected",  mcqRepository.countByStatus(McqStatus.REJECTED));
+                result.put("permanentlyRejected", mcqRepository.countByStatus(McqStatus.PERMANENTLY_REJECTED));
                 result.put("draft",     mcqRepository.countByStatus(McqStatus.DRAFT));
             }
         } else {
@@ -89,6 +93,7 @@ public class StatsController {
                 result.put("inReview",  mcqRepository.countByCreatorIdAndStatusAndDateRange(uid, McqStatus.UNDER_REVIEW, start, end)
                                       + mcqRepository.countByCreatorIdAndStatusAndDateRange(uid, McqStatus.READY_FOR_REVIEW, start, end));
                 result.put("rejected",  mcqRepository.countByCreatorIdAndStatusAndDateRange(uid, McqStatus.REJECTED, start, end));
+                result.put("permanentlyRejected", mcqRepository.countByCreatorIdAndStatusAndDateRange(uid, McqStatus.PERMANENTLY_REJECTED, start, end));
                 result.put("draft",     mcqRepository.countByCreatorIdAndStatusAndDateRange(uid, McqStatus.DRAFT, start, end));
             } else {
                 result.put("totalMcqs", mcqRepository.countByCreatorId(uid));
@@ -96,6 +101,7 @@ public class StatsController {
                 result.put("inReview",  mcqRepository.countByCreatorIdAndStatus(uid, McqStatus.UNDER_REVIEW)
                                       + mcqRepository.countByCreatorIdAndStatus(uid, McqStatus.READY_FOR_REVIEW));
                 result.put("rejected",  mcqRepository.countByCreatorIdAndStatus(uid, McqStatus.REJECTED));
+                result.put("permanentlyRejected", mcqRepository.countByCreatorIdAndStatus(uid, McqStatus.PERMANENTLY_REJECTED));
                 result.put("draft",     mcqRepository.countByCreatorIdAndStatus(uid, McqStatus.DRAFT));
             }
         }
@@ -247,7 +253,8 @@ public class StatsController {
     public ResponseEntity<List<Map<String, Object>>> getSlaBreached(@AuthenticationPrincipal String enterpriseId) {
         User user = resolveUser(enterpriseId);
         if (!"ADMIN".equals(user.getRole().name())) return ResponseEntity.status(403).build();
-        LocalDateTime threshold = LocalDateTime.now().minusHours(48);
+        int slaDays = appConfigService.getSlaBreachThresholdDays();
+        LocalDateTime threshold = LocalDateTime.now().minusDays(slaDays);
         List<McqStatus> reviewStatuses = List.of(McqStatus.READY_FOR_REVIEW, McqStatus.UNDER_REVIEW);
         List<Mcq> breached = mcqRepository.findSlaBreached(reviewStatuses, threshold);
         List<Map<String, Object>> result = breached.stream().map(m -> {
@@ -262,6 +269,8 @@ public class StatsController {
             item.put("updatedAt", m.getUpdatedAt());
             long hoursStuck = java.time.Duration.between(m.getUpdatedAt(), LocalDateTime.now()).toHours();
             item.put("hoursStuck", hoursStuck);
+            item.put("daysStuck", hoursStuck / 24);
+            item.put("slaThresholdDays", slaDays);
             return item;
         }).collect(Collectors.toList());
         return ResponseEntity.ok(result);

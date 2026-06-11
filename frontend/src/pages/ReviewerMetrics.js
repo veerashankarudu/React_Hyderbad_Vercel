@@ -7,9 +7,9 @@ import SortableTh from '../components/SortableTh';
 import TablePagination from '../components/TablePagination';
 import './ReviewerMetrics.css';
 
-function hoursColor(h) {
-  if (h >= 72) return '#dc2626';
-  if (h >= 48) return '#d97706';
+function daysColor(d) {
+  if (d >= 5) return '#dc2626';
+  if (d >= 3) return '#d97706';
   return '#059669';
 }
 
@@ -29,7 +29,7 @@ export default function ReviewerMetrics() {
   const [sPage, setSPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [mSort, setMSort] = useState({ col: 'fullName', dir: 'asc' });
-  const [sSort, setSSort] = useState({ col: 'hoursStuck', dir: 'desc' });
+  const [sSort, setSSort] = useState({ col: 'daysStuck', dir: 'desc' });
 
   // Translate visible SLA breach question stems
   const slaStems = sla.map(m => m.questionStem || '');
@@ -143,7 +143,7 @@ export default function ReviewerMetrics() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
                     <thead>
                       <tr className="rm-sla-thead-row" style={{ textAlign: 'left' }}>
-                        {[{col:'id',label:t('rm.colMcqId')},{col:'questionStem',label:t('rm.colQuestion')},{col:'status',label:t('rm.colStatus')},{col:'techStack',label:t('rm.colTechStack')},{col:'creatorName',label:t('rm.colCreator')},{col:'reviewerName',label:t('rm.colReviewerName')},{col:'hoursStuck',label:t('rm.colTimeStuck')}].map(h => (
+                        {[{col:'id',label:t('rm.colMcqId')},{col:'questionStem',label:t('rm.colQuestion')},{col:'status',label:t('rm.colStatus')},{col:'techStack',label:t('rm.colTechStack')},{col:'creatorName',label:t('rm.colCreator')},{col:'reviewerName',label:t('rm.colReviewerName')},{col:'daysStuck',label:t('rm.colTimeStuck')}].map(h => (
                           <SortableTh key={h.col} colKey={h.col} label={h.label}
                             sortCol={sSort.col} sortDir={sSort.dir} onSort={handleSSort}
                             style={{ padding: '0.65rem 1rem' }} />
@@ -160,8 +160,8 @@ export default function ReviewerMetrics() {
                           <td style={{ padding: '0.6rem 1rem', fontSize: '0.78rem' }}>{m.creatorName}</td>
                           <td style={{ padding: '0.6rem 1rem', fontSize: '0.78rem' }}>{m.reviewerName || '—'}</td>
                           <td style={{ padding: '0.6rem 1rem' }}>
-                            <span style={{ fontWeight: 700, color: hoursColor(m.hoursStuck), fontSize: '0.88rem' }}>
-                              {m.hoursStuck}h
+                            <span style={{ fontWeight: 700, color: daysColor(m.daysStuck ?? Math.floor((m.hoursStuck || 0) / 24)), fontSize: '0.88rem' }}>
+                              {m.daysStuck ?? Math.floor((m.hoursStuck || 0) / 24)}d
                             </span>
                           </td>
                         </tr>

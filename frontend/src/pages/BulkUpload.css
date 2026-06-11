@@ -68,18 +68,18 @@ body.dark-mode .file-size { color: #8b949e; }
 body.dark-mode .format-table th { background: rgba(161,0,255,0.15); color: #C77DFF; }
 body.dark-mode .format-table td { border-color: #30363d; color: #c9d1d9; }
 body.dark-mode .format-table code { background: rgba(161,0,255,0.2); color: #C77DFF; }
-body.dark-mode .upload-error-table-wrap { border-color: rgba(245,158,11,0.3); }
-body.dark-mode .upload-error-table th { background: rgba(120,83,19,0.4); color: #fbbf24; }
-body.dark-mode .upload-error-table td { border-color: rgba(245,158,11,0.15); color: #c9d1d9; }
-body.dark-mode .upload-error-table tr:nth-child(odd) td { background: rgba(120,83,19,0.1); }
+body.dark-mode .upload-error-table-wrap { border-color: rgba(161,0,255,0.2); }
+body.dark-mode .upload-error-table th { background: rgba(161,0,255,0.15); color: #C77DFF; }
+body.dark-mode .upload-error-table td { border-color: rgba(161,0,255,0.12); color: #c9d1d9; }
+body.dark-mode .upload-error-table tr:nth-child(odd) td { background: rgba(161,0,255,0.05); }
 body.dark-mode .result-stat-total { background: rgba(55,48,163,0.3); color: #C77DFF; }
 body.dark-mode .result-stat-ok { background: rgba(5,150,105,0.2); color: #34d399; }
 body.dark-mode .result-stat-fail { background: rgba(220,38,38,0.2); color: #f87171; }
 
 /* Dark mode: upload result panels */
-body.dark-mode .upload-result.success { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.3); }
-body.dark-mode .upload-result.partial { background: rgba(120,53,15,0.25); border-color: rgba(245,158,11,0.35); }
-body.dark-mode .upload-result.error   { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.35); }
+body.dark-mode .upload-result.success { background: rgba(0,200,83,0.08); border-color: rgba(0,200,83,0.25); }
+body.dark-mode .upload-result.partial { background: rgba(161,0,255,0.07); border-color: rgba(161,0,255,0.2); }
+body.dark-mode .upload-result.error   { background: rgba(255,23,68,0.08); border-color: rgba(255,23,68,0.25); }
 body.dark-mode .upload-result.success .upload-result-title { color: #34d399; }
 body.dark-mode .upload-result.partial .upload-result-title { color: #fbbf24; }
 body.dark-mode .upload-result.error   .upload-result-title { color: #f87171; }
@@ -90,8 +90,24 @@ body.dark-mode .err-row-msg { color: #c9d1d9; }
 /* Duplicate row highlight */
 .err-row-duplicate td { background: rgba(245,158,11,0.13) !important; border-left: 3px solid #f59e0b; }
 .err-msg-dup { color: #b45309 !important; font-weight: 600; }
-body.dark-mode .err-row-duplicate td { background: rgba(120,53,15,0.35); border-left: 3px solid #fbbf24; }
+body.dark-mode .err-row-duplicate td { background: rgba(245,158,11,0.08) !important; border-left: 3px solid #fbbf24; }
 body.dark-mode .err-msg-dup { color: #fbbf24; font-weight: 600; }
+
+/* Successfully imported rows table */
+.upload-ok-table-wrap { border-color: rgba(0,200,83,0.25) !important; }
+.upload-ok-heading { color: #065f46 !important; }
+.ok-row-even td { background: #f0fdf4; }
+.ok-row-odd td { background: #fff; }
+.ok-row-num { color: #065f46 !important; }
+.ok-row-stem { color: #374151; }
+body.dark-mode .upload-ok-table-wrap { border-color: rgba(0,200,83,0.2) !important; }
+body.dark-mode .upload-ok-heading { color: #34d399 !important; }
+body.dark-mode .upload-error-table th { background: rgba(161,0,255,0.15) !important; color: #C77DFF !important; }
+body.dark-mode .upload-ok-table-wrap .upload-error-table th { background: rgba(0,200,83,0.12) !important; color: #34d399 !important; }
+body.dark-mode .ok-row-even td { background: rgba(0,200,83,0.06) !important; }
+body.dark-mode .ok-row-odd td { background: transparent !important; }
+body.dark-mode .ok-row-num { color: #34d399 !important; }
+body.dark-mode .ok-row-stem { color: #c9d1d9 !important; }
 
 /* Similar row highlight (AI similarity) */
 .err-row-similar td { background: rgba(239,68,68,0.1) !important; border-left: 3px solid #ef4444; }

@@ -13,8 +13,8 @@ export default function AIStudio() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    API.get('/api/v1/master/tech-stacks').then(r => setTechStacks(r.data)).catch(() => {});
-    API.get('/api/v1/master/topics').then(r => setTopics(r.data)).catch(() => {});
+    API.get('/master/tech-stacks').then(r => setTechStacks(r.data)).catch(() => {});
+    API.get('/master/topics').then(r => setTopics(r.data)).catch(() => {});
   }, []);
 
   return (
@@ -36,6 +36,9 @@ export default function AIStudio() {
           <button className={activeTab === 'learning-path' ? 'active' : ''} onClick={() => setActiveTab('learning-path')}>
             🎯 Learning Path
           </button>
+          <button className={activeTab === 'smart-rag' ? 'active' : ''} onClick={() => setActiveTab('smart-rag')}>
+            📚 Smart RAG
+          </button>
         </div>
 
         <div className="ai-studio-content">
@@ -47,6 +50,9 @@ export default function AIStudio() {
           )}
           {activeTab === 'learning-path' && (
             <LearningPath loading={loading} setLoading={setLoading} />
+          )}
+          {activeTab === 'smart-rag' && (
+            <SmartRag loading={loading} setLoading={setLoading} />
           )}
         </div>
       </div>
@@ -70,7 +76,7 @@ function CodeToMcq({ techStacks, topics, loading, setLoading }) {
     setLoading(true);
     setResults(null);
     try {
-      const res = await API.post('/api/v1/ai/generate-from-code', {
+      const res = await API.post('/ai/generate-from-code', {
         code, language, count, difficulty,
         techStackId: saveMode && techStackId ? Number(techStackId) : null,
         topicId: saveMode && topicId ? Number(topicId) : null,
@@ -180,7 +186,7 @@ function RewriteMcq({ loading, setLoading }) {
     setLoading(true);
     setResult(null);
     try {
-      const res = await API.post('/api/v1/ai/rewrite-mcq', {
+      const res = await API.post('/ai/rewrite-mcq', {
         questionStem: stem, optionA: optA, optionB: optB,
         optionC: optC, optionD: optD, correctAnswer: correct, difficulty
       });
@@ -196,7 +202,7 @@ function RewriteMcq({ loading, setLoading }) {
     setLoading(true);
     setResult(null);
     try {
-      const res = await API.post(`/api/v1/ai/rewrite-mcq/${mcqId}`);
+      const res = await API.post(`/ai/rewrite-mcq/${mcqId}`);
       setResult(res.data);
       if (res.data.original) {
         setStem(res.data.original.questionStem || '');
@@ -317,7 +323,7 @@ function LearningPath({ loading, setLoading }) {
         wrongAnswers: jsonInput ? JSON.parse(jsonInput).wrongAnswers || wrongAnswers : wrongAnswers,
         correctAnswers: jsonInput ? JSON.parse(jsonInput).correctAnswers || correctAnswers : correctAnswers
       };
-      const res = await API.post('/api/v1/ai/learning-path', payload);
+      const res = await API.post('/ai/learning-path', payload);
       setResult(res.data);
       toast.success('Learning path generated!');
     } catch (e) {
@@ -408,6 +414,92 @@ function LearningPath({ loading, setLoading }) {
               </div>
             </div>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────── Smart RAG ─────────────────────────── */
+function SmartRag({ loading, setLoading }) {
+  const [question, setQuestion] = useState('');
+  const [threshold, setThreshold] = useState(50);
+  const [result, setResult] = useState(null);
+
+  const handleAsk = async () => {
+    if (!question.trim()) { toast.warning('Enter a question'); return; }
+    setLoading(true);
+    setResult(null);
+    try {
+      const res = await API.post('/ai/smart-rag-query', { question, threshold }, { timeout: 120000 });
+      setResult(res.data);
+      if (res.data.error) toast.error(res.data.error);
+      else toast.success('Answer ready!');
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'RAG query failed');
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <div className="ai-panel">
+      <h2>📚 Smart RAG — Agentic Knowledge Query</h2>
+      <p className="ai-desc">
+        2-step agentic RAG: retrieves QuizHub knowledge docs → AI judge scores relevance →
+        answers grounded in docs (if relevant) or falls back to general knowledge
+      </p>
+
+      <div className="ai-form-group">
+        <label>Your Question</label>
+        <textarea value={question} onChange={e => setQuestion(e.target.value)} rows={2}
+          placeholder="e.g. Which tech stacks does QuizHub support?" />
+      </div>
+      <div className="ai-form-row">
+        <div className="ai-form-group" style={{ flex: 1 }}>
+          <label>Relevance Threshold: {threshold}%</label>
+          <input type="range" min="0" max="100" step="5" value={threshold}
+            onChange={e => setThreshold(Number(e.target.value))} />
+        </div>
+      </div>
+
+      <button className="ai-btn" onClick={handleAsk} disabled={loading}>
+        {loading ? '⏳ Thinking...' : '📚 Ask with RAG'}
+      </button>
+
+      {result && !result.error && (
+        <div className="ai-results">
+          <div className="ai-form-row" style={{ gap: '10px', flexWrap: 'wrap' }}>
+            <span className="ai-strength-tag">
+              {result.contextUsed ? '✅ Grounded in docs' : '🌐 General knowledge fallback'}
+            </span>
+            <span className="ai-strength-tag">Relevance: {result.relevanceScore}%</span>
+            <span className="ai-strength-tag">Threshold: {result.threshold}%</span>
+          </div>
+          {result.judgeReasoning && (
+            <div className="ai-section">
+              <h4>⚖️ AI Judge Reasoning</h4>
+              <p>{result.judgeReasoning}</p>
+            </div>
+          )}
+          <div className="ai-section">
+            <h4>💬 Answer</h4>
+            <p style={{ whiteSpace: 'pre-wrap' }}>{result.answer}</p>
+          </div>
+          {result.sources && result.sources.length > 0 && (
+            <div className="ai-section">
+              <h4>📎 Retrieved Sources</h4>
+              <div className="ai-strengths">
+                {result.sources.map((s, i) => <span key={i} className="ai-strength-tag">{s}</span>)}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {result && result.error && (
+        <div className="ai-results">
+          <div className="ai-section">
+            <h4>⚠️ Error</h4>
+            <p>{result.error}</p>
+          </div>
         </div>
       )}
     </div>

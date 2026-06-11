@@ -157,7 +157,12 @@ export default function MyQuestions() {
   const handleSubmit = async (id) => {
     if (!globalThis.confirm(t('myQ2.confirmSubmit'))) return;
     try { await API.post(`/mcqs/${id}/submit`); fetchMcqs(); }
-    catch (err) { globalThis.alert(err.response?.data?.message || t('common.failedSubmit')); }
+    catch (err) {
+      const raw = err.response?.data?.error || err.response?.data?.message || t('common.failedSubmit');
+      // Strip internal "DUPLICATE:ID:" prefix and show the human-readable part
+      const msg = raw.startsWith('DUPLICATE:') ? raw.replace(/^DUPLICATE:\d+:/, '') : raw;
+      globalThis.alert(msg);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -460,14 +465,22 @@ export default function MyQuestions() {
                       <td><StatusBadge status={mcq.status} /></td>
                       <td className="date-cell">{mcq.updatedAt ? new Date(mcq.updatedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}</td>
                       <td className="action-cell">
-                        <button className="btn-sm btn-outline" onClick={() => navigate(`/mcq/${mcq.id}`)}>{t('common.view')}</button>
-                        {['DRAFT', 'REJECTED'].includes(mcq.status) && (
+                        {mcq.status === 'DRAFT' && (
                           <button className="btn-sm btn-outline" onClick={() => navigate(`/mcq/${mcq.id}/edit`)}>{t('common.edit')}</button>
                         )}
                         {mcq.status === 'DRAFT' && (
+                          <button className="btn-sm btn-danger" onClick={() => handleDelete(mcq.id)}>{t('common.delete')}</button>
+                        )}
+                        {['READY_FOR_REVIEW', 'UNDER_REVIEW', 'APPROVED'].includes(mcq.status) && (
+                          <button className="btn-sm btn-outline" onClick={() => navigate(`/mcq/${mcq.id}`)}>{t('common.view')}</button>
+                        )}
+                        {mcq.status === 'REJECTED' && (
+                          <button className="btn-sm btn-outline" onClick={() => navigate(`/mcq/${mcq.id}/edit`)}>{t('common.edit')}</button>
+                        )}
+                        {mcq.status === 'REJECTED' && (
                           <button className="btn-sm btn-blue" onClick={() => handleSubmit(mcq.id)}>{t('common.submit')}</button>
                         )}
-                        {mcq.status === 'DRAFT' && (
+                        {mcq.status === 'REJECTED' && (
                           <button className="btn-sm btn-danger" onClick={() => handleDelete(mcq.id)}>{t('common.delete')}</button>
                         )}
                       </td>

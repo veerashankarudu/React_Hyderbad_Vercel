@@ -1979,6 +1979,48 @@ function RenderGeneratedQuestion({ q, index }) {
 }
 
 // ─── PROMPT PARSER ────────────────────────────────────────────────────────────
+// Validates AI-generated questions have the required fields for their renderer.
+// Malformed questions (e.g. DRAG_ORDER without items) would crash the UI.
+function isValidGeneratedQuestion(q) {
+  if (!q || typeof q !== 'object' || !q.type) return false;
+  const hasArr = (v) => Array.isArray(v) && v.length > 0;
+  switch (q.type) {
+    case 'SINGLE_MCQ':
+    case 'FLOWCHART':
+      return !!q.question && hasArr(q.options) && !!q.correct;
+    case 'MULTI_MCQ':
+      return !!q.question && hasArr(q.options) && hasArr(q.correctSet);
+    case 'DRAG_ORDER':
+    case 'DEVOPS_PIPE':
+      return !!q.question && hasArr(q.items);
+    case 'FILL_BLANK':
+      return !!q.question && (hasArr(q.codeParts) || !!q.blank || hasArr(q.blanks));
+    case 'PREDICT_OUTPUT':
+      return !!q.question && (q.expectedOutput !== undefined && q.expectedOutput !== null);
+    case 'DEBUG_CODE':
+    case 'CODE_REVIEW':
+    case 'SECURE_CODE':
+      return !!q.question && hasArr(q.options) && !!q.correct;
+    case 'SQL_BUILDER':
+    case 'PIPELINE_BUILD':
+      return !!q.question && hasArr(q.clauses) && hasArr(q.correctIds);
+    case 'RIDDLE':
+      return !!(q.riddle || q.question) && hasArr(q.options) && !!q.correct;
+    case 'MATCH_PAIRS':
+      return !!q.question && hasArr(q.pairs);
+    case 'CODE_OUTPUT':
+      return !!q.question && hasArr(q.snippets) && hasArr(q.outputs) && !!q.correctMap;
+    case 'CODE_REARRANGE':
+      return !!q.question && hasArr(q.blocks) && hasArr(q.correctOrder);
+    case 'ARCH_LAYERS':
+      return !!q.question && hasArr(q.layers) && hasArr(q.items);
+    case 'CROSSWORD':
+      return !!q.question && hasArr(q.words);
+    default:
+      return false;
+  }
+}
+
 function parsePrompt(prompt) {
   const lower = prompt.toLowerCase();
   // Extract count — number near question keywords, leading number, or any standalone number
@@ -3002,6 +3044,7 @@ export default function QuestionTypes() {
   const [prompt, setPrompt] = useState('');
   const [generatedQuestions, setGeneratedQuestions] = useState(null);
   const [generating, setGenerating] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [genMeta, setGenMeta] = useState(null);
   const [challengeMode, setChallengeMode] = useState(false);
   const [challengeQuestions, setChallengeQuestions] = useState(null);
@@ -3022,27 +3065,41 @@ export default function QuestionTypes() {
     const parsed = parsePrompt(prompt);
 
     try {
-      // Call real AI backend with a short timeout
+      // Call real AI backend — pass questionType explicitly so backend can enforce it
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
-      const res = await API.post('/ai/generate-interactive', { prompt: prompt.trim() }, { signal: controller.signal });
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const payload = { prompt: prompt.trim(), count: parsed.count };
+      if (parsed.preferredType) payload.questionType = parsed.preferredType;
+      const res = await API.post('/ai/generate-interactive', payload, { signal: controller.signal });
       clearTimeout(timeoutId);
       if (res.data && res.data.questions && res.data.questions.length > 0) {
-        // Validate AI returned the correct type if user specified one
-        const aiQuestions = res.data.questions;
+        // Drop malformed questions that would crash the renderer
+        let aiQuestions = res.data.questions.filter(isValidGeneratedQuestion);
         if (parsed.preferredType) {
+          // Filter to only the requested type — AI may still occasionally return stray types
           const matchingType = aiQuestions.filter(q => q.type === parsed.preferredType);
-          if (matchingType.length > 0) {
+          if (matchingType.length >= parsed.count) {
+            // AI gave enough of the right type
             setGenMeta({ ...parsed, source: 'AI' });
             setGeneratedQuestions(matchingType.slice(0, parsed.count));
             setGenerating(false);
             return;
           }
-          // AI didn't return correct type — fall through to local bank
-          console.warn('AI returned wrong types, falling back to local bank');
+          if (matchingType.length > 0) {
+            // AI gave some correct type — supplement with local bank questions of same type
+            const localParsed = { ...parsed, count: parsed.count - matchingType.length };
+            const localExtra = generateQuestions(localParsed);
+            const combined = [...matchingType, ...localExtra].slice(0, parsed.count);
+            setGenMeta({ ...parsed, source: 'AI+local' });
+            setGeneratedQuestions(combined);
+            setGenerating(false);
+            return;
+          }
+          // AI returned zero of the correct type — fall through to local bank
+          console.warn(`AI returned wrong types for ${parsed.preferredType}, falling back to local bank`);
         } else {
           setGenMeta({ topic: prompt.trim(), wantsMix: true, preferredType: null, source: 'AI' });
-          setGeneratedQuestions(aiQuestions);
+          setGeneratedQuestions(aiQuestions.slice(0, parsed.count));
           setGenerating(false);
           return;
         }
@@ -3052,7 +3109,7 @@ export default function QuestionTypes() {
       console.warn('AI generation unavailable, using local bank:', err.message);
     }
 
-    // Fallback: use local question bank
+    // Fallback: use local question bank (always respects preferredType and count)
     const questions = generateQuestions(parsed);
     setGenMeta({ ...parsed, source: 'local' });
     setGeneratedQuestions(questions);
@@ -3060,6 +3117,58 @@ export default function QuestionTypes() {
   };
 
   const clearGenerated = () => { setGeneratedQuestions(null); setGenMeta(null); setPrompt(''); };
+
+  // Load more questions of the same topic/type and append to the existing list
+  const handleLoadMore = async () => {
+    if (!genMeta || loadingMore) return;
+    setLoadingMore(true);
+    const batchSize = 3;
+    const existingQuestionTexts = new Set(
+      (generatedQuestions || []).map(q => q.question || q.riddle || '')
+    );
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const payload = {
+        prompt: `${batchSize} more ${genMeta.displayTopic || genMeta.topic} questions, different from before`,
+        count: batchSize,
+      };
+      if (genMeta.preferredType) payload.questionType = genMeta.preferredType;
+      const res = await API.post('/ai/generate-interactive', payload, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.data && res.data.questions && res.data.questions.length > 0) {
+        let more = res.data.questions.filter(isValidGeneratedQuestion);
+        if (genMeta.preferredType) more = more.filter(q => q.type === genMeta.preferredType);
+        // Drop duplicates of questions already shown
+        more = more.filter(q => !existingQuestionTexts.has(q.question || q.riddle || ''));
+        if (more.length > 0) {
+          setGeneratedQuestions(prev => [...prev, ...more.slice(0, batchSize)]);
+          setLoadingMore(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Load more via AI unavailable, using local bank:', err.message);
+    }
+
+    // Fallback: pull more from local bank, skipping ones already shown
+    const localParsed = {
+      count: batchSize + (generatedQuestions || []).length,
+      topic: genMeta.topic,
+      displayTopic: genMeta.displayTopic,
+      preferredType: genMeta.preferredType,
+      wantsMix: genMeta.preferredType ? false : true,
+      detectedTypes: genMeta.detectedTypes,
+    };
+    const localQuestions = generateQuestions(localParsed)
+      .filter(q => !existingQuestionTexts.has(q.question || q.riddle || ''))
+      .slice(0, batchSize);
+    if (localQuestions.length > 0) {
+      setGeneratedQuestions(prev => [...prev, ...localQuestions]);
+    }
+    setLoadingMore(false);
+  };
 
   const startChallenge = (questions, topic) => {
     setChallengeQuestions(questions);
@@ -3241,6 +3350,21 @@ export default function QuestionTypes() {
               {generatedQuestions.map((q, idx) => (
                 <RenderGeneratedQuestion key={idx} q={q} index={idx + 1} />
               ))}
+            </div>
+            {/* Load More — fetch additional questions of the same topic/type */}
+            <div className="qt-load-more" style={{ textAlign: 'center', margin: '1rem 0' }}>
+              <button
+                className="qt-btn qt-btn-primary qt-btn-lg"
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                style={{ minWidth: '220px' }}
+              >
+                {loadingMore ? (
+                  <>⏳ Loading more...</>
+                ) : (
+                  <>➕ Load 3 More Questions</>
+                )}
+              </button>
             </div>
             <div className="qt-gen-footer">
               <button className="qt-btn qt-btn-primary" onClick={handleGenerate}>🔄 Regenerate</button>

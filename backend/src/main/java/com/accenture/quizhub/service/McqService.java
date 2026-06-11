@@ -32,6 +32,7 @@ public class McqService {
     private final UserRepository userRepository;
     private final McqVersionRepository mcqVersionRepository;
     private final InboxMessageService inboxMessageService;
+    private final AppConfigService appConfigService;
 
     @Transactional
     public McqResponse createMcq(McqRequest request, User creator) {
@@ -73,7 +74,7 @@ public class McqService {
         if (!request.isSkipDuplicateCheck()) {
         try {
             List<Mcq> pool = mcqRepository.findAll().stream()
-                    .filter(m -> m.getStatus() != McqStatus.REJECTED)
+                    .filter(m -> m.getStatus() != McqStatus.REJECTED && m.getStatus() != McqStatus.PERMANENTLY_REJECTED)
                     .filter(m -> m.getTechStack() != null && m.getTechStack().getId().equals(techStack.getId()))
                     .limit(50)
                     .collect(Collectors.toList());
@@ -122,6 +123,11 @@ public class McqService {
             throw new BadRequestException("You are not allowed to edit this MCQ");
         }
 
+        // Permanently rejected MCQs cannot be edited by anyone
+        if (mcq.getStatus() == McqStatus.PERMANENTLY_REJECTED) {
+            throw new BadRequestException("This MCQ has been permanently rejected and cannot be edited.");
+        }
+
         // Only DRAFT or REJECTED MCQs can be edited
         if (mcq.getStatus() != McqStatus.DRAFT && mcq.getStatus() != McqStatus.REJECTED) {
             if (!isAdmin) {
@@ -151,10 +157,22 @@ public class McqService {
         mcq.setTechStack(techStack);
         mcq.setTopic(topic);
 
+        if (request.isSendForReview() && mcq.getStatus() == McqStatus.PERMANENTLY_REJECTED) {
+            throw new BadRequestException("This MCQ has been permanently rejected and cannot be resubmitted.");
+        }
         if (request.isSendForReview() && mcq.getStatus() == McqStatus.DRAFT) {
             mcq.setStatus(McqStatus.READY_FOR_REVIEW);
         } else if (request.isSendForReview() && mcq.getStatus() == McqStatus.REJECTED) {
-            // After rejection, creator can resubmit
+            // Check rejection limit before allowing resubmit
+            if (appConfigService.isRejectionLimitEnabled()) {
+                int maxAllowed = appConfigService.getMaxRejectionCount();
+                int currentCount = mcq.getRejectionCount() != null ? mcq.getRejectionCount() : 0;
+                if (currentCount >= maxAllowed) {
+                    mcq.setStatus(McqStatus.PERMANENTLY_REJECTED);
+                    mcqRepository.save(mcq);
+                    throw new BadRequestException("This MCQ has been rejected " + currentCount + " time(s) and reached the max limit of " + maxAllowed + ". It cannot be resubmitted.");
+                }
+            }
             mcq.setStatus(McqStatus.READY_FOR_REVIEW);
         }
 
@@ -196,14 +214,28 @@ public class McqService {
         if (!mcq.getCreator().getId().equals(currentUser.getId())) {
             throw new BadRequestException("Only the creator can submit for review");
         }
+        if (mcq.getStatus() == McqStatus.PERMANENTLY_REJECTED) {
+            throw new BadRequestException("This MCQ has been permanently rejected after reaching the maximum rejection limit. It cannot be resubmitted.");
+        }
         if (mcq.getStatus() != McqStatus.DRAFT && mcq.getStatus() != McqStatus.REJECTED) {
             throw new BadRequestException("MCQ must be in DRAFT or REJECTED state to submit for review");
+        }
+
+        // Check rejection limit before allowing resubmit
+        if (mcq.getStatus() == McqStatus.REJECTED && appConfigService.isRejectionLimitEnabled()) {
+            int maxAllowed = appConfigService.getMaxRejectionCount();
+            int currentCount = mcq.getRejectionCount() != null ? mcq.getRejectionCount() : 0;
+            if (currentCount >= maxAllowed) {
+                mcq.setStatus(McqStatus.PERMANENTLY_REJECTED);
+                mcqRepository.save(mcq);
+                throw new BadRequestException("This MCQ has been rejected " + currentCount + " time(s) and has reached the maximum limit of " + maxAllowed + ". It cannot be resubmitted.");
+            }
         }
 
         // AI semantic duplicate check before allowing submit for review (PPT Slide 8 requirement)
         try {
             List<Mcq> pool = mcqRepository.findAll().stream()
-                    .filter(m -> m.getStatus() != McqStatus.REJECTED)
+                    .filter(m -> m.getStatus() != McqStatus.REJECTED && m.getStatus() != McqStatus.PERMANENTLY_REJECTED)
                     .filter(m -> !m.getId().equals(mcq.getId()))
                     .filter(m -> m.getTechStack() != null && mcq.getTechStack() != null
                             && m.getTechStack().getId().equals(mcq.getTechStack().getId()))
@@ -371,6 +403,9 @@ public class McqService {
                 .aiRisk(mcq.getAiRisk())
                 .aiGenerated(mcq.getAiGenerated() != null ? mcq.getAiGenerated() : false)
                 .contentJson(mcq.getContentJson())
+                .rejectionCount(mcq.getRejectionCount() != null ? mcq.getRejectionCount() : 0)
+                .rejectionLimitEnabled(appConfigService.isRejectionLimitEnabled())
+                .maxRejectionLimit(appConfigService.getMaxRejectionCount())
                 .build();
     }
 

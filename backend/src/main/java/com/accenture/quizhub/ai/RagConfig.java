@@ -4,10 +4,10 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.List;
 import java.util.Map;
@@ -21,12 +21,29 @@ import java.util.Map;
 @Configuration
 public class RagConfig {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RagConfig.class);
+
+    /**
+     * Note: @ConditionalOnBean(EmbeddingModel.class) cannot be used here because user
+     * @Configuration classes are processed BEFORE auto-configurations, so the condition
+     * would never match. Instead we resolve the EmbeddingModel lazily via ObjectProvider.
+     */
     @Bean
-    @ConditionalOnBean(EmbeddingModel.class)
-    public VectorStore vectorStore(EmbeddingModel embeddingModel) {
+    @Lazy
+    public VectorStore vectorStore(ObjectProvider<EmbeddingModel> embeddingModelProvider) {
+        EmbeddingModel embeddingModel = embeddingModelProvider.getIfAvailable();
+        if (embeddingModel == null) {
+            log.warn("No EmbeddingModel available — RAG vector store disabled");
+            return null;
+        }
         SimpleVectorStore store = SimpleVectorStore.builder(embeddingModel).build();
-        // Seed with QuizHub domain knowledge
-        store.add(knowledgeDocuments());
+        try {
+            // Seed with QuizHub domain knowledge
+            store.add(knowledgeDocuments());
+            log.info("RAG vector store seeded with {} knowledge documents", knowledgeDocuments().size());
+        } catch (Exception e) {
+            log.warn("Failed to seed RAG vector store (embedding service unreachable?): {}", e.getMessage());
+        }
         return store;
     }
 

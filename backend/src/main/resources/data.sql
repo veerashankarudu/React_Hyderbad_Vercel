@@ -348,3 +348,15 @@ UPDATE mcqs SET reviewer_id = (SELECT id FROM users WHERE enterprise_id = 'swati
 UPDATE mcqs SET reviewer_id = (SELECT id FROM users WHERE enterprise_id = 'indugu.hari.prasad')
   WHERE id IN (2008, 2009, 2010, 2011, 2012, 2013)
   AND reviewer_id IS NULL AND status IN ('APPROVED', 'READY_FOR_REVIEW');
+
+-- ============================================================
+-- App Configuration — Default settings (idempotent)
+-- ============================================================
+INSERT IGNORE INTO app_config (config_key, config_value, description, updated_at) VALUES
+  ('max_rejection_limit_enabled', 'false', 'Enable/disable maximum rejection limit for MCQs', NOW()),
+  ('max_rejection_count', '3', 'Maximum number of rejections before an MCQ is permanently rejected', NOW()),
+  ('sla_breach_threshold_days', '2', 'Number of days after which a question in review is considered an SLA breach', NOW()),
+  ('reviewer_metrics_enabled', 'true', 'Enable/disable reviewer performance metrics tracking', NOW());
+
+-- Set rejection_count=0 for all existing MCQs that have NULL
+UPDATE mcqs SET rejection_count = 0 WHERE rejection_count IS NULL;

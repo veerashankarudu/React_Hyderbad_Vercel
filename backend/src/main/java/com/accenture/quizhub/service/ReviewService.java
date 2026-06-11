@@ -22,6 +22,7 @@ public class ReviewService {
     private final NotificationService notificationService;
     private final EmailService emailService;
     private final InboxMessageService inboxMessageService;
+    private final AppConfigService appConfigService;
 
     @Transactional(readOnly = true)
     public Page<McqResponse> getAssignedReviews(User reviewer, McqStatus status, int page, int size) {
@@ -52,7 +53,21 @@ public class ReviewService {
             if (request.getComment() == null || request.getComment().isBlank()) {
                 throw new BadRequestException("A comment is required when rejecting an MCQ");
             }
-            mcq.setStatus(McqStatus.REJECTED);
+            // Increment rejection count
+            int newCount = (mcq.getRejectionCount() != null ? mcq.getRejectionCount() : 0) + 1;
+            mcq.setRejectionCount(newCount);
+
+            // Check if max rejection limit is enabled and exceeded
+            if (appConfigService.isRejectionLimitEnabled()) {
+                int maxAllowed = appConfigService.getMaxRejectionCount();
+                if (newCount >= maxAllowed) {
+                    mcq.setStatus(McqStatus.PERMANENTLY_REJECTED);
+                } else {
+                    mcq.setStatus(McqStatus.REJECTED);
+                }
+            } else {
+                mcq.setStatus(McqStatus.REJECTED);
+            }
         } else {
             mcq.setStatus(McqStatus.APPROVED);
         }
@@ -74,17 +89,29 @@ public class ReviewService {
                 ? mcq.getTechStack().getName().toUpperCase().replace(" ", "-") + "-" + mcq.getId()
                 : "MCQ-" + mcq.getId();
         if (isRejection) {
-            notificationService.notify(mcq.getCreator(), preview, "REJECTED", mcq.getId(), reviewer, mcqRef);
+            String notifType = mcq.getStatus() == McqStatus.PERMANENTLY_REJECTED ? "PERMANENTLY_REJECTED" : "REJECTED";
+            notificationService.notify(mcq.getCreator(), preview, notifType, mcq.getId(), reviewer, mcqRef);
             emailService.sendMcqRejectedEmail(mcq, reviewer, request.getComment());
+            String inboxTitle = mcq.getStatus() == McqStatus.PERMANENTLY_REJECTED
+                    ? "🚫 MCQ Permanently Rejected — " + mcqRef
+                    : "❌ MCQ Rejected — " + mcqRef;
+            String inboxBody = mcq.getStatus() == McqStatus.PERMANENTLY_REJECTED
+                    ? "Hi " + mcq.getCreator().getFullName() + ",\n\n" +
+                      "Your MCQ has been rejected for the final time (rejection #" + mcq.getRejectionCount() + ").\n\n" +
+                      "MCQ: " + preview + "\n" +
+                      "Reviewed by: " + reviewer.getFullName() + "\n" +
+                      "Reason: " + request.getComment() + "\n\n" +
+                      "This question has reached the maximum rejection limit and cannot be resubmitted.\n\n— QuizHub AI"
+                    : "Hi " + mcq.getCreator().getFullName() + ",\n\n" +
+                      "Your MCQ has been reviewed and requires revision (rejection #" + mcq.getRejectionCount() + ").\n\n" +
+                      "MCQ: " + preview + "\n" +
+                      "Reviewed by: " + reviewer.getFullName() + "\n" +
+                      "Reason: " + request.getComment() + "\n\n" +
+                      "Please edit and resubmit the question.\n\n— QuizHub AI";
             inboxMessageService.sendSystem(
                 mcq.getCreator(),
-                "❌ MCQ Rejected — " + mcqRef,
-                "Hi " + mcq.getCreator().getFullName() + ",\n\n" +
-                "Your MCQ has been reviewed and requires revision.\n\n" +
-                "MCQ: " + preview + "\n" +
-                "Reviewed by: " + reviewer.getFullName() + "\n" +
-                "Reason: " + request.getComment() + "\n\n" +
-                "Please edit and resubmit the question.\n\n— QuizHub AI",
+                inboxTitle,
+                inboxBody,
                 mcq.getId()
             );
         } else {

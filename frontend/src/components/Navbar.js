@@ -38,6 +38,7 @@ const ADMIN_ITEMS = [
   { path: '/user-management', labelKey: 'nav.users', icon: <Users size={ICON_SIZE} /> },
   { path: '/reviewer-metrics', labelKey: 'nav.reviewerMetrics', icon: <Star size={ICON_SIZE} /> },
   { path: '/audit-log', labelKey: 'nav.auditLog', icon: <ScrollText size={ICON_SIZE} /> },
+  { path: '/admin-settings', labelKey: 'nav.settings', icon: <Settings size={ICON_SIZE} /> },
 ];
 
 function buildInitials(name) {

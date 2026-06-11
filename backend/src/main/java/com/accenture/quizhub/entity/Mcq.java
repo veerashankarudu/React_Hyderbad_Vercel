@@ -64,7 +64,7 @@ public class Mcq {
     private Difficulty difficulty;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     @Builder.Default
     private McqStatus status = McqStatus.DRAFT;
 
@@ -121,6 +121,11 @@ public class Mcq {
     @Column(name = "media_type", length = 10)
     @Builder.Default
     private String mediaType = "TEXT";
+
+    /** Number of times this MCQ has been rejected by reviewers */
+    @Column(name = "rejection_count")
+    @Builder.Default
+    private Integer rejectionCount = 0;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

@@ -38,4 +38,7 @@ public class McqResponse {
     private String aiRisk;
     private Boolean aiGenerated;
     private String contentJson;
+    private Integer rejectionCount;
+    private Integer maxRejectionLimit;
+    private Boolean rejectionLimitEnabled;
 }

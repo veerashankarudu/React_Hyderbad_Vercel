@@ -7,6 +7,7 @@ const STATUS_CONFIG = {
   UNDER_REVIEW:     { bg: '#FFFBEB', color: '#B45309', labelKey: 'common.inReview',       dot: '#F59E0B',  border: '#FDE68A' },
   APPROVED:         { bg: '#ECFDF5', color: '#065F46', labelKey: 'common.approved',       dot: '#10B981',  border: '#A7F3D0' },
   REJECTED:         { bg: '#FFF1F2', color: '#9F1239', labelKey: 'common.rejected',       dot: '#F43F5E',  border: '#FECDD3' },
+  PERMANENTLY_REJECTED: { bg: '#1F2937', color: '#F9FAFB', labelKey: 'common.permanentlyRejected', dot: '#DC2626', border: '#374151' },
 };
 
 export default function StatusBadge({ status }) {

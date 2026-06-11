@@ -33,6 +33,8 @@ export default function BulkUpload() {
 
   // ── Inline edit modal ──
   const [inlineEdit, setInlineEdit] = useState(null);   // null=closed, errorRow=open
+  const [inlineDupInfo, setInlineDupInfo] = useState(null); // { linkedId, score } for warning banner
+  const [inlineOriginalStem, setInlineOriginalStem] = useState(''); // original stem to detect no-change
   const [inlineForm, setInlineForm] = useState({});
   const [inlineTopics, setInlineTopics] = useState([]);
   const [inlineSubmitting, setInlineSubmitting] = useState(false);
@@ -84,12 +86,14 @@ export default function BulkUpload() {
     }
   };
 
-  const openInlineEdit = (errorRow) => {
+  const openInlineEdit = (errorRow, dupInfo) => {
     const matchedStack = techStacks.find(
       ts => ts.name.toLowerCase() === (errorRow.techStack || '').toLowerCase()
     );
     const validDiffs = ['EASY', 'MEDIUM', 'HARD'];
     const rawDiff = (errorRow.difficulty || '').toUpperCase().trim();
+    setInlineDupInfo(dupInfo || null);
+    setInlineOriginalStem(errorRow.questionStem || '');
     setInlineForm({
       questionStem: errorRow.questionStem || '',
       optionA: errorRow.optionA || '',
@@ -113,6 +117,11 @@ export default function BulkUpload() {
 
   const submitInlineEdit = async () => {
     if (inlineSubmitting) return;
+    // Block save if stem is unchanged from the original duplicate
+    if (inlineForm.questionStem.trim() === inlineOriginalStem.trim()) {
+      toast.error('Question stem is unchanged — please revise it before saving.');
+      return;
+    }
     setInlineSubmitting(true);
     try {
       const matchedTopic = inlineTopics.find(
@@ -146,7 +155,12 @@ export default function BulkUpload() {
       setInlineEdit(null);
       toast.success('Question saved as draft successfully!', { autoClose: 15000 });
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to submit question.');
+      const raw = err.response?.data?.error || err.response?.data?.message || 'Failed to save question.';
+      // Strip DUPLICATE:ID: or SIMILAR:ID:PCT%: internal prefixes
+      const msg = raw.startsWith('DUPLICATE:') ? raw.replace(/^DUPLICATE:\d+:/, '')
+                : raw.startsWith('SIMILAR:')   ? raw.replace(/^SIMILAR:\d+:\d+%:/, '')
+                : raw;
+      toast.error(msg);
     } finally {
       setInlineSubmitting(false);
     }
@@ -346,7 +360,15 @@ export default function BulkUpload() {
                                     )}
                                     {e.questionStem && (
                                       <> &nbsp;<button
-                                        onClick={() => openInlineEdit(e)}
+                                        onClick={() => {
+                                          const raw2 = e.error || '';
+                                          const isDup2 = raw2.startsWith('DUPLICATE:');
+                                          const isSim2 = raw2.startsWith('SIMILAR:');
+                                          let dupInfo = null;
+                                          if (isDup2) { const p = raw2.split(':'); dupInfo = { linkedId: p[1], score: 100, label: 'Exact duplicate' }; }
+                                          else if (isSim2) { const p = raw2.split(':'); dupInfo = { linkedId: p[1], score: Math.round(Number(p[2]) * 100), label: `${Math.round(Number(p[2]) * 100)}% similar` }; }
+                                          openInlineEdit(e, dupInfo);
+                                        }}
                                         style={{ color: '#60a5fa', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, whiteSpace: 'nowrap' }}
                                       >
                                         ✏️ Edit &amp; Submit
@@ -361,19 +383,19 @@ export default function BulkUpload() {
                       </div>
                     )}
                     {result.data?.importedRows?.length > 0 && (
-                      <div className="upload-error-table-wrap" style={{ marginTop: '0.75rem' }}>
-                        <p className="upload-error-heading" style={{ color: '#065f46' }}>✅ Successfully imported rows:</p>
+                      <div className="upload-error-table-wrap upload-ok-table-wrap" style={{ marginTop: '0.75rem' }}>
+                        <p className="upload-error-heading upload-ok-heading">✅ Successfully imported rows:</p>
                         <table className="upload-error-table">
                           <thead>
                             <tr><th>{t('bu.rowNum')}</th><th>{t('common.techStack')}</th><th>{t('common.topic')}</th><th>{t('bu.questionPreview')}</th></tr>
                           </thead>
                           <tbody>
                             {result.data.importedRows.map((r, i) => (
-                              <tr key={i} style={{ background: i % 2 === 0 ? '#f0fdf4' : '#fff' }}>
-                                <td className="err-row-num" style={{ color: '#065f46' }}>{r.row}</td>
+                              <tr key={i} className={i % 2 === 0 ? 'ok-row-even' : 'ok-row-odd'}>
+                                <td className="err-row-num ok-row-num">{r.row}</td>
                                 <td style={{ fontSize: '0.78rem' }}>{r.techStack}</td>
                                 <td style={{ fontSize: '0.78rem' }}>{r.topic || '—'}</td>
-                                <td style={{ fontSize: '0.78rem', color: '#374151' }}>{r.stem}</td>
+                                <td className="ok-row-stem" style={{ fontSize: '0.78rem' }}>{r.stem}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -609,10 +631,18 @@ export default function BulkUpload() {
       {inlineEdit && (
         <div style={modalOverlay} onClick={() => setInlineEdit(null)}>
           <div style={{ ...modalBox, maxWidth: '660px' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h3 style={{ margin: 0, fontSize: '1rem' }}>✏️ Edit &amp; Submit — Row {inlineEdit.row}</h3>
               <button onClick={() => setInlineEdit(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem', lineHeight: 1, color: 'var(--text-muted)' }}>✕</button>
             </div>
+
+            {inlineDupInfo && (
+              <div style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '8px', padding: '0.65rem 0.9rem', marginBottom: '1rem', fontSize: '0.82rem', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '1rem' }}>⚠️</span>
+                <span><strong>{inlineDupInfo.label}</strong> with MCQ #{inlineDupInfo.linkedId}.</span>
+                <span style={{ color: 'var(--text-muted)' }}>Substantially rewrite the question stem — similarity must drop below 30% to save.</span>
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
               <div style={{ flex: 1 }}>
@@ -695,7 +725,8 @@ export default function BulkUpload() {
               <button
                 className="btn-primary"
                 onClick={submitInlineEdit}
-                disabled={inlineSubmitting || !inlineForm.techStackId || !inlineForm.questionStem.trim() || !inlineForm.correctAnswer}
+                disabled={inlineSubmitting || !inlineForm.techStackId || !inlineForm.questionStem.trim() || !inlineForm.correctAnswer || inlineForm.questionStem.trim() === inlineOriginalStem.trim()}
+                title={inlineForm.questionStem.trim() === inlineOriginalStem.trim() ? 'Change the question stem first — similarity must drop below 30%' : ''}
               >
                 {inlineSubmitting ? 'Submitting…' : '✓ Save as Draft'}
               </button>

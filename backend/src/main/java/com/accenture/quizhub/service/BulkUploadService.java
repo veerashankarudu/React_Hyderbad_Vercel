@@ -186,11 +186,7 @@ public class BulkUploadService {
     private List<String[]> parseCsv(InputStream is) throws IOException {
         try (CSVReader reader = new CSVReader(new InputStreamReader(is))) {
             List<String[]> all = reader.readAll();
-            // Skip header row (first row)
-            if (all.size() > 1) {
-                return all.subList(1, all.size());
-            }
-            return new ArrayList<>();
+            return skipToDataRows(all);
         } catch (CsvException e) {
             throw new IOException("Failed to parse CSV: " + e.getMessage(), e);
         }
@@ -200,11 +196,11 @@ public class BulkUploadService {
         List<String[]> rows = new ArrayList<>();
         try (Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
-            int firstRow = sheet.getFirstRowNum() + 1; // skip header
-            for (int i = firstRow; i <= sheet.getLastRowNum(); i++) {
+            for (int i = sheet.getFirstRowNum(); i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
+                if (row == null) { rows.add(new String[0]); continue; }
                 int lastCol = row.getLastCellNum();
+                if (lastCol < 0) { rows.add(new String[0]); continue; }
                 String[] data = new String[lastCol];
                 for (int j = 0; j < lastCol; j++) {
                     Cell cell = row.getCell(j);
@@ -213,6 +209,29 @@ public class BulkUploadService {
                 rows.add(data);
             }
         }
-        return rows;
+        return skipToDataRows(rows);
+    }
+
+    /**
+     * Smart header detection: real-world files often have title/notes rows before the
+     * actual header row. Finds the header row (the one containing "tech stack" and
+     * "question"/"stem" labels) and returns only the data rows after it, with blank
+     * rows removed. Falls back to skipping the first row if no header is found.
+     */
+    private List<String[]> skipToDataRows(List<String[]> all) {
+        if (all.isEmpty()) return new ArrayList<>();
+        int headerIdx = -1;
+        for (int i = 0; i < Math.min(all.size(), 10); i++) {
+            String joined = String.join("|", all.get(i)).toLowerCase();
+            if (joined.contains("tech stack") && (joined.contains("question") || joined.contains("stem"))) {
+                headerIdx = i;
+                break;
+            }
+        }
+        int dataStart = headerIdx >= 0 ? headerIdx + 1 : 1;
+        if (dataStart >= all.size()) return new ArrayList<>();
+        return all.subList(dataStart, all.size()).stream()
+                .filter(r -> r.length > 0 && Arrays.stream(r).anyMatch(c -> c != null && !c.isBlank()))
+                .collect(Collectors.toList());
     }
 }

@@ -17,6 +17,7 @@
     "reviewerMetrics": "Reviewer Metrics",
     "auditLog": "Audit Log",
     "masterData": "Master Data",
+    "settings": "Settings",
     "main": "MAIN",
     "admin": "ADMIN",
     "notifications": "Notifications",
@@ -54,6 +55,7 @@
     "all": "All",
     "approved": "Approved",
     "rejected": "Rejected",
+    "permanentlyRejected": "Permanently Rejected",
     "draft": "Draft",
     "inReview": "Under Review",
     "readyForReview": "Ready for Review",
@@ -734,7 +736,7 @@
     "loading": "Loading metrics…",
     "allPerformance": "👥 All Reviewer Performance",
     "noData": "No reviewer data available.",
-    "slaTitle": "🚨 SLA Breach — Questions Stuck > 48 Hours in Review",
+    "slaTitle": "🚨 SLA Breach — Questions Exceeding Review Deadline",
     "noSla": "✅ No SLA breaches — all reviews on track!",
     "breached": "{{count}} breached",
     "colReviewer": "Reviewer",
@@ -751,7 +753,7 @@
     "colTechStack": "Tech Stack",
     "colCreator": "Creator",
     "colReviewerName": "Reviewer",
-    "colTimeStuck": "Time Stuck"
+    "colTimeStuck": "Days Stuck"
   },
   "comments": {
     "placeholder": "Write a comment… @mention teammates · Ctrl+Enter to post",

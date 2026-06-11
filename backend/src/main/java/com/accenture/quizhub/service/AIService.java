@@ -650,6 +650,26 @@ public class AIService {
 
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> generateMcqs(String techStackName, String topicName, int count, String difficulty) {
+        return generateMcqs(techStackName, topicName, count, difficulty, (List<String>) null);
+    }
+
+    /**
+     * Generate MCQs while explicitly steering the AI AWAY from a list of existing question stems
+     * (used for duplicate-replacement regeneration).
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> generateMcqs(String techStackName, String topicName, int count, String difficulty, List<String> avoidStems) {
+        StringBuilder avoidBlock = new StringBuilder();
+        if (avoidStems != null && !avoidStems.isEmpty()) {
+            avoidBlock.append("\nCRITICAL — The question bank ALREADY contains these questions. ")
+                      .append("Your new questions MUST test COMPLETELY DIFFERENT aspects/sub-concepts. ")
+                      .append("Do NOT rephrase any of these:\n");
+            int n = 0;
+            for (String s : avoidStems) {
+                if (n++ >= 15) break;
+                avoidBlock.append("- ").append(s.length() > 140 ? s.substring(0, 140) : s).append("\n");
+            }
+        }
         String prompt = String.format(
             "You are an expert MCQ question designer for technical training. " +
             "Generate exactly %d high-quality multiple choice questions about \"%s\" in the topic \"%s\".\n\n" +
@@ -658,20 +678,39 @@ public class AIService {
             "- Each question must have exactly 4 options (A, B, C, D)\n" +
             "- Only one correct answer per question\n" +
             "- Questions must be practical, scenario-based, and test real understanding\n" +
-            "- No duplicate questions\n\n" +
+            "- No duplicate questions\n" +
+            "%s\n" +
             "Respond ONLY with a valid JSON array (no markdown, no extra text):\n" +
             "[{\"questionStem\":\"...\",\"optionA\":\"...\",\"optionB\":\"...\",\"optionC\":\"...\",\"optionD\":\"...\",\"correctAnswer\":\"A\",\"difficulty\":\"%s\"}]",
-            count, techStackName, topicName, difficulty, difficulty
+            count, techStackName, topicName, difficulty, avoidBlock.toString(), difficulty
         );
         try {
-            String raw = chatClient.prompt().user(prompt).call().content();
-            if (raw == null) throw new RuntimeException("null response");
-            raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
-            // Extract JSON array if wrapped in extra text
-            int start = raw.indexOf('[');
-            int end = raw.lastIndexOf(']');
-            if (start >= 0 && end > start) raw = raw.substring(start, end + 1);
-            List<Map<String, Object>> questions = objectMapper.readValue(raw, new TypeReference<List<Map<String, Object>>>() {});
+            List<Map<String, Object>> questions = null;
+            Exception lastErr = null;
+            for (int attempt = 0; attempt < 2 && (questions == null || questions.isEmpty()); attempt++) {
+                try {
+                    String raw = chatClient.prompt().user(prompt).call().content();
+                    if (raw == null) throw new RuntimeException("null response");
+                    raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
+                    // Extract JSON array if wrapped in extra text
+                    int start = raw.indexOf('[');
+                    int end = raw.lastIndexOf(']');
+                    if (start >= 0 && end > start) raw = raw.substring(start, end + 1);
+                    questions = objectMapper.readValue(raw, new TypeReference<List<Map<String, Object>>>() {});
+                    // Discard malformed entries (model sometimes echoes template placeholders like "...")
+                    questions.removeIf(q -> {
+                        String stem = String.valueOf(q.getOrDefault("questionStem", ""));
+                        String a = String.valueOf(q.getOrDefault("optionA", ""));
+                        return stem.length() < 15 || (stem.contains("...") && stem.length() < 30) || a.length() < 2;
+                    });
+                } catch (Exception attemptErr) {
+                    lastErr = attemptErr;
+                    questions = null;
+                }
+            }
+            if (questions == null || questions.isEmpty()) {
+                throw lastErr != null ? lastErr : new RuntimeException("model returned malformed questions");
+            }
             return questions;
         } catch (Exception e) {
             List<Map<String, Object>> fallback = new ArrayList<>();
@@ -777,9 +816,132 @@ public class AIService {
      * Returns diverse question types: SINGLE_MCQ, MULTI_MCQ, DRAG_ORDER, FILL_BLANK, PREDICT_OUTPUT, DEBUG_CODE, RIDDLE.
      */
     public List<Map<String, Object>> generateInteractiveQuestions(String userPrompt) {
-        String prompt = String.format(
+        return generateInteractiveQuestions(userPrompt, null, 5);
+    }
+
+    // Per-type JSON format examples — used to build small focused prompts for single-type requests.
+    // Small local models (e.g. qwen2.5:3b) fail with the giant all-formats prompt, so we send only
+    // the format that matters with a complete example.
+    private static final Map<String, String> TYPE_FORMAT_EXAMPLES = Map.ofEntries(
+        Map.entry("SINGLE_MCQ", "{\"type\":\"SINGLE_MCQ\",\"question\":\"Which AWS service provides object storage?\",\"code\":null,\"options\":[{\"letter\":\"A\",\"text\":\"EC2\"},{\"letter\":\"B\",\"text\":\"S3\"},{\"letter\":\"C\",\"text\":\"RDS\"},{\"letter\":\"D\",\"text\":\"Lambda\"}],\"correct\":\"B\",\"explanation\":\"S3 is AWS object storage.\"}"),
+        Map.entry("MULTI_MCQ", "{\"type\":\"MULTI_MCQ\",\"question\":\"Which are AWS compute services? (Select all)\",\"options\":[{\"letter\":\"A\",\"text\":\"EC2\"},{\"letter\":\"B\",\"text\":\"S3\"},{\"letter\":\"C\",\"text\":\"Lambda\"},{\"letter\":\"D\",\"text\":\"Route53\"}],\"correctSet\":[\"A\",\"C\"],\"explanation\":\"EC2 and Lambda are compute; S3 is storage, Route53 is DNS.\"}"),
+        Map.entry("DRAG_ORDER", "{\"type\":\"DRAG_ORDER\",\"question\":\"Arrange the steps to deploy an app on AWS EC2:\",\"items\":[\"Launch EC2 instance\",\"Configure security group\",\"SSH into instance\",\"Install application\",\"Start the service\"],\"correctOrder\":[0,1,2,3,4]}"),
+        Map.entry("FILL_BLANK", "{\"type\":\"FILL_BLANK\",\"question\":\"AWS ___ is the serverless compute service that runs code without provisioning servers.\",\"blank\":\"Lambda\",\"hint\":\"Functions as a service\"}"),
+        Map.entry("PREDICT_OUTPUT", "{\"type\":\"PREDICT_OUTPUT\",\"question\":\"What does this command output?\",\"code\":\"aws s3 ls\",\"expectedOutput\":\"List of S3 buckets\",\"explanation\":\"aws s3 ls lists all buckets in the account.\"}"),
+        Map.entry("DEBUG_CODE", "{\"type\":\"DEBUG_CODE\",\"question\":\"What is wrong with this code?\",\"code\":\"short code here\",\"options\":[{\"id\":\"A\",\"text\":\"issue A\"},{\"id\":\"B\",\"text\":\"issue B\"},{\"id\":\"C\",\"text\":\"issue C\"},{\"id\":\"D\",\"text\":\"issue D\"}],\"correct\":\"A\",\"explanation\":\"why\"}"),
+        Map.entry("SQL_BUILDER", "{\"type\":\"SQL_BUILDER\",\"question\":\"Build a query to select all users:\",\"clauses\":[{\"id\":\"c1\",\"text\":\"SELECT *\",\"cat\":\"keyword\"},{\"id\":\"c2\",\"text\":\"FROM users\",\"cat\":\"table\"},{\"id\":\"c3\",\"text\":\"DROP TABLE\",\"cat\":\"distractor\"}],\"correctIds\":[\"c1\",\"c2\"]}"),
+        Map.entry("RIDDLE", "{\"type\":\"RIDDLE\",\"riddle\":\"I store your objects in buckets, eleven nines of durability I promise. What am I?\",\"hints\":[\"Storage service\",\"Buckets\"],\"options\":[{\"letter\":\"A\",\"text\":\"S3\"},{\"letter\":\"B\",\"text\":\"EBS\"},{\"letter\":\"C\",\"text\":\"EFS\"},{\"letter\":\"D\",\"text\":\"Glacier\"}],\"correct\":\"A\",\"explanation\":\"S3 stores objects in buckets with 11 9s durability.\"}"),
+        Map.entry("MATCH_PAIRS", "{\"type\":\"MATCH_PAIRS\",\"question\":\"Match AWS service to its purpose:\",\"pairs\":[{\"left\":\"EC2\",\"right\":\"Virtual servers\"},{\"left\":\"S3\",\"right\":\"Object storage\"},{\"left\":\"RDS\",\"right\":\"Managed databases\"},{\"left\":\"Route53\",\"right\":\"DNS service\"}]}"),
+        Map.entry("CODE_OUTPUT", "{\"type\":\"CODE_OUTPUT\",\"question\":\"Match command to its result:\",\"snippets\":[{\"id\":\"s1\",\"code\":\"aws s3 ls\"},{\"id\":\"s2\",\"code\":\"aws ec2 describe-instances\"}],\"outputs\":[{\"id\":\"o1\",\"text\":\"Lists buckets\"},{\"id\":\"o2\",\"text\":\"Lists EC2 instances\"}],\"correctMap\":{\"s1\":\"o1\",\"s2\":\"o2\"}}"),
+        Map.entry("CODE_REARRANGE", "{\"type\":\"CODE_REARRANGE\",\"question\":\"Arrange the code lines:\",\"blocks\":[{\"id\":\"b1\",\"code\":\"line 1\"},{\"id\":\"b2\",\"code\":\"line 2\"},{\"id\":\"b3\",\"code\":\"line 3\"}],\"correctOrder\":[\"b1\",\"b2\",\"b3\"]}"),
+        Map.entry("ARCH_LAYERS", "{\"type\":\"ARCH_LAYERS\",\"question\":\"Place AWS services in the correct category:\",\"layers\":[\"Compute\",\"Storage\",\"Networking\"],\"items\":[{\"text\":\"EC2\",\"layer\":\"Compute\"},{\"text\":\"S3\",\"layer\":\"Storage\"},{\"text\":\"VPC\",\"layer\":\"Networking\"},{\"text\":\"Lambda\",\"layer\":\"Compute\"}]}"),
+        Map.entry("CODE_REVIEW", "{\"type\":\"CODE_REVIEW\",\"question\":\"Find the issue in this configuration:\",\"code\":\"config code here\",\"options\":[{\"id\":\"A\",\"text\":\"issue A\"},{\"id\":\"B\",\"text\":\"issue B\"},{\"id\":\"C\",\"text\":\"issue C\"},{\"id\":\"D\",\"text\":\"issue D\"}],\"correct\":\"A\",\"explanation\":\"why\"}"),
+        Map.entry("PIPELINE_BUILD", "{\"type\":\"PIPELINE_BUILD\",\"question\":\"Build the data pipeline:\",\"clauses\":[{\"id\":\"p1\",\"text\":\"step 1\",\"cat\":\"source\"},{\"id\":\"p2\",\"text\":\"step 2\",\"cat\":\"transform\"},{\"id\":\"p3\",\"text\":\"step 3\",\"cat\":\"terminal\"},{\"id\":\"p4\",\"text\":\"wrong step\",\"cat\":\"distractor\"}],\"correctIds\":[\"p1\",\"p2\",\"p3\"]}"),
+        Map.entry("FLOWCHART", "{\"type\":\"FLOWCHART\",\"question\":\"Auto-scaling flow: CPU > 80% -> Decision. What happens next?\",\"options\":[{\"letter\":\"A\",\"text\":\"Scale out\"},{\"letter\":\"B\",\"text\":\"Scale in\"},{\"letter\":\"C\",\"text\":\"Terminate all\"},{\"letter\":\"D\",\"text\":\"Nothing\"}],\"correct\":\"A\",\"explanation\":\"High CPU triggers scale-out.\"}"),
+        Map.entry("DEVOPS_PIPE", "{\"type\":\"DEVOPS_PIPE\",\"question\":\"Order the deployment stages:\",\"items\":[\"Build\",\"Test\",\"Deploy to staging\",\"Deploy to production\"]}"),
+        Map.entry("SECURE_CODE", "{\"type\":\"SECURE_CODE\",\"question\":\"Find the security vulnerability:\",\"code\":\"code here\",\"options\":[{\"id\":\"A\",\"text\":\"vuln A\"},{\"id\":\"B\",\"text\":\"vuln B\"},{\"id\":\"C\",\"text\":\"vuln C\"},{\"id\":\"D\",\"text\":\"vuln D\"}],\"correct\":\"A\",\"explanation\":\"why\"}"),
+        Map.entry("CROSSWORD", "{\"type\":\"CROSSWORD\",\"question\":\"AWS Crossword — Cloud Services!\",\"entries\":[{\"word\":\"LAMBDA\",\"clue\":\"Serverless compute service\"},{\"word\":\"VPC\",\"clue\":\"Isolated virtual network\"},{\"word\":\"IAM\",\"clue\":\"Identity and access management\"},{\"word\":\"RDS\",\"clue\":\"Managed relational database\"},{\"word\":\"SNS\",\"clue\":\"Pub/sub notification service\"}]}")
+    );
+
+    /** Validates server-side that an AI question has all required fields for its type. */
+    private boolean isValidQuestion(Map<String, Object> q) {
+        if (q == null || q.get("type") == null) return false;
+        String type = String.valueOf(q.get("type"));
+        boolean hasQuestion = q.get("question") != null && !String.valueOf(q.get("question")).isBlank();
+        switch (type) {
+            case "SINGLE_MCQ": case "FLOWCHART": case "DEBUG_CODE": case "CODE_REVIEW": case "SECURE_CODE":
+                return hasQuestion && isNonEmptyList(q.get("options")) && q.get("correct") != null;
+            case "MULTI_MCQ":
+                return hasQuestion && isNonEmptyList(q.get("options")) && isNonEmptyList(q.get("correctSet"));
+            case "DRAG_ORDER": case "DEVOPS_PIPE":
+                return hasQuestion && isNonEmptyList(q.get("items"));
+            case "FILL_BLANK":
+                return hasQuestion && (q.get("blank") != null || isNonEmptyList(q.get("blanks")) || isNonEmptyList(q.get("codeParts")));
+            case "PREDICT_OUTPUT":
+                return hasQuestion && q.get("expectedOutput") != null;
+            case "SQL_BUILDER": case "PIPELINE_BUILD":
+                return hasQuestion && isNonEmptyList(q.get("clauses")) && isNonEmptyList(q.get("correctIds"));
+            case "RIDDLE":
+                return (q.get("riddle") != null || hasQuestion) && isNonEmptyList(q.get("options")) && q.get("correct") != null;
+            case "MATCH_PAIRS":
+                return hasQuestion && isNonEmptyList(q.get("pairs"));
+            case "CODE_OUTPUT":
+                return hasQuestion && isNonEmptyList(q.get("snippets")) && isNonEmptyList(q.get("outputs")) && q.get("correctMap") != null;
+            case "CODE_REARRANGE":
+                return hasQuestion && isNonEmptyList(q.get("blocks")) && isNonEmptyList(q.get("correctOrder"));
+            case "ARCH_LAYERS":
+                return hasQuestion && isNonEmptyList(q.get("layers")) && isNonEmptyList(q.get("items"));
+            case "CROSSWORD":
+                return hasQuestion && (isNonEmptyList(q.get("words")) || isNonEmptyList(q.get("entries")));
+            default:
+                return false;
+        }
+    }
+
+    private boolean isNonEmptyList(Object o) {
+        return o instanceof List && !((List<?>) o).isEmpty();
+    }
+
+    public List<Map<String, Object>> generateInteractiveQuestions(String userPrompt, String questionType, int count) {
+        String prompt;
+        if (questionType != null && !questionType.isBlank() && TYPE_FORMAT_EXAMPLES.containsKey(questionType)) {
+            // FOCUSED single-type prompt — small models handle this far better than the all-formats prompt
+            prompt = String.format(
+                "Generate %d quiz question(s) about this topic: \"%s\"\n\n" +
+                "STRICT RULES:\n" +
+                "1. EVERY question MUST be about the topic in the request above. Do NOT use other topics.\n" +
+                "2. EVERY question MUST be type \"%s\" and include ALL fields shown in the example below.\n" +
+                "3. Respond with ONLY a JSON array containing exactly %d complete object(s). No markdown, no extra text.\n\n" +
+                "EXAMPLE of ONE complete %s question (copy this structure exactly, but write NEW content about the requested topic):\n%s\n\n" +
+                "Now output the JSON array of %d question(s):",
+                count, userPrompt, questionType, count, questionType,
+                TYPE_FORMAT_EXAMPLES.get(questionType), count);
+        } else {
+            prompt = buildMixedTypesPrompt(userPrompt, count);
+        }
+        try {
+            List<Map<String, Object>> questions = callAiForQuestions(prompt);
+            // Server-side validation: drop malformed/incomplete questions
+            questions.removeIf(q -> !isValidQuestion(q));
+            if (questionType != null && !questionType.isBlank()) {
+                questions.removeIf(q -> !questionType.equals(q.get("type")));
+                // Top-up: if AI under-delivered, ask for the remainder (max 2 retries)
+                int retries = 0;
+                while (questions.size() < count && retries < 2) {
+                    int missing = count - questions.size();
+                    String topUpPrompt = prompt + "\n\nNOTE: Generate exactly " + missing +
+                        " MORE question(s) of type \"" + questionType + "\" on the same topic, different from these already generated. " +
+                        "Output ONLY a JSON array with " + missing + " object(s).";
+                    try {
+                        List<Map<String, Object>> more = callAiForQuestions(topUpPrompt);
+                        more.removeIf(m -> !isValidQuestion(m) || !questionType.equals(m.get("type")));
+                        if (more.isEmpty()) break;
+                        questions.addAll(more);
+                    } catch (Exception ex) {
+                        break;
+                    }
+                    retries++;
+                }
+                // Trim overshoot
+                if (questions.size() > count) questions = new ArrayList<>(questions.subList(0, count));
+            }
+            return questions;
+        } catch (Exception e) {
+            List<Map<String, Object>> fallback = new ArrayList<>();
+            Map<String, Object> err = new HashMap<>();
+            err.put("error", "AI generation failed: " + e.getMessage());
+            fallback.add(err);
+            return fallback;
+        }
+    }
+
+    /** Builds the multi-format prompt used when no specific question type is requested. */
+    private String buildMixedTypesPrompt(String userPrompt, int count) {
+        String typeInstruction = "Generate exactly " + count + " question(s). " +
+            "ALL questions MUST be about the topic in the request. Mix different types for variety unless the user specifies one type.";
+        return String.format(
             "Generate quiz questions. Request: \"%s\"\n\n" +
-            "Rules: If no count specified, generate 5. Match the topic exactly. If user specifies a type, use ONLY that type. Otherwise mix types. Keep all text SHORT.\n\n" +
+            "%s\n\n" +
             "JSON formats (respond ONLY with a JSON array, no markdown):\n" +
             "SINGLE_MCQ: {\"type\":\"SINGLE_MCQ\",\"question\":\"?\",\"code\":null,\"options\":[{\"letter\":\"A\",\"text\":\"..\"},{\"letter\":\"B\",\"text\":\"..\"},{\"letter\":\"C\",\"text\":\"..\"},{\"letter\":\"D\",\"text\":\"..\"}],\"correct\":\"B\",\"explanation\":\"..\"}\n" +
             "MULTI_MCQ: {\"type\":\"MULTI_MCQ\",\"question\":\"?\",\"options\":[{\"letter\":\"A\",\"text\":\"..\"},{\"letter\":\"B\",\"text\":\"..\"},{\"letter\":\"C\",\"text\":\"..\"},{\"letter\":\"D\",\"text\":\"..\"}],\"correctSet\":[\"A\",\"C\"],\"explanation\":\"..\"}\n" +
@@ -797,45 +959,46 @@ public class AIService {
             "PIPELINE_BUILD: {\"type\":\"PIPELINE_BUILD\",\"question\":\"Build the pipeline:\",\"clauses\":[{\"id\":\"p1\",\"text\":\".filter()\",\"cat\":\"intermediate\"},{\"id\":\"p2\",\"text\":\".collect()\",\"cat\":\"terminal\"}],\"correctIds\":[\"p1\",\"p2\"]}\n" +
             "FLOWCHART: {\"type\":\"FLOWCHART\",\"question\":\"What happens at decision point?\",\"options\":[{\"letter\":\"A\",\"text\":\"..\"},{\"letter\":\"B\",\"text\":\"..\"},{\"letter\":\"C\",\"text\":\"..\"},{\"letter\":\"D\",\"text\":\"..\"}],\"correct\":\"B\",\"explanation\":\"..\"}\n" +
             "DEVOPS_PIPE: {\"type\":\"DEVOPS_PIPE\",\"question\":\"Order CI/CD stages:\",\"items\":[\"Build\",\"Test\",\"Deploy\",\"Monitor\"]}\n" +
-            "SECURE_CODE: {\"type\":\"SECURE_CODE\",\"question\":\"Find the vulnerability:\",\"code\":\"code\",\"options\":[{\"id\":\"A\",\"text\":\"..\"},{\"id\":\"B\",\"text\":\"..\"},{\"id\":\"C\",\"text\":\"..\"},{\"id\":\"D\",\"text\":\"..\"}],\"correct\":\"A\",\"explanation\":\"..\"}\n\n" +
-            "TYPE DETECTION: 'fill in the blank/cloze/word bank'→FILL_BLANK, 'drag/order/arrange/sequence'→DRAG_ORDER, 'match pair/concept'→MATCH_PAIRS, " +
+            "SECURE_CODE: {\"type\":\"SECURE_CODE\",\"question\":\"Find the vulnerability:\",\"code\":\"code\",\"options\":[{\"id\":\"A\",\"text\":\"..\"},{\"id\":\"B\",\"text\":\"..\"},{\"id\":\"C\",\"text\":\"..\"},{\"id\":\"D\",\"text\":\"..\"}],\"correct\":\"A\",\"explanation\":\"..\"}\n" +
+            "CROSSWORD: {\"type\":\"CROSSWORD\",\"question\":\"Topic Crossword — short title!\",\"entries\":[{\"word\":\"LAMBDA\",\"clue\":\"Serverless compute service\"},{\"word\":\"S3\",\"clue\":\"Object storage service\"}]} " +
+            "— give exactly 5 entries per crossword, single words only (A-Z, no spaces/hyphens), 3-8 letters each, all words MUST be related to the requested topic. Do NOT include row/col/direction — layout is computed automatically.\n\n" +
+            "TYPE DETECTION (only if user did not specify): 'fill in the blank/cloze/word bank'→FILL_BLANK, 'drag/order/arrange/sequence'→DRAG_ORDER, 'match pair/concept'→MATCH_PAIRS, " +
             "'code output/match code'→CODE_OUTPUT, 'rearrange/reorder code'→CODE_REARRANGE, 'architecture/layer'→ARCH_LAYERS, " +
             "'code review/PR review'→CODE_REVIEW, 'stream pipeline/pipeline build'→PIPELINE_BUILD, 'flowchart/diagram'→FLOWCHART, " +
             "'devops/ci-cd/deploy pipeline'→DEVOPS_PIPE, 'secure/owasp/vulnerability/xss/injection'→SECURE_CODE, " +
             "'predict output/trace'→PREDICT_OUTPUT, 'debug/find bug'→DEBUG_CODE, 'sql build'→SQL_BUILDER, 'riddle/enigma'→RIDDLE, " +
+            "'crossword/cross word'→CROSSWORD, " +
             "'multi select/checkbox/select all'→MULTI_MCQ. Default→SINGLE_MCQ.\n" +
             "Output ONLY the JSON array.\n",
-            userPrompt
+            userPrompt, typeInstruction
         );
+    }
+
+    /** Calls the LLM with the generation prompt and parses the JSON array response. */
+    private List<Map<String, Object>> callAiForQuestions(String prompt) throws Exception {
+        String raw = chatClient.prompt().user(prompt).call().content();
+        if (raw == null) throw new RuntimeException("null response from AI");
+        raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
+        int start = raw.indexOf('[');
+        int end = raw.lastIndexOf(']');
+        if (start >= 0 && end > start) {
+            raw = raw.substring(start, end + 1);
+        }
+        // Try parsing as-is first
         try {
-            String raw = chatClient.prompt().user(prompt).call().content();
-            if (raw == null) throw new RuntimeException("null response from AI");
-            raw = raw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
-            int start = raw.indexOf('[');
-            int end = raw.lastIndexOf(']');
-            if (start >= 0 && end > start) {
-                raw = raw.substring(start, end + 1);
-            }
-            // Try parsing as-is first
-            try {
-                List<Object> parsed = objectMapper.readValue(raw, List.class);
-                // Unwrap nested array: [[{...}]] → [{...}]
-                List<Map<String, Object>> questions = unwrapNestedArray(parsed);
-                return questions;
-            } catch (Exception parseErr) {
-                // JSON truncated — try to recover by finding last complete object
-                String repaired = repairTruncatedJsonArray(raw);
-                List<Object> parsed = objectMapper.readValue(repaired, List.class);
-                List<Map<String, Object>> questions = unwrapNestedArray(parsed);
-                if (questions.isEmpty()) throw parseErr;
-                return questions;
-            }
-        } catch (Exception e) {
-            List<Map<String, Object>> fallback = new ArrayList<>();
-            Map<String, Object> err = new HashMap<>();
-            err.put("error", "AI generation failed: " + e.getMessage());
-            fallback.add(err);
-            return fallback;
+            List<Object> parsed = objectMapper.readValue(raw, List.class);
+            // Unwrap nested array: [[{...}]] → [{...}]
+            List<Map<String, Object>> questions = unwrapNestedArray(parsed);
+            questions.forEach(this::layoutCrosswordIfNeeded);
+            return questions;
+        } catch (Exception parseErr) {
+            // JSON truncated — try to recover by finding last complete object
+            String repaired = repairTruncatedJsonArray(raw);
+            List<Object> parsed = objectMapper.readValue(repaired, List.class);
+            List<Map<String, Object>> questions = unwrapNestedArray(parsed);
+            if (questions.isEmpty()) throw parseErr;
+            questions.forEach(this::layoutCrosswordIfNeeded);
+            return questions;
         }
     }
 
@@ -861,6 +1024,123 @@ public class AIService {
             }
         }
         return questions;
+    }
+
+    /**
+     * If the question is a CROSSWORD generated by AI with "entries" (word+clue only),
+     * compute a valid grid layout (row/col/direction with intersections) so the
+     * frontend can render it. AI cannot reliably produce valid intersecting layouts.
+     */
+    @SuppressWarnings("unchecked")
+    private void layoutCrosswordIfNeeded(Map<String, Object> q) {
+        if (!"CROSSWORD".equals(q.get("type"))) return;
+        if (q.containsKey("words") && q.get("words") != null) return; // already laid out
+        Object entriesObj = q.get("entries");
+        if (!(entriesObj instanceof List)) return;
+
+        // Sanitize: uppercase, letters only, 2-10 chars, dedupe
+        List<Map<String, String>> entries = new ArrayList<>();
+        for (Object o : (List<?>) entriesObj) {
+            if (!(o instanceof Map)) continue;
+            Map<String, Object> e = (Map<String, Object>) o;
+            String word = String.valueOf(e.getOrDefault("word", "")).toUpperCase().replaceAll("[^A-Z]", "");
+            String clue = String.valueOf(e.getOrDefault("clue", ""));
+            if (word.length() >= 2 && word.length() <= 10 && !clue.isBlank()
+                    && entries.stream().noneMatch(x -> x.get("word").equals(word))) {
+                entries.add(Map.of("word", word, "clue", clue));
+            }
+        }
+        if (entries.isEmpty()) return;
+        // Longest word first — better anchor
+        entries.sort((a, b) -> b.get("word").length() - a.get("word").length());
+
+        int size = 15; // working grid; will be trimmed by offset normalization
+        char[][] grid = new char[size][size];
+        List<Map<String, Object>> placed = new ArrayList<>();
+
+        // Place first word horizontally in the middle
+        String first = entries.get(0).get("word");
+        int startRow = size / 2, startCol = (size - first.length()) / 2;
+        for (int i = 0; i < first.length(); i++) grid[startRow][startCol + i] = first.charAt(i);
+        placed.add(new java.util.LinkedHashMap<>(Map.of(
+                "word", first, "clue", entries.get(0).get("clue"),
+                "row", startRow, "col", startCol, "direction", "across")));
+
+        // Try to place remaining words by intersection
+        for (int w = 1; w < entries.size(); w++) {
+            String word = entries.get(w).get("word");
+            String clue = entries.get(w).get("clue");
+            boolean done = false;
+            outer:
+            for (int i = 0; i < word.length() && !done; i++) {
+                char ch = word.charAt(i);
+                for (int r = 0; r < size && !done; r++) {
+                    for (int c = 0; c < size && !done; c++) {
+                        if (grid[r][c] != ch) continue;
+                        // Try vertical placement crossing at (r,c)
+                        int vr = r - i;
+                        if (canPlace(grid, size, word, vr, c, false)) {
+                            for (int k = 0; k < word.length(); k++) grid[vr + k][c] = word.charAt(k);
+                            placed.add(new java.util.LinkedHashMap<>(Map.of(
+                                    "word", word, "clue", clue, "row", vr, "col", c, "direction", "down")));
+                            done = true;
+                            continue outer;
+                        }
+                        // Try horizontal placement crossing at (r,c)
+                        int hc = c - i;
+                        if (canPlace(grid, size, word, r, hc, true)) {
+                            for (int k = 0; k < word.length(); k++) grid[r][hc + k] = word.charAt(k);
+                            placed.add(new java.util.LinkedHashMap<>(Map.of(
+                                    "word", word, "clue", clue, "row", r, "col", hc, "direction", "across")));
+                            done = true;
+                            continue outer;
+                        }
+                    }
+                }
+            }
+            // No intersection found — place standalone below existing content
+            if (!done) {
+                int maxRow = placed.stream().mapToInt(p -> {
+                    int pr = (int) p.get("row");
+                    return "down".equals(p.get("direction")) ? pr + ((String) p.get("word")).length() - 1 : pr;
+                }).max().orElse(startRow);
+                int newRow = maxRow + 2;
+                if (newRow < size && word.length() <= size) {
+                    for (int k = 0; k < word.length(); k++) grid[newRow][k] = word.charAt(k);
+                    placed.add(new java.util.LinkedHashMap<>(Map.of(
+                            "word", word, "clue", clue, "row", newRow, "col", 0, "direction", "across")));
+                }
+            }
+        }
+
+        // Normalize offsets so min row/col is 0
+        int minRow = Integer.MAX_VALUE, minCol = Integer.MAX_VALUE;
+        for (Map<String, Object> p : placed) {
+            minRow = Math.min(minRow, (int) p.get("row"));
+            minCol = Math.min(minCol, (int) p.get("col"));
+        }
+        for (Map<String, Object> p : placed) {
+            p.put("row", (int) p.get("row") - minRow);
+            p.put("col", (int) p.get("col") - minCol);
+        }
+
+        q.put("words", placed);
+        q.remove("entries");
+    }
+
+    /** Checks if a word can be placed at (row,col) without conflicting with existing letters. */
+    private boolean canPlace(char[][] grid, int size, String word, int row, int col, boolean across) {
+        if (row < 0 || col < 0) return false;
+        int endRow = across ? row : row + word.length() - 1;
+        int endCol = across ? col + word.length() - 1 : col;
+        if (endRow >= size || endCol >= size) return false;
+        for (int k = 0; k < word.length(); k++) {
+            int r = across ? row : row + k;
+            int c = across ? col + k : col;
+            char existing = grid[r][c];
+            if (existing != 0 && existing != word.charAt(k)) return false;
+        }
+        return true;
     }
 
     private String repairTruncatedJsonArray(String raw) {
@@ -1012,6 +1292,25 @@ public class AIService {
 
         // General chat fallback
         if (!isApiKeyConfigured()) return noKeyMessage();
+
+        // ── RAG first: if the question is about QuizHub itself, answer grounded in
+        //    the knowledge docs (retrieve → judge relevance → grounded answer) ──
+        try {
+            if (vectorStore != null) {
+                Map<String, Object> rag = smartRagQuery(userMessage, 50);
+                if (Boolean.TRUE.equals(rag.get("contextUsed")) && rag.get("answer") != null) {
+                    @SuppressWarnings("unchecked")
+                    List<String> sources = (List<String>) rag.getOrDefault("sources", Collections.emptyList());
+                    return "📚 **From QuizHub docs** (relevance " + rag.get("relevanceScore") + "%):\n\n" +
+                           rag.get("answer") +
+                           (sources.isEmpty() ? "" : "\n\n📎 *Sources: " + String.join(", ", new LinkedHashSet<>(sources)) + "*");
+                }
+                // relevance too low → fall through to general LLM chat below
+            }
+        } catch (Exception ignored) {
+            // RAG unavailable — fall through to general chat
+        }
+
         StringBuilder prompt = new StringBuilder();
         prompt.append("You are QuizHub AI, a friendly technical learning assistant embedded in a group chat ")
               .append("for software engineers working on an MCQ authoring platform. ")
@@ -1696,6 +1995,116 @@ public class AIService {
                 .map(d -> d.getMetadata().getOrDefault("source", "unknown"))
                 .collect(Collectors.toList()));
         result.put("question", question);
+        return result;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SMART RAG (Agentic / Self-RAG) — 2-Step LLM Pipeline
+    // Step 1: LLM judges context relevance → returns percentage
+    // Step 2: If relevance ≥ threshold → LLM generates grounded answer
+    //         If relevance < threshold  → falls back to general LLM answer
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Agentic RAG — two-LLM pipeline:
+     * LLM #1 scores how relevant the retrieved context is (0-100%).
+     * LLM #2 generates the final answer — grounded if score ≥ 70, general fallback otherwise.
+     */
+    public Map<String, Object> smartRagQuery(String question, int threshold) {
+        Map<String, Object> result = new LinkedHashMap<>();
+
+        if (!isApiKeyConfigured()) {
+            result.put("error", noKeyMessage());
+            return result;
+        }
+        if (vectorStore == null) {
+            result.put("error", "Vector store not available. Embedding model may not be configured.");
+            return result;
+        }
+
+        // ── RETRIEVE: fetch top-5 docs from vector store ──────────────────────
+        List<Document> docs = vectorStore.similaritySearch(
+                SearchRequest.builder().query(question).topK(5).build());
+
+        String context = docs.stream()
+                .map(Document::getText)
+                .collect(Collectors.joining("\n\n"));
+
+        List<String> sources = docs.stream()
+                .map(d -> (String) d.getMetadata().getOrDefault("source", "unknown"))
+                .collect(Collectors.toList());
+
+        // ── STEP 1: LLM #1 — Judge relevance percentage ───────────────────────
+        String judgePrompt = String.format(
+            "You are a relevance scoring engine.\n\n" +
+            "CONTEXT DOCUMENTS:\n%s\n\n" +
+            "USER QUESTION: %s\n\n" +
+            "TASK: Score how well the context documents can answer the user question.\n" +
+            "- 90-100: Context directly and completely answers the question\n" +
+            "- 70-89:  Context mostly covers the question with minor gaps\n" +
+            "- 40-69:  Context is related but only partially answers the question\n" +
+            "- 10-39:  Context is loosely related, mostly insufficient\n" +
+            "- 0-9:    Context is irrelevant to the question\n\n" +
+            "Respond ONLY with a valid JSON object in this exact format:\n" +
+            "{\"relevanceScore\": <integer 0-100>, \"reasoning\": \"<one sentence why>\"}",
+            context, question);
+
+        String judgeRaw = chatClient.prompt().user(judgePrompt).call().content();
+
+        int relevanceScore = 0;
+        String reasoning = "Could not parse judge response";
+        try {
+            if (judgeRaw != null) {
+                String cleaned = judgeRaw.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
+                int s = cleaned.indexOf('{'), e = cleaned.lastIndexOf('}');
+                if (s >= 0 && e > s) {
+                    Map<String, Object> judgeResult = objectMapper.readValue(
+                        cleaned.substring(s, e + 1), new TypeReference<Map<String, Object>>() {});
+                    relevanceScore = judgeResult.get("relevanceScore") != null
+                        ? ((Number) judgeResult.get("relevanceScore")).intValue() : 0;
+                    reasoning = (String) judgeResult.getOrDefault("reasoning", reasoning);
+                }
+            }
+        } catch (Exception ex) {
+            reasoning = "Judge parse error: " + ex.getMessage();
+        }
+
+        result.put("question", question);
+        result.put("relevanceScore", relevanceScore);
+        result.put("threshold", threshold);
+        result.put("judgeReasoning", reasoning);
+        result.put("sources", sources);
+
+        // ── STEP 2: LLM #2 — Generate answer based on relevance gate ──────────
+        boolean contextSufficient = relevanceScore >= threshold;
+        result.put("contextUsed", contextSufficient);
+
+        String answerPrompt;
+        if (contextSufficient) {
+            // Grounded answer — use the retrieved context
+            answerPrompt = String.format(
+                "Answer the following question using ONLY the context provided below.\n" +
+                "Be specific, accurate, and concise. Do not add information not present in the context.\n\n" +
+                "CONTEXT:\n%s\n\n" +
+                "QUESTION: %s\n\n" +
+                "ANSWER:",
+                context, question);
+            result.put("answerMode", "grounded (RAG context used)");
+        } else {
+            // Fallback — answer from general knowledge with disclaimer
+            answerPrompt = String.format(
+                "The internal knowledge base does not have sufficient information to answer this question " +
+                "(relevance score: %d%%). Answer using your general knowledge, but clearly indicate " +
+                "this answer is NOT based on internal documents.\n\n" +
+                "QUESTION: %s\n\n" +
+                "ANSWER (from general knowledge):",
+                relevanceScore, question);
+            result.put("answerMode", "fallback (general knowledge, context relevance too low: " + relevanceScore + "%)");
+        }
+
+        String answer = chatClient.prompt().user(answerPrompt).call().content();
+        result.put("answer", answer != null ? answer : "No answer generated");
+
         return result;
     }
 

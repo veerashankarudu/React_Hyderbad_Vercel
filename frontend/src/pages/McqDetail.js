@@ -205,7 +205,12 @@ export default function McqDetail() {
                 {submitting ? t('detail.submitting') : `📬 ${t('detail.submitForReview')}`}
               </button>
             )}
-            {((isCreator && ['DRAFT','REJECTED'].includes(mcq.status)) || (isAdmin && mcq.status !== 'DRAFT')) && (
+            {mcq.status === 'REJECTED' && isCreator && (
+              <button className="btn-sm btn-blue" onClick={handleSubmitForReview} disabled={submitting}>
+                {submitting ? t('detail.submitting') : `🔄 Resubmit for Review`}
+              </button>
+            )}
+            {((isCreator && ['DRAFT','REJECTED'].includes(mcq.status)) || (isAdmin && mcq.status !== 'DRAFT')) && mcq.status !== 'PERMANENTLY_REJECTED' && (
               <button className="btn-primary" onClick={() => navigate(`/mcq/${id}/edit`)}>{t('detail.editMcq')}</button>
             )}
             <button className="btn-sm btn-outline" onClick={handleExplain} disabled={explainLoading}>
@@ -303,6 +308,23 @@ export default function McqDetail() {
             </div>
             <StatusBadge status={mcq.status} />
           </div>
+
+          {/* Rejection limit warning banner */}
+          {mcq.rejectionCount > 0 && mcq.rejectionLimitEnabled && (
+            <div style={{
+              padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem',
+              background: mcq.status === 'PERMANENTLY_REJECTED' ? '#1f2937' : '#fef2f2',
+              border: mcq.status === 'PERMANENTLY_REJECTED' ? '1px solid #dc2626' : '1px solid #fecaca',
+              color: mcq.status === 'PERMANENTLY_REJECTED' ? '#f9fafb' : '#991b1b',
+              fontSize: '0.82rem', fontWeight: 600
+            }}>
+              {mcq.status === 'PERMANENTLY_REJECTED' ? (
+                <span>🚫 This question has been permanently rejected after {mcq.rejectionCount} rejection(s). It cannot be resubmitted.</span>
+              ) : (
+                <span>⚠️ Rejected {mcq.rejectionCount} of {mcq.maxRejectionLimit} allowed time(s). {mcq.maxRejectionLimit - mcq.rejectionCount} attempt(s) remaining before permanent rejection.</span>
+              )}
+            </div>
+          )}
 
           <div className="detail-body">
             <div className="question-stem"><QuestionStemRenderer text={txStem || mcq.questionStem} /></div>

@@ -5,11 +5,13 @@ import com.accenture.quizhub.dto.request.AddUserRequest;
 import com.accenture.quizhub.dto.response.AuditLogResponse;
 import com.accenture.quizhub.dto.response.McqResponse;
 import com.accenture.quizhub.dto.response.UserSummary;
+import com.accenture.quizhub.entity.AppConfig;
 import com.accenture.quizhub.entity.User;
 import com.accenture.quizhub.enums.McqStatus;
 import com.accenture.quizhub.exception.ResourceNotFoundException;
 import com.accenture.quizhub.repository.UserRepository;
 import com.accenture.quizhub.service.AdminService;
+import com.accenture.quizhub.service.AppConfigService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -32,6 +35,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final UserRepository userRepository;
+    private final AppConfigService appConfigService;
 
     private User resolveUser(String enterpriseId) {
         return userRepository.findByEnterpriseId(enterpriseId)
@@ -125,5 +129,24 @@ public class AdminController {
     @GetMapping("/audit-log")
     public ResponseEntity<List<AuditLogResponse>> getAuditLog() {
         return ResponseEntity.ok(adminService.getAuditLog());
+    }
+
+    // --- App Configuration (Admin Settings) ---
+
+    @GetMapping("/settings")
+    public ResponseEntity<Map<String, String>> getSettings() {
+        return ResponseEntity.ok(appConfigService.getAll());
+    }
+
+    @PutMapping("/settings")
+    public ResponseEntity<Map<String, String>> updateSettings(@RequestBody Map<String, String> settings) {
+        settings.forEach((key, value) -> appConfigService.setValue(key, value, null));
+        return ResponseEntity.ok(appConfigService.getAll());
+    }
+
+    @GetMapping("/settings/{key}")
+    public ResponseEntity<Map<String, String>> getSetting(@PathVariable String key) {
+        String value = appConfigService.getValueOrDefault(key, "");
+        return ResponseEntity.ok(Map.of("key", key, "value", value));
     }
 }

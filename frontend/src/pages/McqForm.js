@@ -54,6 +54,7 @@ export default function McqForm({ mode }) {
   const [duplicateWarning, setDuplicateWarning] = useState('');
   const [duplicateMatches, setDuplicateMatches] = useState([]);
   const [duplicateBlocked, setDuplicateBlocked] = useState(false);
+  const [showDupModal, setShowDupModal] = useState(false);
   const [aiCheckLoading, setAiCheckLoading] = useState(false);
   const [validateResult, setValidateResult] = useState(null);
   const [validateLoading, setValidateLoading] = useState(false);
@@ -196,6 +197,7 @@ export default function McqForm({ mode }) {
         const matches = data.similarQuestions || [];
         setDuplicateMatches(matches);
         setDuplicateBlocked(data.blocked === true);
+        if (data.blocked === true && matches.length > 0) setShowDupModal(true);
         if (matches.length === 0) {
           setDuplicateWarning('no-duplicates');
         } else {
@@ -300,6 +302,7 @@ export default function McqForm({ mode }) {
           setDuplicateBlocked(dupData.blocked === true);
           if (dupData.blocked) {
             setDuplicateWarning('blocked');
+            setShowDupModal(true);
             setError({ text: 'AI detected ≥30% similarity with existing questions. Please revise the question before sending for review.', dupId: null });
             setLoading(false);
             return;
@@ -318,7 +321,7 @@ export default function McqForm({ mode }) {
       if (sendForReview) {
         const mcqId = isEdit ? id : res.data.id;
         try { await API.post(`/mcqs/${mcqId}/submit`); } catch (submitErr) {
-          const submitMsg = submitErr.response?.data?.message || '';
+          const submitMsg = submitErr.response?.data?.error || submitErr.response?.data?.message || '';
           if (submitMsg.startsWith('DUPLICATE:')) {
             const parts = submitMsg.split(':');
             const dupId = parts[1];
@@ -328,6 +331,12 @@ export default function McqForm({ mode }) {
             setLoading(false);
             return;
           }
+          // Other submit errors — show message but stay on page
+          const friendlyMsg = submitMsg || 'Failed to submit for review.';
+          setError({ text: friendlyMsg, dupId: null });
+          toast.error(friendlyMsg, { autoClose: 6000 });
+          setLoading(false);
+          return;
         }
       }
       navigate('/my-questions');
@@ -417,8 +426,29 @@ export default function McqForm({ mode }) {
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '0.3rem' }}>
                               {hasDup && <span style={{ color: '#d97706', marginRight: '0.3rem' }}><AlertTriangle size={12} style={{marginRight:'0.2rem',verticalAlign:'middle'}} /> Duplicate</span>}
+                              {q.wasReplaced && <span style={{ color: '#059669', marginRight: '0.3rem', fontSize: '0.72rem', fontWeight: 700 }}>🔄 Auto-replaced (original was a duplicate)</span>}
                               Q{idx + 1}: {q.questionStem?.length > 100 ? q.questionStem.substring(0, 100) + '…' : q.questionStem}
                             </div>
+                            {q.wasReplaced && q.replacedOriginalStem && (
+                              <div style={{ margin: '0.4rem 0', padding: '0.5rem 0.7rem', background: 'rgba(220,38,38,0.07)', border: '1px dashed #dc2626', borderRadius: '8px', fontSize: '0.75rem' }}>
+                                <div style={{ fontWeight: 700, color: '#dc2626', marginBottom: '0.25rem' }}>✕ Discarded duplicate (AI originally generated):</div>
+                                <div style={{ color: 'var(--text)', textDecoration: 'line-through', opacity: 0.75, marginBottom: '0.3rem' }}>
+                                  {q.replacedOriginalStem}
+                                </div>
+                                {(q.replacedOriginalMatches || []).length > 0 && (
+                                  <div>
+                                    <div style={{ fontWeight: 600, color: '#92400e', marginBottom: '0.15rem' }}>It matched these existing questions:</div>
+                                    {(q.replacedOriginalMatches || []).map((m) => (
+                                      <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.1rem' }}>
+                                        <span style={{ background: '#dc2626', color: '#fff', padding: '0.05rem 0.35rem', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700 }}>{m.similarityPercent}%</span>
+                                        <span style={{ color: 'var(--text-muted)' }}>Q#{m.id}: {(m.questionStem || '').length > 75 ? (m.questionStem || '').substring(0, 75) + '…' : m.questionStem}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                <div style={{ marginTop: '0.3rem', color: '#059669', fontWeight: 600 }}>↓ Replaced with the new unique question above</div>
+                              </div>
+                            )}
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                               A: {q.optionA} | B: {q.optionB} | C: {q.optionC} | D: {q.optionD} | ✓ {q.correctAnswer}
                             </div>
@@ -503,6 +533,52 @@ export default function McqForm({ mode }) {
             </dialog>
           </div>
         )}
+
+        {/* ── Duplicate Check Failed modal (PPT Level 2 mockup) ── */}
+        {showDupModal && duplicateMatches.length > 0 && (() => {
+          const blocking = duplicateMatches.filter(m => (m.similarityPercent || 0) >= 30).slice(0, 5);
+          const shown = blocking.length > 0 ? blocking : duplicateMatches.slice(0, 5);
+          const idList = shown.map(m => m.id).join(', ');
+          return (
+          <div className="dialog-overlay" onClick={() => setShowDupModal(false)} aria-hidden="true">
+            <dialog open className="ai-gen-dialog" onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()} style={{ maxWidth: '640px', maxHeight: '80vh', overflowY: 'auto', border: '1.5px solid #dc2626' }}>
+              <div style={{ padding: '1.25rem 1.5rem' }}>
+                <h3 style={{ color: '#dc2626', textAlign: 'center', margin: '0 0 0.75rem', fontSize: '1.15rem' }}>
+                  <XCircle size={18} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} />Duplicate Check Failed
+                </h3>
+                <p style={{ textAlign: 'center', fontSize: '0.85rem', margin: '0 0 0.5rem', color: 'var(--text)' }}>
+                  A similarity match was detected with an existing question in the question bank for the same technology stack and topic (based on question stem and options).
+                </p>
+                <p style={{ textAlign: 'center', fontSize: '0.85rem', fontWeight: 600, margin: '0 0 1rem', color: 'var(--text)' }}>
+                  Similar question ID{shown.length > 1 ? 's' : ''}: {idList}.{' '}
+                  The MCQ is {shown.map(m => `${m.similarityPercent}% similar to question ID ${m.id}`).join(' and ')}.
+                </p>
+                {shown.map((m) => (
+                  <div key={m.id} style={{ border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.08)', borderRadius: '10px', padding: '0.9rem 1.1rem', marginBottom: '0.75rem' }}>
+                    <div style={{ textAlign: 'center', fontWeight: 700, color: '#b45309', marginBottom: '0.6rem', fontSize: '0.88rem' }}>
+                      Question ID {m.id} — {m.similarityPercent}% similar
+                    </div>
+                    <div style={{ fontSize: '0.82rem', marginBottom: '0.5rem', color: 'var(--text)' }}>
+                      <strong>Stem:</strong> {m.questionStem}
+                    </div>
+                    {(m.optionA || m.optionB || m.optionC || m.optionD) && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'grid', gap: '0.25rem' }}>
+                        {m.optionA && <div>A. {m.optionA}</div>}
+                        {m.optionB && <div>B. {m.optionB}</div>}
+                        {m.optionC && <div>C. {m.optionC}</div>}
+                        {m.optionD && <div>D. {m.optionD}</div>}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                  <button type="button" className="btn-secondary" onClick={() => setShowDupModal(false)}>Close &amp; Revise</button>
+                </div>
+              </div>
+            </dialog>
+          </div>
+          );
+        })()}
 
         {/* Rejection feedback banner */}
         {isEdit && mcqStatus === 'REJECTED' && reviewComments.length > 0 && (
@@ -837,15 +913,17 @@ export default function McqForm({ mode }) {
 
               <div className="form-actions">
                 <button type="button" className="btn-secondary" onClick={() => navigate(-1)}>{t('common.cancel')}</button>
-                <button type="button" className="btn-secondary" disabled={loading} onClick={(e) => handleSubmit(e, false)}>
-                  {loading ? t('common.saving') : t('common.save')}
-                </button>
+                {(!isEdit || mcqStatus === 'DRAFT' || mcqStatus === 'REJECTED') && (
+                  <button type="button" className="btn-secondary" disabled={loading} onClick={(e) => handleSubmit(e, false)}>
+                    {loading ? t('common.saving') : t('common.save')}
+                  </button>
+                )}
                 {(!isEdit || mcqStatus === 'DRAFT' || mcqStatus === 'REJECTED') && (
                   <button type="button" className="btn-primary" disabled={loading || duplicateBlocked} title={duplicateBlocked ? 'Duplicate detected — revise the question first' : ''} onClick={(e) => handleSubmit(e, true)}>
                     {loading ? t('common.saving') : duplicateBlocked ? <><XCircle size={14} style={{marginRight:'0.3rem',verticalAlign:'middle'}} /> Duplicate — Revise First</> : t('form.saveAndSend')}
                   </button>
                 )}
-                {isEdit && mcqStatus !== 'REJECTED' && (
+                {isEdit && mcqStatus && mcqStatus !== 'DRAFT' && mcqStatus !== 'REJECTED' && (
                   <button type="button" className="btn-primary" disabled={loading} onClick={(e) => handleSubmit(e, false)}>
                     {loading ? t('common.saving') : t('form.updateMcq')}
                   </button>
