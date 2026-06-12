@@ -8,7 +8,7 @@
 [![Spring AI](https://img.shields.io/badge/Powered%20by-Spring%20AI%20%2B%20GPT--4o--mini-412991?logo=openai)](https://spring.io/projects/spring-ai)
 [![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?logo=mysql)](https://mysql.com)
 [![i18n](https://img.shields.io/badge/i18n-7%20Languages-brightgreen)](https://www.i18next.com)
-[![Tests](https://img.shields.io/badge/Tests-2%2C029%20Passing-brightgreen?logo=checkmarx)](https://github.com)
+[![Tests](https://img.shields.io/badge/Tests-2%2C044%20Passing-brightgreen?logo=checkmarx)](https://github.com)
 [![Backend Coverage](https://img.shields.io/badge/Backend%20Coverage-92.5%25-brightgreen?logo=jacoco)](https://github.com)
 [![Frontend Coverage](https://img.shields.io/badge/Frontend%20Coverage-80.37%25-brightgreen?logo=jest)](https://github.com)
 
@@ -24,101 +24,184 @@ All MCQs go through a governed lifecycle: **DRAFT → READY_FOR_REVIEW → UNDER
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        User Browser                              │
-│              React 19 (JavaScript) — localhost:3000              │
-│     Pages: MCQ Form, Question Bank, Quiz, Inbox, Analytics ...  │
-└────────────────────────────┬────────────────────────────────────┘
-                             │  HTTP / REST (Axios)
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              Spring Boot 3.2.5 REST API — localhost:8080         │
-│   Controllers: Auth, MCQ, Admin, Review, BulkUpload, Quiz ...   │
-│   Security: Spring Security + JWT (JJWT 0.11.5)                 │
-└──────────┬──────────────┬──────────────┬────────────────────────┘
-           │              │              │
-           ▼              ▼              ▼
-┌──────────────┐  ┌──────────────┐  ┌────────────────────────────┐
-│  Spring AI   │  │  Spring Data │  │     Spring Mail            │
-│  (GPT-4o-   │  │  JPA + MySQL │  │  (Email notifications:     │
-│   mini)      │  │              │  │   assigned/approved/       │
-│              │  │  quizhub DB  │  │   rejected)                │
-│ • Duplicate  │  │              │  └────────────────────────────┘
-│   detection  │  │ • MCQs       │
-│ • Quality    │  │ • Users      │  ┌────────────────────────────┐
-│   scoring    │  │ • Reviews    │  │   Apache POI + OpenCSV     │
-│ • Enrichment │  │ • Quizzes    │  │   (Bulk Upload: XLSX/CSV)  │
-└──────────────┘  │ • Inbox      │  └────────────────────────────┘
-                  └──────────────┘
+```mermaid
+flowchart TD
+    subgraph Browser["🌐 User Browser — localhost:3000"]
+        React["React 19 · JavaScript\n23 Routes · In-Memory API Cache\nAxios + JWT interceptor"]
+    end
+
+    subgraph Backend["⚙️ Spring Boot 3.2.5 — localhost:8080"]
+        API["17 REST Controllers\nJWT Security Filter\nSpring Security + JJWT 0.11.5"]
+        Services["Service Layer\nMcqService · ReviewService · AIService\nBulkUploadService · QuizService · LiveSessionService"]
+        API --> Services
+    end
+
+    subgraph MCP["🔌 MCP Server — localhost:8085"]
+        MCPTools["Spring AI MCP\n8 Tools Exposed\nquizhub-mcp v1.0.0"]
+    end
+
+    subgraph Data["🗄️ Data Layer"]
+        DB[("MySQL 8.x\nquizhub DB\n19 Entities")]
+        SpringCache["Spring Cache\n@Cacheable TechStacks · Topics"]
+    end
+
+    subgraph External["☁️ External Services"]
+        AI["OpenAI GPT-4o-mini\nvia Spring AI 1.0.0"]
+        Mail["SMTP\nSpring Mail"]
+        Lingva["Lingva API\nTranslation"]
+        MyMemory["MyMemory API\nFallback Translation"]
+    end
+
+    Browser -->|"REST · Bearer JWT"| Backend
+    MCP -->|"WebClient · Bearer JWT"| Backend
+    Services --> Data
+    Services -->|"Spring AI"| AI
+    Services -->|"JavaMail"| Mail
+    Services -->|"HTTP"| Lingva
+    Lingva -.->|"fallback"| MyMemory
 ```
 
 ---
 
 ## 🗃️ ER Diagram (Entity Relationship)
 
-```
-+------------------+        +------------------+        +------------------+
-|      USER        |        |       MCQ         |        |   TECH_STACK     |
-+------------------+        +------------------+        +------------------+
-| PK id            |        | PK id            |        | PK id (1001-1006)|
-|    enterprise_id |        |    question_stem |        |    name          |
-|    full_name     |        |    option_a/b/c/d|        |    description   |
-|    email         |        |    correct_answer|        +--------+---------+
-|    password_hash |        |    difficulty    |                 |
-|    role (ENUM)   |        |    status (ENUM) |     1           | N
-|    is_approved   |        |    version       +-----+-----------+
-|    created_at    |  1   N |    created_at    |     |
-+--------+---------+--------+    updated_at    |     |
-         |                  | FK creator_id    +--+  |
-         |   reviewer       | FK tech_stack_id |  |  +------------------+
-         +------------------+    FK topic_id   |  |  |     TOPIC        |
-         |                  +--------+---------+  |  +------------------+
-         |  1             N          |             |  | PK id            |
-+--------+---------+                |             |  |    name          |
-|      REVIEW      |                | 1           |  | FK tech_stack_id |
-+------------------+                |             |  +------------------+
-| PK id            |             N  |
-| FK mcq_id        +----------------+
-| FK reviewer_id   |
-|    decision      |     +------------------+       +------------------+
-|    comment       |     |  MCQ_VERSION     |       |   QUIZ_SESSION   |
-|    reviewed_at   |     +------------------+       +------------------+
-+------------------+     | PK id            |       | PK id            |
-                         | FK mcq_id        |       |    title         |
-+------------------+     |    version_num   |       |    quiz_link     |
-|   INBOX_MESSAGE  |     |    snapshot_json |       |    expires_at    |
-+------------------+     |    changed_by    |       |    time_limit    |
-| PK id            |     |    changed_at    |       | FK created_by    |
-| FK sender_id     |     +------------------+       +--------+---------+
-| FK receiver_id   |                                         |
-|    subject       |     +------------------+               | N
-|    body          |     |  NOTIFICATION    |    +----------+----------+
-|    is_read       |     +------------------+    |   QUIZ_ATTEMPT      |
-|    is_starred    |     | PK id            |    +---------------------+
-|    is_draft      |     | FK user_id       |    | PK id               |
-|    sent_at       |     |    type          |    | FK session_id        |
-+------------------+     |    message       |    |    participant_name  |
-                         |    is_read       |    |    participant_email |
-+------------------+     |    created_at    |    |    score            |
-|    AUDIT_LOG     |     +------------------+    |    violations       |
-+------------------+                             |    status (ENUM)    |
-| PK id            |                             |    submitted_at     |
-| FK user_id       |                             +---------------------+
-|    action        |
-|    entity_type   |     +------------------+
-|    entity_id     |     |   MCQ_COMMENT    |
-|    details       |     +------------------+
-|    created_at    |     | PK id            |
-+------------------+     | FK mcq_id        |
-                         | FK author_id     |
-                         | FK reply_to_id   |  <- self-referencing
-                         |    text          |
-                         |    created_at    |
-                         +------------------+
+```mermaid
+erDiagram
+    USER {
+        Long id PK
+        String enterpriseId UK
+        String fullName
+        String email
+        String passwordHash
+        Enum role
+        Boolean isApproved
+    }
+    TECH_STACK {
+        Long id PK
+        String name
+        String description
+    }
+    TOPIC {
+        Long id PK
+        String name
+        Long techStackId FK
+    }
+    MCQ {
+        Long id PK
+        String questionStem
+        String optionA
+        String optionB
+        String optionC
+        String optionD
+        String correctAnswer
+        Enum difficulty
+        Enum status
+        Integer version
+        Long creatorId FK
+        Long techStackId FK
+        Long topicId FK
+        Long reviewerId FK
+    }
+    REVIEW {
+        Long id PK
+        Long mcqId FK
+        Long reviewerId FK
+        String decision
+        String comment
+        Timestamp reviewedAt
+    }
+    MCQ_VERSION {
+        Long id PK
+        Long mcqId FK
+        Integer versionNum
+        String snapshotJson
+        String changedBy
+    }
+    MCQ_COMMENT {
+        Long id PK
+        Long mcqId FK
+        Long authorId FK
+        Long replyToId FK
+        String text
+    }
+    QUIZ_SESSION {
+        Long id PK
+        String title
+        String quizLink UK
+        Timestamp expiresAt
+        Long createdBy FK
+    }
+    QUIZ_ATTEMPT {
+        Long id PK
+        Long sessionId FK
+        String participantEmail
+        Integer score
+        Integer violations
+        Enum status
+    }
+    LIVE_SESSION {
+        Long id PK
+        String pin UK
+        String title
+        Enum status
+        Long hostId FK
+    }
+    LIVE_PARTICIPANT {
+        Long id PK
+        Long sessionId FK
+        String enterpriseId
+        Integer score
+    }
+    INBOX_MESSAGE {
+        Long id PK
+        Long senderId FK
+        Long receiverId FK
+        String subject
+        Boolean isRead
+    }
+    NOTIFICATION {
+        Long id PK
+        Long userId FK
+        String type
+        String message
+        Boolean isRead
+    }
+    AUDIT_LOG {
+        Long id PK
+        Long userId FK
+        String action
+        String entityType
+        Timestamp createdAt
+    }
+    PASSWORD_RESET_TOKEN {
+        Long id PK
+        Long userId FK
+        String token UK
+        Timestamp expiresAt
+        Boolean used
+    }
+
+    USER ||--o{ MCQ : "creates"
+    USER ||--o{ REVIEW : "reviews"
+    USER }o--o{ TECH_STACK : "assigned to"
+    MCQ }o--|| TECH_STACK : "belongs to"
+    MCQ }o--|| TOPIC : "categorized by"
+    TOPIC }o--|| TECH_STACK : "under"
+    MCQ ||--o{ REVIEW : "reviewed via"
+    MCQ ||--o{ MCQ_VERSION : "versioned as"
+    MCQ ||--o{ MCQ_COMMENT : "discussed in"
+    MCQ_COMMENT ||--o{ MCQ_COMMENT : "replied to"
+    USER ||--o{ INBOX_MESSAGE : "sends/receives"
+    USER ||--o{ NOTIFICATION : "notified via"
+    USER ||--o{ AUDIT_LOG : "tracked in"
+    USER ||--o{ QUIZ_SESSION : "creates"
+    QUIZ_SESSION ||--o{ QUIZ_ATTEMPT : "attempted via"
+    USER ||--o{ LIVE_SESSION : "hosts"
+    LIVE_SESSION ||--o{ LIVE_PARTICIPANT : "joined by"
+    USER ||--o{ PASSWORD_RESET_TOKEN : "resets via"
 ```
 
-**MCQ Status ENUM:** `DRAFT | READY_FOR_REVIEW | UNDER_REVIEW | APPROVED | REJECTED`  
+**MCQ Status ENUM:** `DRAFT | READY_FOR_REVIEW | UNDER_REVIEW | APPROVED | REJECTED | PERMANENTLY_REJECTED`  
 **User Role ENUM:** `ADMIN | SME`  
 **Difficulty ENUM:** `EASY | MEDIUM | HARD`  
 **Quiz Attempt Status ENUM:** `COMPLETED | TERMINATED | IN_PROGRESS`
@@ -179,7 +262,6 @@ ReviewService              OpenAI GPT-4o-mini
 | Pattern | Where Applied | Purpose |
 |---|---|---|
 | **Repository Pattern** | `McqRepository`, `UserRepository` etc. | Abstracts data access via Spring Data JPA |
-| **Service Layer Pattern** | `McqService`, `ReviewService`, `AIService` | Business logic separated from controllers |
 | **DTO Pattern** | `McqRequestDto`, `McqResponseDto` | Decouple API contract from entity model |
 | **Strategy Pattern** | Translation fallback (Lingva → MyMemory) | Swap translation provider without code change |
 | **Observer Pattern** | Email notifications, Inbox messages | Decouple lifecycle events from actions |
@@ -193,7 +275,95 @@ ReviewService              OpenAI GPT-4o-mini
 
 ---
 
-## 🏗️ Tech Stack
+## 📊 Mermaid Diagrams
+
+### MCQ Lifecycle — State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> DRAFT : SME creates / saves draft
+    DRAFT --> READY_FOR_REVIEW : SME submits for review
+    READY_FOR_REVIEW --> UNDER_REVIEW : Admin assigns reviewer
+    UNDER_REVIEW --> APPROVED : Reviewer approves ✅
+    UNDER_REVIEW --> REJECTED : Reviewer rejects ❌ (mandatory comment)
+    REJECTED --> READY_FOR_REVIEW : SME edits & resubmits
+    REJECTED --> PERMANENTLY_REJECTED : Exceeds rejection limit (admin-configurable)
+    APPROVED --> [*]
+    PERMANENTLY_REJECTED --> [*]
+
+    note right of DRAFT
+        Editable by SME & Admin
+        Can be deleted
+    end note
+    note right of UNDER_REVIEW
+        Locked from edits
+        Reviewer sees in Pending Reviews
+    end note
+    note right of APPROVED
+        Used in Quizzes & Live Battle
+        Read-only
+    end note
+```
+
+---
+
+### Authentication + Instant Load Flow
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant FE as React Frontend
+    participant Cache as API Cache (Memory)
+    participant BE as Spring Boot :8080
+    participant DB as MySQL
+
+    User->>FE: Enter credentials
+    FE->>BE: POST /api/v1/auth/login
+    BE->>DB: Validate user + isApproved check
+    DB-->>BE: User entity
+    BE-->>FE: { token, role, fullName, enterpriseId }
+    FE->>FE: localStorage.setItem('token')
+
+    Note over FE,Cache: 200ms later — prefetchAll(role)
+    par Background cache warm-up (staggered 80ms)
+        FE->>BE: GET /stats/summary
+        FE->>BE: GET /mcqs
+        FE->>BE: GET /master/tech-stacks
+        FE->>BE: GET /stats/leaderboard
+        FE->>BE: GET /stats/reviewer-stats
+    end
+    BE-->>Cache: Responses stored with TTL (15s–600s)
+
+    User->>FE: Navigate to any page
+    FE->>Cache: getCacheSync('/endpoint')
+    Cache-->>FE: Instant data (zero spinner) ✅
+    FE->>FE: useState(() => getCacheSync(url) || [])
+    Note over FE: First render has real data — no loading state
+```
+
+---
+
+### Frontend Cache Architecture
+
+```mermaid
+flowchart TD
+    Login["User Logs In"] --> Prefetch["prefetchAll(role)\n200ms delay"]
+    Boot["App Boots"] --> BootPrefetch["prefetchAll(role)\n300ms delay"]
+    Prefetch --> Cache["_cache Map\nIn-Memory\nTTL per endpoint"]
+    BootPrefetch --> Cache
+
+    Navigate["User navigates to page"] --> Sync["getCacheSync(url)"]
+    Sync -->|"Cache hit\ndata fresh"| InstantRender["⚡ Instant Render\nloading = false\ndata = cached"]
+    Sync -->|"Cache miss\nor expired"| Spinner["Show Spinner\nloading = true"]
+    Spinner --> Fetch["cachedGet(url)"]
+    Fetch --> Cache
+    Cache --> AsyncRender["Render with data\nloading = false"]
+
+    InstantRender --> BGRefresh["Background cachedGet()\nupdates silently"]
+    BGRefresh --> Cache
+
+    Logout["User Logs Out"] --> Clear["clearApiCache()\n_cache.clear()"]
+```
 
 ### Backend
 | Technology | Version | Purpose |
@@ -224,7 +394,7 @@ ReviewService              OpenAI GPT-4o-mini
 | react-i18next | 17.x | React i18n bindings |
 | React Toastify | 11.x | Toast notifications |
 | html2canvas | 1.4.1 | PDF / image export |
-| Vite | 5 | Build tool & dev server |
+| Create React App | 5.0 | Build & dev server (react-scripts / webpack) |
 
 ### AI / ML
 | Technology | Purpose |
@@ -236,6 +406,16 @@ ReviewService              OpenAI GPT-4o-mini
 | Duplicate Detection | Semantic similarity scoring on bulk upload |
 | Lingva API | Dynamic MCQ content translation (primary) |
 | MyMemory API | Translation fallback (if Lingva fails) |
+
+### 🔌 MCP Server
+| Technology | Version | Purpose |
+|---|---|---|
+| Spring Boot | 3.4.1 | MCP server framework |
+| Spring AI MCP | 1.0.0 | Model Context Protocol (SYNC/SSE) |
+| WebClient | 6.x | Calls QuizHub backend REST APIs |
+
+> **Endpoint:** `http://localhost:8085` · **Tools:** 8 registered · **Protocol:** SYNC  
+> Connect from Claude Desktop or GitHub Copilot: `http://localhost:8085/sse`
 
 ---
 
@@ -306,6 +486,22 @@ http://localhost:8080/actuator/health
 # Expected: {"status":"UP"}
 ```
 
+### 7. MCP Server (Optional — for AI agent integration)
+```bash
+cd mcp-server
+
+# Get a fresh token first
+export QUIZHUB_TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"enterpriseId":"divya.madhanasekar","password":"Admin@123"}' | \
+  python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+
+mvn spring-boot:run
+```
+MCP Server starts at: `http://localhost:8085`  
+SSE endpoint for Claude/Copilot: `http://localhost:8085/sse`  
+8 tools registered: `searchQuestions`, `checkDuplicate`, `createMcq`, `getStats`, and more.
+
 ---
 
 ## 🔐 Test Credentials
@@ -313,6 +509,7 @@ http://localhost:8080/actuator/health
 | Role | Enterprise ID | Password |
 |---|---|---|
 | Admin | `divya.madhanasekar` | `Admin@123` |
+| Admin | `gaurav.a.bhola` | `Admin@123` |
 | SME 1 | `birendra.kumar.singh` | `Sme@1234` |
 | SME 2 | `swati.avinash.nikam` | `Sme@1234` |
 | SME 3 | `indugu.hari.prasad` | `Sme@1234` |
@@ -327,7 +524,7 @@ English · French · German · Hindi · Kannada · Telugu · Urdu (RTL)
 
 ---
 
-## ✨ Features (434 Total)
+## ✨ Features (440 Total)
 
 > **Core PPT requirements: ~50 | Bonus features: ~381** — Over 8× what most hackathon teams build.
 
@@ -812,12 +1009,15 @@ English · French · German · Hindi · Kannada · Telugu · Urdu (RTL)
 
 ---
 
-### ⚡ Frontend Performance & Caching (5 features)
-334. **API Response Cache** — in-memory cache with TTL (5min default, 15min for master data, 1min for notifications)
-335. **SessionStorage caching** — tech stacks & topics cached in sessionStorage
-336. **Optimistic UI updates** — instant feedback before server response
-337. **Debounced auto-save** — 1.5s debounce on draft saves
-338. **Lazy loading** — deferred data fetches for non-critical resources
+### ⚡ Frontend Performance & Caching (8 features)
+334. **API Response Cache** — in-memory `_cache` Map with per-endpoint TTL (15s–600s); staggered 80ms prefetch on login
+335. **`getCacheSync()` instant render** — all 8 pages initialise state synchronously from cache on first render; zero loading spinner even on rapid navigation
+336. **`prefetchAll(role)`** — fires 200ms after login and 300ms on app boot; warms all role-relevant endpoints in background
+337. **SessionStorage caching** — tech stacks & topics additionally cached in sessionStorage
+338. **Optimistic UI updates** — instant feedback before server response
+339. **Debounced auto-save** — 1.5s debounce on draft saves
+340. **Lazy loading** — React lazy + Suspense; all non-auth pages code-split and deferred
+341. **Service worker cache fix** — JS/CSS bundles excluded from PWA precache; new deployments visible immediately on normal refresh
 
 ---
 
@@ -829,11 +1029,14 @@ English · French · German · Hindi · Kannada · Telugu · Urdu (RTL)
 
 ---
 
-### 📈 Reviewer Metrics (4 features)
+### 📈 Reviewer Metrics (7 features)
 343. Per-reviewer stats: assigned, approved, rejected, avg response time
 344. Top reviewer highlighted
 345. Average review time chart
 346. SME cannot access /reviewer-metrics (RBAC enforced)
+347. **SLA breach table** — lists questions stuck beyond threshold; shows days stuck, `/ Nd limit` (slaThresholdDays), and `since DD MMM YYYY` date derived from updatedAt
+348. **Admin-configurable SLA threshold** — global or per-tech-stack days limit stored in admin settings
+349. **Reviewer workload toggle** — show/hide workload distribution widget on Reviewer Metrics page
 
 ---
 
@@ -948,12 +1151,12 @@ English · French · German · Hindi · Kannada · Telugu · Urdu (RTL)
 
 ---
 
-### **Total: 434 distinct features** ✅
+### **Total: 440 distinct features** ✅
 
 | Category | Count |
 |---|---|
 | Core PPT requirements | ~50 |
-| Bonus features built on top | ~384 |
+| Bonus features built on top | ~390 |
 | AI-powered features (AI Studio + ChatBot + MCQ AI) | 37 |
 | Live Quiz Battle features | 38 |
 | Interactive Question Types | 20 |
@@ -1357,7 +1560,7 @@ The following is auto-seeded via `data.sql`:
 
 **Topics per stack:** 6–7 topics each (e.g., Spring Cloud: Service Discovery, API Gateway, Circuit Breaker, Config Server, Load Balancing, Distributed Tracing, Spring Cloud Bus)
 
-**Users:** 1 Admin (divya.madhanasekar) + 4 SMEs pre-seeded with tech stack mappings
+**Users:** 2 Admins (divya.madhanasekar, gaurav.a.bhola) + 3 SMEs pre-seeded with tech stack mappings
 
 ---
 
