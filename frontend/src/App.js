@@ -7,6 +7,9 @@ import { AuthProvider, useAuth } from './AuthContext';
 import PrivateRoute from './PrivateRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import ChatBot from './components/ChatBot';
+import WellnessReminder from './components/WellnessReminder';
+import GlobalSoundListener from './components/GlobalSoundListener';
+import KeyboardShortcuts from './components/KeyboardShortcuts';
 
 // Critical pages — loaded eagerly (login flow)
 import Login from './pages/Login';
@@ -136,6 +139,9 @@ export default function App() {
         </Suspense>
         <ToastContainer position="top-right" autoClose={30000} />
         <ChatBotGuard />
+        <WellnessReminder />
+        <GlobalSoundListener />
+        <KeyboardShortcuts />
         <ExamLockGuard />
       </BrowserRouter>
     </AuthProvider>

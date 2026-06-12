@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './i18n';
 import './index.css';
+import './animations.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
@@ -17,9 +18,10 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-// PWA: register service worker (production builds; harmless no-op if unsupported)
+// Unregister any cached service workers so new code always loads fresh
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+  navigator.serviceWorker.getRegistrations().then((regs) => {
+    regs.forEach((r) => r.unregister());
   });
+  caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
 }

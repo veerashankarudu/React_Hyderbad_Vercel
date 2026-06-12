@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PartyPopper, Bot, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import API from '../api';
+import API, { cachedGet, isCacheWarm, getCacheSync } from '../api';
 import Navbar from '../components/Navbar';
 import SortableTh from '../components/SortableTh';
 import TablePagination from '../components/TablePagination';
@@ -29,8 +29,8 @@ function getCopilotRisk(score) {
 }
 
 export default function PendingReviews() {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState(() => { const d = getCacheSync('/reviews'); return Array.isArray(d) ? d : (d?.content || []); });
+  const [loading, setLoading] = useState(() => !isCacheWarm('/reviews'));
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState('');
   const [sortCol, setSortCol] = useState('questionStem');
@@ -86,9 +86,9 @@ export default function PendingReviews() {
     try {
       // Only fetch UNDER_REVIEW (assigned to this SME) + stats for approved/rejected
       const [r1, r2, r3] = await Promise.allSettled([
-        API.get('/reviews', { params: { status: 'UNDER_REVIEW' } }),
-        API.get('/reviews', { params: { status: 'APPROVED' } }),
-        API.get('/reviews', { params: { status: 'REJECTED' } }),
+        cachedGet('/reviews', { params: { status: 'UNDER_REVIEW' } }),
+        cachedGet('/reviews', { params: { status: 'APPROVED' } }),
+        cachedGet('/reviews', { params: { status: 'REJECTED' } }),
       ]);
       const raw1 = r1.status === 'fulfilled' ? r1.value.data : [];
       const raw2 = r2.status === 'fulfilled' ? r2.value.data : [];

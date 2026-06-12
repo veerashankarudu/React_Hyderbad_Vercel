@@ -327,9 +327,27 @@ English · French · German · Hindi · Kannada · Telugu · Urdu (RTL)
 
 ---
 
-## ✨ Features (421 Total)
+## ✨ Features (434 Total)
 
-> **Core PPT requirements: ~50 | Bonus features: ~371** — Over 8× what most hackathon teams build.
+> **Core PPT requirements: ~50 | Bonus features: ~381** — Over 8× what most hackathon teams build.
+
+---
+
+### 🆕 Latest UI/UX Enhancements (13 features) — *Added June 2026*
+
+422. **Transformers-inspired animated topbar strip** — Full cinematic story sequence cycling every ~33s: saucer flies across, beams each team member's name (Veera ⚡, Teja 🚀, Tarun 🌟, Dilip 💫) one by one with glowing colored light ray
+423. **Bumblebee Camaro car animation** — Yellow/gold CSS-drawn Camaro (Bumblebee movie-style) drives full-width right-to-left across the strip with spinning wheels and golden glow
+424. **Explosion burst + 6 sparkle particles** — Car explodes at left end with white→gold→purple radial burst; 6 emoji particles (⭐✨💛🌟) fly outward at different angles
+425. **CSS robot rise** — Robot materialises from explosion with arm-throw animation, then vanishes
+426. **Saucer launch with team label** — Robot launches 🛸 saucer left trailing "✦ BumbleBee Team ✦" purple glowing label
+427. **Floating orbs + twinkling stars** — 6 glowing orbs and 10 twinkling stars as topbar background accents
+428. **Drag-to-reorder dashboard widgets** — All 9 Home dashboard widgets are drag-and-droppable; order persisted to `localStorage` and survives page refresh; visual feedback (grab cursor, opacity/scale/glow on drag target)
+429. **Sound effects system** — `useSoundEffects` hook + `GlobalSoundListener`; plays audio cues on navigation and key actions; toggle on/off + volume control in navbar
+430. **Keyboard shortcuts overlay** — Press `?` anywhere to open a modal listing all keyboard shortcuts (`KeyboardShortcuts` component)
+431. **Wellness reminder popups** — Periodic break reminders shown as non-intrusive overlay (`WellnessReminder` component)
+432. **Service worker cache fix** — JS/CSS bundles excluded from PWA cache; new deployments are visible immediately on normal refresh without needing Ctrl+Shift+R
+433. **Instant page load / zero-spinner system** — `getCacheSync()` + `prefetchAll()` in `api.js`; all 8 pages (Home, MyQuestions, AuditLog, UserManagement, PendingReviews, Analytics, ReviewerDashboard, Leaderboard) initialise their state synchronously from in-memory cache on first render — zero loading flash even on rapid navigation
+434. **SLA breach table: stuck date + SLA limit** — Reviewer Metrics SLA breach table now shows days stuck **and** `/ Nd limit` (from `slaThresholdDays`) inline, plus a muted `since DD MMM YYYY` date below derived from `updatedAt` — reviewers can instantly see both how long a question has been stuck and what the expected turnaround was
 
 ---
 
@@ -930,12 +948,12 @@ English · French · German · Hindi · Kannada · Telugu · Urdu (RTL)
 
 ---
 
-### **Total: 421 distinct features** ✅
+### **Total: 434 distinct features** ✅
 
 | Category | Count |
 |---|---|
 | Core PPT requirements | ~50 |
-| Bonus features built on top | ~371 |
+| Bonus features built on top | ~384 |
 | AI-powered features (AI Studio + ChatBot + MCQ AI) | 37 |
 | Live Quiz Battle features | 38 |
 | Interactive Question Types | 20 |

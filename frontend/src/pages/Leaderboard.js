@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/Navbar';
-import API from '../api';
+import API, { cachedGet, isCacheWarm, getCacheSync } from '../api';
 import { useAuth } from '../AuthContext';
 import SortableTh from '../components/SortableTh';
 import TablePagination from '../components/TablePagination';
@@ -63,8 +63,8 @@ export default function Leaderboard() {
   const [mode, setMode] = useState('reviewers');
 
   // ── Reviewer leaderboard state ────────────────────────────────────────────
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(() => getCacheSync('/stats/leaderboard') || []);
+  const [loading, setLoading] = useState(() => !isCacheWarm('/stats/leaderboard'));
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [sortCol, setSortCol] = useState('reviewCount');
@@ -139,7 +139,7 @@ export default function Leaderboard() {
 
   // Load reviewer leaderboard once
   useEffect(() => {
-    API.get('/stats/leaderboard')
+    cachedGet('/stats/leaderboard')
       .then(({ data }) => setData(data))
       .catch(() => setError(t('lb2.failedLoad')))
       .finally(() => setLoading(false));

@@ -9,7 +9,7 @@ import {
   AlertTriangle, Activity, Layers, Star, Settings, RotateCcw, X
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import API from '../api';
+import API, { cachedGet, getCacheSync } from '../api';
 import { useTranslation } from 'react-i18next';
 import { useContentTranslation } from '../hooks/useContentTranslation';
 import './Home.css';
@@ -60,6 +60,26 @@ function loadWidgetPrefs(userId) {
 
 function saveWidgetPrefs(prefs, userId) {
   localStorage.setItem(getUserStorageKey(userId), JSON.stringify(prefs));
+}
+
+/* ── Drag-to-Reorder Order Storage ── */
+const GRID_ORDER_KEY = 'quizhub_dashboard_grid_order_';
+const DEFAULT_LEFT_ORDER  = ['techStack', 'recentActivity'];
+const DEFAULT_RIGHT_ORDER = ['performance', 'insights', 'leaderboard'];
+const DEFAULT_EXTRA_ORDER = ['pendingApprovals', 'reviewerWorkload', 'actionItems', 'qualityGauge'];
+
+function loadGridOrder(section, userId) {
+  try {
+    const saved = localStorage.getItem(`${GRID_ORDER_KEY}${section}_${userId || 'default'}`);
+    if (saved) { const p = JSON.parse(saved); if (Array.isArray(p)) return p; }
+  } catch {}
+  if (section === 'left')  return [...DEFAULT_LEFT_ORDER];
+  if (section === 'right') return [...DEFAULT_RIGHT_ORDER];
+  return [...DEFAULT_EXTRA_ORDER];
+}
+
+function saveGridOrder(section, order, userId) {
+  localStorage.setItem(`${GRID_ORDER_KEY}${section}_${userId || 'default'}`, JSON.stringify(order));
 }
 
 
@@ -142,20 +162,27 @@ export default function Home() {
   const { t, i18n } = useTranslation();
   const now = new Date();
 
-  const [summary, setSummary]           = useState({ totalMcqs: 0, approved: 0, inReview: 0, rejected: 0, draft: 0 });
-  const [techStackData, setTechStackData] = useState([]);
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [leaderboard, setLeaderboard]   = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [reviewerStats, setReviewerStats] = useState(null);
-  const [slaBreachCount, setSlaBreachCount] = useState(0);
-  const [pendingApprovals, setPendingApprovals] = useState([]);
+  const [summary, setSummary]           = useState(() => getCacheSync('/stats/summary') || { totalMcqs: 0, approved: 0, inReview: 0, rejected: 0, draft: 0 });
+  const [techStackData, setTechStackData] = useState(() => getCacheSync('/stats/by-tech-stack') || []);
+  const [recentActivity, setRecentActivity] = useState(() => getCacheSync('/stats/recent-activity') || []);
+  const [leaderboard, setLeaderboard]   = useState(() => { const d = getCacheSync('/stats/leaderboard'); return d ? d.slice(0, 5) : []; });
+  const [loading, setLoading]           = useState(() => !getCacheSync('/stats/summary'));
+  const [reviewerStats, setReviewerStats] = useState(() => getCacheSync('/stats/reviewer-stats') || null);
+  const [slaBreachCount, setSlaBreachCount] = useState(() => { const d = getCacheSync('/stats/sla-breach'); return d ? (d.length || 0) : 0; });
+  const [pendingApprovals, setPendingApprovals] = useState(() => { const d = getCacheSync('/mcqs?status=READY_FOR_REVIEW&page=0&size=100'); if (!d) return []; const items = d.content || d; return Array.isArray(items) ? items.slice(0, 5) : []; });
   const [reviewerWorkload, setReviewerWorkload] = useState([]);
 
   // Dashboard widget customization — per user
   const userId = user?.enterpriseId || user?.id;
   const [visibleWidgets, setVisibleWidgets] = useState(() => loadWidgetPrefs(userId));
   const [showCustomize, setShowCustomize] = useState(false);
+
+  // Drag-to-reorder state
+  const [leftOrder,  setLeftOrder]  = useState(() => loadGridOrder('left',  userId));
+  const [rightOrder, setRightOrder] = useState(() => loadGridOrder('right', userId));
+  const [extraOrder, setExtraOrder] = useState(() => loadGridOrder('extra', userId));
+  const [draggingId, setDraggingId] = useState(null);
+  const [dragOverId, setDragOverId] = useState(null);
 
   // Listen for profile-dropdown trigger
   useEffect(() => {
@@ -179,6 +206,39 @@ export default function Home() {
     saveWidgetPrefs([...DEFAULT_VISIBLE], userId);
   }, [userId]);
 
+  // Drag-to-reorder handlers
+  const reorderArr = useCallback((arr, fromId, toId) => {
+    const next = [...arr];
+    const from = next.indexOf(fromId);
+    const to   = next.indexOf(toId);
+    if (from < 0 || to < 0) return null;
+    next.splice(from, 1);
+    next.splice(to, 0, fromId);
+    return next;
+  }, []);
+
+  const handleWidgetDrop = useCallback((targetId) => {
+    if (!draggingId || draggingId === targetId) { setDraggingId(null); setDragOverId(null); return; }
+    const tryLeft = reorderArr(leftOrder, draggingId, targetId);
+    if (tryLeft)  { setLeftOrder(tryLeft);   saveGridOrder('left',  tryLeft,  userId); }
+    const tryRight = reorderArr(rightOrder, draggingId, targetId);
+    if (tryRight) { setRightOrder(tryRight); saveGridOrder('right', tryRight, userId); }
+    const tryExtra = reorderArr(extraOrder, draggingId, targetId);
+    if (tryExtra) { setExtraOrder(tryExtra); saveGridOrder('extra', tryExtra, userId); }
+    setDraggingId(null); setDragOverId(null);
+  }, [draggingId, leftOrder, rightOrder, extraOrder, reorderArr, userId]);
+
+  const getDragProps = useCallback((id, orderArr) => ({
+    draggable: true,
+    onDragStart: (e) => { e.dataTransfer.effectAllowed = 'move'; setDraggingId(id); },
+    onDragOver:  (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverId(id); },
+    onDragLeave: ()  => setDragOverId(d => d === id ? null : d),
+    onDrop:      (e) => { e.preventDefault(); handleWidgetDrop(id); },
+    onDragEnd:   ()  => { setDraggingId(null); setDragOverId(null); },
+    className: `dw${draggingId === id ? ' dw-is-dragging' : ''}${dragOverId === id && draggingId !== id ? ' dw-drag-over' : ''}`,
+    style: { order: orderArr ? orderArr.indexOf(id) : 0 },
+  }), [draggingId, dragOverId, handleWidgetDrop]);
+
   // Translate recent activity question stems AND tech stack names
   const activityStems = recentActivity.map(item => item.questionStem || '');
   const activityTechStacks = recentActivity.map(item => item.techStack || '');
@@ -200,15 +260,15 @@ export default function Home() {
 
   useEffect(() => {
     Promise.allSettled([
-      API.get('/stats/summary'),
-      API.get('/stats/by-tech-stack'),
-      API.get('/stats/recent-activity'),
-      API.get('/stats/leaderboard'),
-      API.get('/stats/reviewer-stats'),
+      cachedGet('/stats/summary'),
+      cachedGet('/stats/by-tech-stack'),
+      cachedGet('/stats/recent-activity'),
+      cachedGet('/stats/leaderboard'),
+      cachedGet('/stats/reviewer-stats'),
       ...(user?.role === 'ADMIN' ? [
-        API.get('/stats/sla-breach'),
+        cachedGet('/stats/sla-breach'),
         API.get('/mcqs?status=READY_FOR_REVIEW&page=0&size=100'),
-        API.get('/stats/leaderboard'),
+        cachedGet('/stats/leaderboard'),
       ] : []),
     ]).then(([sumR, stackR, actR, lbR, revR, slaR, pendR, wlR]) => {
       if (sumR.status   === 'fulfilled') setSummary(sumR.value.data);
@@ -229,7 +289,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!showAiGen) return;
-    API.get('/master/tech-stacks').then(r => setAiTechStacks(r.data || [])).catch(() => {});
+    cachedGet('/master/tech-stacks').then(r => setAiTechStacks(r.data || [])).catch(() => {});
   }, [showAiGen]);
 
   useEffect(() => {
@@ -534,7 +594,7 @@ export default function Home() {
 
             {/* Tech stack bar chart */}
             {isWidgetVisible('techStack') && (
-            <div className="dw">
+            <div {...getDragProps('techStack', leftOrder)}>
               <div className="dw-head">
                 <div>
                   <div className="dw-title"><BarChart3 size={16} style={{marginRight:'0.4rem',verticalAlign:'middle'}} /> {t('home.byTechStack')}</div>
@@ -549,7 +609,7 @@ export default function Home() {
 
             {/* Recent activity table */}
             {isWidgetVisible('recentActivity') && (
-            <div className="dw">
+            <div {...getDragProps('recentActivity', leftOrder)}>
               <div className="dw-head">
                 <div>
                   <div className="dw-title"><Clock size={16} style={{marginRight:'0.4rem',verticalAlign:'middle'}} /> {t('home.recentActivity')}</div>
@@ -592,7 +652,7 @@ export default function Home() {
 
             {/* Performance rings */}
             {isWidgetVisible('performance') && (
-            <div className="dw">
+            <div {...getDragProps('performance', rightOrder)}>
               <div className="dw-head"><div className="dw-title"><TrendingUp size={16} style={{marginRight:'0.4rem',verticalAlign:'middle'}} /> {t('home.performanceOverview')}</div></div>
               <div className="dw-body">
                 <div className="rings-row">
@@ -618,7 +678,7 @@ export default function Home() {
 
             {/* Dashboard Insights */}
             {isWidgetVisible('insights') && (
-            <div className="dw">
+            <div {...getDragProps('insights', rightOrder)}>
               <div className="dw-head"><div className="dw-title"><Activity size={16} style={{marginRight:'0.4rem',verticalAlign:'middle'}} /> {isAdmin ? 'Platform Insights' : 'My Review Stats'}</div></div>
               <div className="dw-body">
                 <div className="insights-grid">
@@ -688,7 +748,7 @@ export default function Home() {
 
             {/* Mini leaderboard */}
             {isWidgetVisible('leaderboard') && (
-            <div className="dw">
+            <div {...getDragProps('leaderboard', rightOrder)}>
               <div className="dw-head">
                 <div className="dw-title"><Trophy size={16} style={{marginRight:'0.4rem',verticalAlign:'middle'}} /> {t('home.topReviewers')}</div>
                 <button className="dw-link" onClick={() => navigate('/leaderboard')}>{t('common.fullList')} →</button>
@@ -720,7 +780,7 @@ export default function Home() {
 
           {/* Pending Approvals — Admin only */}
           {isAdmin && isWidgetVisible('pendingApprovals') && (
-            <div className="dw">
+            <div {...getDragProps('pendingApprovals', extraOrder)}>
               <div className="dw-head">
                 <div>
                   <div className="dw-title"><AlertTriangle size={16} style={{marginRight:'0.4rem',verticalAlign:'middle'}} /> Pending Approvals</div>
@@ -753,7 +813,7 @@ export default function Home() {
 
           {/* Reviewer Workload — Admin only */}
           {isAdmin && isWidgetVisible('reviewerWorkload') && (
-            <div className="dw">
+            <div {...getDragProps('reviewerWorkload', extraOrder)}>
               <div className="dw-head">
                 <div>
                   <div className="dw-title"><Layers size={16} style={{marginRight:'0.4rem',verticalAlign:'middle'}} /> Reviewer Workload</div>
@@ -786,7 +846,7 @@ export default function Home() {
 
           {/* Action Items — for all users */}
           {isWidgetVisible('actionItems') && (
-            <div className="dw">
+            <div {...getDragProps('actionItems', extraOrder)}>
               <div className="dw-head">
                 <div>
                   <div className="dw-title"><CheckCircle2 size={16} style={{marginRight:'0.4rem',verticalAlign:'middle'}} /> Action Items</div>
@@ -841,7 +901,7 @@ export default function Home() {
 
           {/* Quality Gauge */}
           {isWidgetVisible('qualityGauge') && (
-            <div className="dw">
+            <div {...getDragProps('qualityGauge', extraOrder)}>
               <div className="dw-head">
                 <div>
                   <div className="dw-title"><Star size={16} style={{marginRight:'0.4rem',verticalAlign:'middle'}} /> Quality Gauge</div>

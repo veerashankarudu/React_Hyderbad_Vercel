@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import NotificationBell from './NotificationBell';
 import ChangePasswordModal from './ChangePasswordModal';
+import SoundSettings from './SoundSettings';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES } from '../i18n';
 import API from '../api';
@@ -10,11 +11,18 @@ import {
   LayoutDashboard, PenLine, Columns3, ClipboardCheck, Target,
   Zap, BarChart3, TrendingUp, UserRound, Brain, Gamepad2,
   BookOpen, Trophy, FolderCog, Library, Users, Star, ScrollText,
-  Sun, Moon, Mail, KeyRound, ImagePlus, LogOut, ChevronDown, Settings
+  Sun, Moon, Mail, KeyRound, ImagePlus, LogOut, ChevronDown, Settings, Volume2
 } from 'lucide-react';
 import './Navbar.css';
 
 const ICON_SIZE = 18;
+
+const PARADE_MEMBERS = [
+  { name: 'Veera', emoji: '🚀', color: '#C77DFF' },
+  { name: 'Teja',  emoji: '⚡', color: '#FF4DA6' },
+  { name: 'Tarun', emoji: '🌟', color: '#00C6FF' },
+  { name: 'Dilip', emoji: '💫', color: '#00FF94' },
+];
 
 const NAV_ITEMS = [
   { path: '/', labelKey: 'nav.dashboard', icon: <LayoutDashboard size={ICON_SIZE} />, exact: true },
@@ -38,7 +46,6 @@ const ADMIN_ITEMS = [
   { path: '/user-management', labelKey: 'nav.users', icon: <Users size={ICON_SIZE} /> },
   { path: '/reviewer-metrics', labelKey: 'nav.reviewerMetrics', icon: <Star size={ICON_SIZE} /> },
   { path: '/audit-log', labelKey: 'nav.auditLog', icon: <ScrollText size={ICON_SIZE} /> },
-  { path: '/admin-settings', labelKey: 'nav.settings', icon: <Settings size={ICON_SIZE} /> },
 ];
 
 function buildInitials(name) {
@@ -58,11 +65,28 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showSoundSettings, setShowSoundSettings] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('dashTheme') !== 'light');
   const [inboxUnread, setInboxUnread] = useState(0);
-  const profileMenuRef = React.useRef(null);
-  const profilePicInputRef = React.useRef(null);
+  const profileMenuRef = useRef(null);
+  const profilePicInputRef = useRef(null);
   const [profilePic, setProfilePic] = useState(() => localStorage.getItem('profilePic') || null);
+  const [paradeStep, setParadeStep] = useState(0);
+
+  // Story sequence: 0-3 = saucer reveals Veera/Teja/Tarun/Dilip, 4 = transformer
+  useEffect(() => {
+      const DURS = [6000, 6000, 6000, 6000, 9000];
+    let t;
+    const schedule = (step) => {
+      t = setTimeout(() => {
+        const next = (step + 1) % 5;
+        setParadeStep(next);
+        schedule(next);
+      }, DURS[step]);
+    };
+    schedule(0);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const fetchUnread = () => {
@@ -85,7 +109,6 @@ export default function Navbar() {
     });
   };
 
-  // Sync body attribute on mount; remove it when Navbar unmounts (e.g. navigating to Login/Register)
   React.useEffect(() => {
     document.body.dataset.sb = collapsed ? 'collapsed' : 'expanded';
     return () => { delete document.body.dataset.sb; };
@@ -225,6 +248,78 @@ export default function Navbar() {
 
     {/* ─── TOP BAR (fixed top-right) ──────────────────── */}
     <header className={`topbar${collapsed ? ' topbar-collapsed' : ''}`}>
+
+      {/* ── Animated Brand Strip ── */}
+      <div className="tbg" aria-hidden="true">
+        <span className="tbg-orb tbg-orb1" />
+        <span className="tbg-orb tbg-orb2" />
+        <span className="tbg-orb tbg-orb3" />
+        <span className="tbg-orb tbg-orb4" />
+        <span className="tbg-orb tbg-orb5" />
+        <span className="tbg-orb tbg-orb6" />
+        <span className="tbg-star tbg-s1" />
+        <span className="tbg-star tbg-s2" />
+        <span className="tbg-star tbg-s3" />
+        <span className="tbg-star tbg-s4" />
+        <span className="tbg-star tbg-s5" />
+        <span className="tbg-star tbg-s6" />
+        <span className="tbg-star tbg-s7" />
+        <span className="tbg-star tbg-s8" />
+        <span className="tbg-star tbg-s9" />
+        <span className="tbg-star tbg-s10" />
+        {/* SAUCER NAME REVEAL (steps 0-3): saucer flies in, beams down each member's name */}
+        {paradeStep < 4 && (
+          <div className="tbg-parade" key={`p-${paradeStep}`}
+               style={{ '--pc': PARADE_MEMBERS[paradeStep].color }}>
+            <span className="tbg-sfly">🛸</span>
+            <div className="tbg-beam">
+              <div className="tbg-beam-ray"></div>
+              <span className="tbg-beam-name">
+                {PARADE_MEMBERS[paradeStep].name} {PARADE_MEMBERS[paradeStep].emoji}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* TRANSFORMER SEQUENCE (step 4): car right→left, transforms → robot, robot launches saucer */}
+        {paradeStep === 4 && (
+          <div className="tbg-xform" key="xform">
+            <div className="tbg-css-car">
+              <div className="tbg-car-cabin"><div className="tbg-car-stripe"></div></div>
+              <div className="tbg-car-hull"><div className="tbg-car-badge"></div></div>
+              <div className="tbg-car-wheel tbg-cw-l"></div>
+              <div className="tbg-car-wheel tbg-cw-r"></div>
+            </div>
+            <div className="tbg-xburst"></div>
+            <div className="tbg-spark tbg-sp1">⭐</div>
+            <div className="tbg-spark tbg-sp2">✨</div>
+            <div className="tbg-spark tbg-sp3">💛</div>
+            <div className="tbg-spark tbg-sp4">⭐</div>
+            <div className="tbg-spark tbg-sp5">🌟</div>
+            <div className="tbg-spark tbg-sp6">✨</div>
+            <div className="tbg-css-robot">
+              <div className="tbg-rh"></div>
+              <div className="tbg-rb"></div>
+              <div className="tbg-ra tbg-ra-l"></div>
+              <div className="tbg-ra tbg-ra-r"></div>
+              <div className="tbg-rl tbg-rl-l"></div>
+              <div className="tbg-rl tbg-rl-r"></div>
+            </div>
+            <div className="tbg-bot-saucer">🛸</div>
+            <div className="tbg-bot-label">✦ BumbleBee Team ✦</div>
+          </div>
+        )}
+        <div className="tbg-center">
+          <span className="tbg-name">QuizHub <span className="tbg-ai">AI</span></span>
+          <div className="tbg-credits">
+            <div className="tbg-credits-inner">
+              <span className="tbg-credits-text">✦ Made with ♥ by BumbleBee Team &nbsp;·&nbsp; <em>Veera</em> &nbsp;·&nbsp; <em>Teja</em> &nbsp;·&nbsp; <em>Tarun</em> &nbsp;·&nbsp; <em>Dilip</em> &nbsp;·&nbsp; Hack-N-Stack 2026 &nbsp;·&nbsp; </span>
+              <span className="tbg-credits-text">✦ Made with ♥ by BumbleBee Team &nbsp;·&nbsp; <em>Veera</em> &nbsp;·&nbsp; <em>Teja</em> &nbsp;·&nbsp; <em>Tarun</em> &nbsp;·&nbsp; <em>Dilip</em> &nbsp;·&nbsp; Hack-N-Stack 2026 &nbsp;·&nbsp; </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="topbar-actions">
         {/* Dark / Light mode pill toggle */}
         <button
@@ -236,6 +331,17 @@ export default function Navbar() {
         >
           <span className={`topbar-theme-opt${!darkMode ? ' active' : ''}`}><Sun size={14} /></span>
           <span className={`topbar-theme-opt${darkMode ? ' active' : ''}`}><Moon size={14} /></span>
+        </button>
+
+        {/* Sound Settings */}
+        <button
+          className="topbar-btn"
+          onClick={() => setShowSoundSettings(true)}
+          title="Sound Settings"
+          type="button"
+          aria-label="Sound settings"
+        >
+          <Volume2 size={16} />
         </button>
 
         {/* Language Picker */}
@@ -342,6 +448,16 @@ export default function Navbar() {
                 <span className="topbar-dropdown-icon"><KeyRound size={16} /></span>
                 {t('nav.changePassword')}
               </button>
+              {user?.role === 'ADMIN' && (
+                <button
+                  className="topbar-dropdown-item"
+                  onClick={() => { navigate('/admin-settings'); setShowProfileMenu(false); }}
+                  type="button"
+                >
+                  <span className="topbar-dropdown-icon"><Settings size={16} /></span>
+                  {t('nav.settings')}
+                </button>
+              )}
               {location.pathname === '/' && (
                 <button
                   className="topbar-dropdown-item"
@@ -375,6 +491,7 @@ export default function Navbar() {
     </header>
 
     {showChangePwd && <ChangePasswordModal onClose={() => setShowChangePwd(false)} />}
+    {showSoundSettings && <SoundSettings onClose={() => setShowSoundSettings(false)} />}
     </>
   );
 }

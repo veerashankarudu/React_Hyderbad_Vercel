@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API from '../api';
+import API, { cachedGet, isCacheWarm, getCacheSync } from '../api';
 import Navbar from '../components/Navbar';
 import { useTranslation } from 'react-i18next';
 import { useContentTranslation } from '../hooks/useContentTranslation';
@@ -19,9 +19,9 @@ function diffScore(mcq) {
 }
 
 export default function ReviewerDashboard() {
-  const [stats, setStats] = useState(null);
-  const [recentReviews, setRecentReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(() => getCacheSync('/stats/reviewer-stats') || null);
+  const [recentReviews, setRecentReviews] = useState(() => { const d = getCacheSync('/reviews'); return Array.isArray(d) ? d : (d?.content || []); });
+  const [loading, setLoading] = useState(() => !isCacheWarm('/stats/reviewer-stats'));
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -31,9 +31,9 @@ export default function ReviewerDashboard() {
 
   useEffect(() => {
     Promise.all([
-      API.get('/stats/reviewer-stats'),
-      API.get('/reviews', { params: { status: 'APPROVED', size: 5 } }),
-      API.get('/reviews', { params: { status: 'REJECTED', size: 5 } }),
+      cachedGet('/stats/reviewer-stats'),
+      cachedGet('/reviews', { params: { status: 'APPROVED', size: 5 } }),
+      cachedGet('/reviews', { params: { status: 'REJECTED', size: 5 } }),
     ]).then(([statsRes, approvedRes, rejectedRes]) => {
       setStats(statsRes.data);
       const approved = Array.isArray(approvedRes.data) ? approvedRes.data : (approvedRes.data.content || []);

@@ -1,7 +1,7 @@
 /* global globalThis */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import API from '../api';
+import API, { cachedGet, isCacheWarm, getCacheSync } from '../api';
 import StatusBadge from '../components/StatusBadge';
 import Navbar from '../components/Navbar';
 import SortableTh from '../components/SortableTh';
@@ -53,8 +53,8 @@ function getMqVal(m, key) {
 
 export default function MyQuestions() {
   const [searchParams] = useSearchParams();
-  const [allMcqs, setAllMcqs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [allMcqs, setAllMcqs] = useState(() => { const d = getCacheSync('/mcqs'); return Array.isArray(d) ? d : (d?.content || []); });
+  const [loading, setLoading] = useState(() => !isCacheWarm('/mcqs'));
   const [activeTab, setActiveTab] = useState(searchParams.get('status') || '');
   const [difficulty, setDifficulty] = useState('');
   const [search, setSearch] = useState('');
@@ -81,7 +81,7 @@ export default function MyQuestions() {
   const fetchMcqs = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await API.get('/mcqs');
+      const { data } = await cachedGet('/mcqs');
       setAllMcqs(Array.isArray(data) ? data : (data.content || []));
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
@@ -119,7 +119,7 @@ export default function MyQuestions() {
   // Load tech stacks when AI generator opens
   useEffect(() => {
     if (!showAiGen) return;
-    API.get('/master/tech-stacks').then(r => setTechStacks(r.data || [])).catch(() => {});
+    cachedGet('/master/tech-stacks').then(r => setTechStacks(r.data || [])).catch(() => {});
   }, [showAiGen]);
 
   // Load topics when tech stack changes

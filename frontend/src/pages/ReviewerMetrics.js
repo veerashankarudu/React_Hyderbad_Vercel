@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import API from '../api';
+import API, { cachedGet } from '../api';
 import Navbar from '../components/Navbar';
 import { useTranslation } from 'react-i18next';
 import { useContentTranslation } from '../hooks/useContentTranslation';
@@ -49,8 +49,8 @@ export default function ReviewerMetrics() {
 
   useEffect(() => {
     Promise.all([
-      API.get('/stats/reviewer-metrics'),
-      API.get('/stats/sla-breach'),
+      cachedGet('/stats/reviewer-metrics'),
+      cachedGet('/stats/sla-breach'),
     ]).then(([mRes, sRes]) => {
       setMetrics(Array.isArray(mRes.data) ? mRes.data : []);
       setSla(Array.isArray(sRes.data) ? sRes.data : []);
@@ -163,6 +163,16 @@ export default function ReviewerMetrics() {
                             <span style={{ fontWeight: 700, color: daysColor(m.daysStuck ?? Math.floor((m.hoursStuck || 0) / 24)), fontSize: '0.88rem' }}>
                               {m.daysStuck ?? Math.floor((m.hoursStuck || 0) / 24)}d
                             </span>
+                            {m.slaThresholdDays != null && (
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: '4px' }}>
+                                / {m.slaThresholdDays}d limit
+                              </span>
+                            )}
+                            {m.updatedAt && (
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                since {new Date(m.updatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              </div>
+                            )}
                           </td>
                         </tr>
                       ))}

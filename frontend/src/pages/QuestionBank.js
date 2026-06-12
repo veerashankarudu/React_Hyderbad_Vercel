@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import API from '../api';
+import API, { cachedGet } from '../api';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import AssignReviewerModal from '../components/AssignReviewerModal';
@@ -54,7 +54,7 @@ export default function QuestionBank() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  useEffect(() => { API.get('/master/tech-stacks').then(({ data }) => setTechStacks(Array.isArray(data) ? data : (data.content || []))); }, []);
+  useEffect(() => { cachedGet('/master/tech-stacks').then(({ data }) => setTechStacks(Array.isArray(data) ? data : (data.content || []))); }, []);
 
   const fetchMcqs = useCallback(async () => {
     setLoading(true);
@@ -63,7 +63,7 @@ export default function QuestionBank() {
       if (filters.status) params.status = filters.status;
       if (filters.difficulty) params.difficulty = filters.difficulty;
       if (filters.techStackId) params.techStackId = filters.techStackId;
-      const { data } = await API.get('/admin/mcqs', { params });
+      const { data } = await cachedGet('/admin/mcqs', { params });
       setMcqs(Array.isArray(data) ? data : (data.content || []));
     } catch (err) { console.error(err); }
     finally { setLoading(false); }

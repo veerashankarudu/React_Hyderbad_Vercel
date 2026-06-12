@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import API from '../api';
+import API, { cachedGet, isCacheWarm, getCacheSync } from '../api';
 import Navbar from '../components/Navbar';
 import { useTranslation } from 'react-i18next';
 import SortableTh from '../components/SortableTh';
@@ -30,9 +30,9 @@ function getActionColor(action) {
 
 export default function AuditLog() {
   const { t } = useTranslation();
-  const [logs, setLogs] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState(() => { const d = getCacheSync('/admin/audit-log'); return Array.isArray(d) ? d : (d?.content || []); });
+  const [filtered, setFiltered] = useState(() => { const d = getCacheSync('/admin/audit-log'); return Array.isArray(d) ? d : (d?.content || []); });
+  const [loading, setLoading] = useState(() => !isCacheWarm('/admin/audit-log'));
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [actionFilter, setActionFilter] = useState('');
@@ -49,7 +49,7 @@ export default function AuditLog() {
 
   const loadLogs = useCallback(() => {
     setLoading(true);
-    API.get('/admin/audit-log')
+    cachedGet('/admin/audit-log')
       .then(({ data }) => {
         const arr = Array.isArray(data) ? data : [];
         setLogs(arr);

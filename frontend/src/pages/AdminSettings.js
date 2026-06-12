@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import API from '../api';
+import API, { cachedGet } from '../api';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 
@@ -11,7 +11,7 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    API.get('/admin/settings').then(({ data }) => {
+    cachedGet('/admin/settings').then(({ data }) => {
       setSettings(data);
       setLoading(false);
     }).catch(() => setLoading(false));
@@ -138,6 +138,91 @@ export default function AdminSettings() {
             />
             <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>Enable reviewer performance tracking</span>
           </div>
+        </div>
+
+        {/* Wellness Reminder Section */}
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🧘 Wellness Reminders
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+            Show periodic health & wellness tips to users (drink water, stretch, rest eyes, exercise hands). Promotes well-being during long work sessions.
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={settings.wellness_enabled !== 'false'}
+                onChange={() => handleToggle('wellness_enabled')}
+                style={{ width: 18, height: 18, cursor: 'pointer' }}
+              />
+              <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>Enable wellness reminders for all users</span>
+            </label>
+          </div>
+
+          {settings.wellness_enabled !== 'false' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '8px', border: '1px solid #a7f3d0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                  Show reminder every:
+                </label>
+                <select
+                  value={settings.wellness_interval_minutes || '30'}
+                  onChange={(e) => handleChange('wellness_interval_minutes', e.target.value)}
+                  style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.88rem', fontWeight: 700 }}
+                >
+                  <option value="15">15 minutes</option>
+                  <option value="20">20 minutes</option>
+                  <option value="30">30 minutes</option>
+                  <option value="45">45 minutes</option>
+                  <option value="60">1 hour</option>
+                  <option value="90">1.5 hours</option>
+                  <option value="120">2 hours</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                  Auto-dismiss after:
+                </label>
+                <select
+                  value={settings.wellness_dismiss_seconds || '15'}
+                  onChange={(e) => handleChange('wellness_dismiss_seconds', e.target.value)}
+                  style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.88rem', fontWeight: 700 }}
+                >
+                  <option value="10">10 seconds</option>
+                  <option value="15">15 seconds</option>
+                  <option value="20">20 seconds</option>
+                  <option value="30">30 seconds</option>
+                  <option value="45">45 seconds</option>
+                  <option value="60">60 seconds</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                  First reminder after:
+                </label>
+                <select
+                  value={settings.wellness_first_delay_seconds || '5'}
+                  onChange={(e) => handleChange('wellness_first_delay_seconds', e.target.value)}
+                  style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.88rem', fontWeight: 700 }}
+                >
+                  <option value="5">5 seconds (demo)</option>
+                  <option value="30">30 seconds</option>
+                  <option value="60">1 minute</option>
+                  <option value="300">5 minutes</option>
+                  <option value="600">10 minutes</option>
+                  <option value="1800">30 minutes (same as interval)</option>
+                </select>
+              </div>
+
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                💡 Tips shown: Drink water, stretch body, rest eyes, hand exercises, neck rolls, wrist stretch, deep breathing, posture check, desk exercises, walk around, and more.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Save Button */}

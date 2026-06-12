@@ -2,7 +2,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.svg?v=2" type="image/svg+xml" />
+    <!-- Force no-cache so VS Code webview + all browsers always load latest bundle -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <!-- MutationObserver: intercepts webpack-injected bundle.js script tag and adds ?v=timestamp
+         so the browser treats it as a new URL and bypasses any disk cache -->
+    <script>
+      (function() {
+        var v = Date.now();
+        var obs = new MutationObserver(function(muts) {
+          muts.forEach(function(m) {
+            m.addedNodes.forEach(function(node) {
+              if (node.tagName === 'SCRIPT' && node.src &&
+                  node.src.includes('bundle.js') && !node.src.includes('?v=')) {
+                node.src = node.src.split('?')[0] + '?v=' + v;
+              }
+              if (node.tagName === 'LINK' && node.href &&
+                  node.href.includes('.css') && !node.href.includes('?v=')) {
+                node.href = node.href.split('?')[0] + '?v=' + v;
+              }
+            });
+          });
+        });
+        obs.observe(document.documentElement, { childList: true, subtree: true });
+      })();
+    </script>
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.svg?v=2" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#7C3AED" />

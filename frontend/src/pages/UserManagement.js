@@ -1,7 +1,7 @@
 /* global globalThis */
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import API from '../api';
+import API, { cachedGet, isCacheWarm, getCacheSync } from '../api';
 import Navbar from '../components/Navbar';
 import SortableTh from '../components/SortableTh';
 import TablePagination from '../components/TablePagination';
@@ -141,10 +141,10 @@ AddUserModal.propTypes = {
 };
 
 export default function UserManagement() {
-  const [users, setUsers]           = useState([]);
-  const [auditLog, setAuditLog]     = useState([]);
-  const [techStacks, setTechStacks] = useState([]);
-  const [loading, setLoading]       = useState(true);
+  const [users, setUsers]           = useState(() => { const d = getCacheSync('/admin/users'); return Array.isArray(d) ? d : (d?.content || []); });
+  const [auditLog, setAuditLog]     = useState(() => { const d = getCacheSync('/admin/audit-log'); return Array.isArray(d) ? d : (d?.content || []); });
+  const [techStacks, setTechStacks] = useState(() => { const d = getCacheSync('/master/tech-stacks'); return Array.isArray(d) ? d : (d?.content || []); });
+  const [loading, setLoading]       = useState(() => !isCacheWarm('/admin/users'));
   const [error, setError]           = useState('');
   const [tab, setTab]               = useState('Users');
   const [search, setSearch]         = useState('');
@@ -165,9 +165,9 @@ export default function UserManagement() {
     setLoading(true);
     setError('');
     Promise.all([
-      API.get('/admin/users'),
-      API.get('/admin/audit-log'),
-      API.get('/master/tech-stacks'),
+      cachedGet('/admin/users'),
+      cachedGet('/admin/audit-log'),
+      cachedGet('/master/tech-stacks'),
     ])
       .then(([usersRes, auditRes, stacksRes]) => {
         setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);

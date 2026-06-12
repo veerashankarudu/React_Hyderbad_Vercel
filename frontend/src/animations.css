@@ -1,0 +1,544 @@
+/* ══════════════════════════════════════════════════════════════
+   QUIZHUB AI — GLOBAL ANIMATIONS & MICRO-INTERACTIONS
+   Safe transitions + opt-in animations (no flicker on re-render)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── KEYFRAMES (used by utility classes only) ───────────────── */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(161, 0, 255, 0.25); }
+  50%      { box-shadow: 0 0 12px 4px rgba(161, 0, 255, 0.1); }
+}
+
+@keyframes bounceSubtle {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes countPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+@keyframes glowRing {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(161, 0, 255, 0.4); }
+  50%      { box-shadow: 0 0 0 5px rgba(161, 0, 255, 0); }
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+
+/* ─── DASHBOARD STAT CARDS (dsc) — HOVER LIFT ────────────────── */
+
+.dsc {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.28s ease,
+              border-color 0.28s ease;
+}
+
+.dsc:hover {
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: 0 12px 36px rgba(161, 0, 255, 0.13);
+  border-color: rgba(161, 0, 255, 0.18);
+}
+
+.dsc-val {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
+}
+
+.dsc:hover .dsc-val {
+  transform: scale(1.06);
+  color: var(--primary);
+}
+
+
+/* ─── DASHBOARD WIDGETS (dw) — HOVER GLOW ───────────────────── */
+
+.dw {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.25s ease;
+}
+
+.dw:hover {
+  box-shadow: 0 8px 28px rgba(161, 0, 255, 0.1);
+  border-color: rgba(161, 0, 255, 0.14);
+  transform: translateY(-2px);
+}
+
+
+/* ─── GLASS CARD HOVER ───────────────────────────────────────── */
+
+.glass-card {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease,
+              border-color 0.25s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px rgba(161, 0, 255, 0.11);
+  border-color: rgba(161, 0, 255, 0.16);
+}
+
+
+/* ─── BUTTONS — PRESS & LIFT ─────────────────────────────────── */
+
+.btn-primary,
+.dash-btn-primary,
+button[class*="btn-primary"],
+.login-submit-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.25s ease,
+              background 0.2s ease;
+}
+
+.btn-primary:hover,
+.dash-btn-primary:hover,
+button[class*="btn-primary"]:hover,
+.login-submit-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(161, 0, 255, 0.32);
+}
+
+.btn-primary:active,
+.dash-btn-primary:active,
+button[class*="btn-primary"]:active,
+.login-submit-btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 8px rgba(161, 0, 255, 0.15);
+  transition-duration: 0.08s;
+}
+
+/* Button ripple on click */
+.btn-primary::after,
+.dash-btn-primary::after,
+.login-submit-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 70%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.4s ease, opacity 0.3s;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.btn-primary:active::after,
+.dash-btn-primary:active::after,
+.login-submit-btn:active::after {
+  transform: scale(2.5);
+  opacity: 1;
+  transition: 0s;
+}
+
+/* Secondary buttons */
+.btn-secondary,
+.dash-btn-secondary {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s, border-color 0.2s;
+}
+
+.btn-secondary:hover,
+.dash-btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(161, 0, 255, 0.1);
+}
+
+
+/* ─── TABLE ROWS — HOVER HIGHLIGHT ───────────────────────────── */
+
+table tbody tr {
+  transition: background 0.18s ease, transform 0.15s ease;
+}
+
+table tbody tr:hover {
+  background: var(--surface-hover);
+  transform: scale(1.002);
+}
+
+table th {
+  transition: color 0.2s ease;
+}
+
+table th:hover {
+  color: var(--primary);
+}
+
+
+/* ─── FORM INPUTS — FOCUS GLOW ───────────────────────────────── */
+
+input, select, textarea {
+  transition: border-color 0.22s ease,
+              box-shadow 0.22s ease,
+              transform 0.12s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  transform: scale(1.005);
+  box-shadow: 0 0 0 3px rgba(161, 0, 255, 0.08), 0 2px 8px rgba(161, 0, 255, 0.05);
+}
+
+input[type="checkbox"] {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+input[type="checkbox"]:hover {
+  transform: scale(1.12);
+}
+
+
+/* ─── SIDEBAR LINKS — SLIDE ON HOVER ─────────────────────────── */
+
+.sb-link {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.15s ease,
+              opacity 0.15s ease !important;
+}
+
+.sb-link:hover {
+  transform: translateX(3px);
+}
+
+
+/* ─── BADGES / TAGS / STATUS ─────────────────────────────────── */
+
+.status-badge,
+[class*="badge"],
+[class*="tag"],
+[class*="chip"] {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.status-badge:hover,
+[class*="badge"]:hover,
+[class*="tag"]:hover,
+[class*="chip"]:hover {
+  transform: scale(1.06);
+}
+
+
+/* ─── AVATAR HOVER ───────────────────────────────────────────── */
+
+.sb-avatar,
+[class*="avatar"] {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+
+.sb-avatar:hover,
+[class*="avatar"]:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(161, 0, 255, 0.18);
+}
+
+
+/* ─── ICON BUTTONS — SCALE ───────────────────────────────────── */
+
+button[aria-label],
+[class*="icon-btn"],
+.topbar-icon {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.18s ease,
+              color 0.18s ease;
+}
+
+button[aria-label]:hover,
+[class*="icon-btn"]:hover,
+.topbar-icon:hover {
+  transform: scale(1.1);
+}
+
+button[aria-label]:active,
+[class*="icon-btn"]:active,
+.topbar-icon:active {
+  transform: scale(0.9);
+}
+
+
+/* ─── SVG ICONS IN BUTTONS ───────────────────────────────────── */
+
+button svg {
+  transition: transform 0.18s ease;
+}
+
+button:hover svg {
+  transform: scale(1.05);
+}
+
+
+/* ─── PAGINATION BUTTONS ─────────────────────────────────────── */
+
+.page-btn {
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.page-btn:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.04);
+}
+
+.page-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.95);
+}
+
+
+/* ─── LOGIN PAGE — DEMO ROW HOVER ────────────────────────────── */
+
+.login-demo-row {
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-demo-row:hover {
+  transform: translateX(4px);
+  box-shadow: -3px 0 0 var(--primary);
+}
+
+
+/* ─── KANBAN CARDS ───────────────────────────────────────────── */
+
+[class*="kanban"] [class*="card"] {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+[class*="kanban"] [class*="card"]:hover {
+  transform: translateY(-3px) rotate(0.3deg);
+  box-shadow: 0 8px 24px rgba(161, 0, 255, 0.1);
+}
+
+
+/* ─── MODAL / DIALOG OVERLAY ─────────────────────────────────── */
+
+.dialog-overlay {
+  animation: fadeIn 0.2s ease both;
+}
+
+.dialog-overlay > * {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+
+/* ─── DROPDOWN MENUS ─────────────────────────────────────────── */
+
+[class*="dropdown"],
+[class*="menu-panel"],
+[class*="popover"] {
+  animation: scaleIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top right;
+}
+
+
+/* ─── TOAST NOTIFICATIONS ────────────────────────────────────── */
+
+.Toastify__toast {
+  animation: fadeInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+
+/* ─── SKELETON / LOADING PLACEHOLDER ─────────────────────────── */
+
+.skeleton,
+.loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--border-light) 25%,
+    var(--surface-hover) 50%,
+    var(--border-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+body.dark-mode .skeleton,
+body.dark-mode .loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(161, 0, 255, 0.05) 25%,
+    rgba(161, 0, 255, 0.1) 50%,
+    rgba(161, 0, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+}
+
+
+/* ─── PROGRESS BARS ──────────────────────────────────────────── */
+
+.progress-bar,
+[class*="progress"] > div,
+[role="progressbar"] {
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
+/* ─── STAT NUMBER HOVER ──────────────────────────────────────── */
+
+.stat-value,
+[class*="stat-number"],
+[class*="count-value"] {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
+}
+
+.stat-value:hover,
+[class*="stat-number"]:hover {
+  transform: scale(1.05);
+  color: var(--primary);
+}
+
+
+/* ─── LIVE INDICATOR DOT ─────────────────────────────────────── */
+
+[class*="live-dot"],
+[class*="online-dot"] {
+  animation: glowRing 1.5s ease-in-out infinite;
+}
+
+
+/* ─── CUSTOM SCROLLBAR ───────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(161, 0, 255, 0.18);
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(161, 0, 255, 0.35);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: rgba(161, 0, 255, 0.25);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: rgba(161, 0, 255, 0.45);
+}
+
+
+/* ─── TEXT SELECTION ─────────────────────────────────────────── */
+
+::selection {
+  background: rgba(161, 0, 255, 0.15);
+  color: var(--text);
+}
+
+
+/* ─── HOVER LIFT UTILITY (opt-in) ────────────────────────────── */
+
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(161, 0, 255, 0.1);
+}
+
+
+/* ─── ANIMATION UTILITY CLASSES (opt-in only) ────────────────── */
+
+.animate-fadeInUp      { animation: fadeInUp 0.45s ease both; }
+.animate-fadeInDown    { animation: fadeInDown 0.4s ease both; }
+.animate-fadeInLeft    { animation: fadeInLeft 0.4s ease both; }
+.animate-fadeInRight   { animation: fadeInRight 0.4s ease both; }
+.animate-fadeIn        { animation: fadeIn 0.35s ease both; }
+.animate-scaleIn      { animation: scaleIn 0.35s ease both; }
+.animate-slideUp      { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-pulseGlow    { animation: pulseGlow 2s ease-in-out infinite; }
+.animate-spin         { animation: spin 1s linear infinite; }
+.animate-bounce       { animation: bounceSubtle 1s ease-in-out infinite; }
+.animate-countPop     { animation: countPop 0.3s ease; }
+
+/* Stagger delays for explicit use */
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.1s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.2s; }
+.delay-5 { animation-delay: 0.25s; }
+.delay-6 { animation-delay: 0.3s; }
+
+
+/* ─── RESPONSIVE — TONE DOWN ON MOBILE ───────────────────────── */
+
+@media (max-width: 768px) {
+  .dsc:hover,
+  .glass-card:hover,
+  .dw:hover {
+    transform: translateY(-2px);
+  }
+
+  table tbody tr:hover {
+    transform: none;
+  }
+
+  .btn-primary:hover,
+  .dash-btn-primary:hover {
+    transform: translateY(-1px);
+  }
+}
+
+
+/* ─── RESPECT REDUCED MOTION ─────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

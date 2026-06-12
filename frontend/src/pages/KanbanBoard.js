@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API from '../api';
+import API, { cachedGet } from '../api';
 import { useAuth } from '../AuthContext';
 import Navbar from '../components/Navbar';
 import { useTranslation } from 'react-i18next';
@@ -78,7 +78,7 @@ export default function KanbanBoard() {
   useEffect(() => { fetchMcqs(); }, [fetchMcqs]);
 
   useEffect(() => {
-    API.get('/master/tech-stacks')
+    cachedGet('/master/tech-stacks')
       .then(({ data }) => setTechStacks(Array.isArray(data) ? data : (data.content || [])))
       .catch(() => {});
   }, []);

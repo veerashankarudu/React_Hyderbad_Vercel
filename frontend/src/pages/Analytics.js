@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import API from '../api';
+import API, { cachedGet, isCacheWarm, getCacheSync } from '../api';
 import { useAuth } from '../AuthContext';
 import { useTranslation } from 'react-i18next';
 import './Analytics.css';
@@ -84,9 +84,9 @@ export default function Analytics() {
   const navigate = useNavigate();
   const isAdmin = user?.role === 'ADMIN';
 
-  const [summary, setSummary] = useState(null);
-  const [byStack, setByStack] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState(() => getCacheSync('/stats/summary') || null);
+  const [byStack, setByStack] = useState(() => getCacheSync('/stats/by-tech-stack') || []);
+  const [loading, setLoading] = useState(() => !isCacheWarm('/stats/summary'));
 
   // Date range state
   const [fromDate, setFromDate] = useState('');
@@ -103,8 +103,8 @@ export default function Analytics() {
     if (from) params.from = from;
     if (to)   params.to   = to;
     Promise.allSettled([
-      API.get('/stats/summary',       { params }),
-      API.get('/stats/by-tech-stack', { params }),
+      cachedGet('/stats/summary',       { params }),
+      cachedGet('/stats/by-tech-stack', { params }),
     ]).then(([sumR, stackR]) => {
       if (sumR.status === 'fulfilled')   setSummary(sumR.value.data);
       if (stackR.status === 'fulfilled') setByStack(stackR.value.data);

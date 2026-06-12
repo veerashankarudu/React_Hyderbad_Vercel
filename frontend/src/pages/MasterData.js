@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import API from '../api';
+import API, { cachedGet } from '../api';
 import { useAuth } from '../AuthContext';
 import { useTranslation } from 'react-i18next';
 import Navbar from '../components/Navbar';
@@ -41,7 +41,7 @@ export default function MasterData() {
   // ── Load tech stacks ─────────────────────────────────────────────────────
   const loadTechStacks = () => {
     setLoadingTs(true);
-    API.get('/master/tech-stacks')
+    cachedGet('/master/tech-stacks')
       .then(r => {
         setTechStacks(r.data);
         setTsPage(1);
@@ -65,7 +65,7 @@ export default function MasterData() {
   // ── Load all SMEs once (for the assign dropdown) ──────────────────────────
   useEffect(() => {
     if (!isAdmin) return;
-    API.get('/master/smes')
+    cachedGet('/master/smes')
       .then(r => setAllSmes(r.data))
       .catch(() => {});
   }, [isAdmin]);

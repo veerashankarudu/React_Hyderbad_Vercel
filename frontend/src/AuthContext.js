@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { clearApiCache, prefetchAll } from './api';
 
 const AuthContext = createContext(null);
 
@@ -7,7 +8,13 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('user');
-      return saved ? JSON.parse(saved) : null;
+      if (saved) {
+        const u = JSON.parse(saved);
+        // Eagerly prefetch data on app boot (user already logged in)
+        setTimeout(() => prefetchAll(u?.role), 300);
+        return u;
+      }
+      return null;
     } catch {
       return null;
     }
@@ -17,11 +24,14 @@ export function AuthProvider({ children }) {
     localStorage.setItem('token', userData.token);
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
+    // Eagerly prefetch all page data right after login
+    setTimeout(() => prefetchAll(userData?.role), 200);
   }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    clearApiCache();
     setUser(null);
   }, []);
 
