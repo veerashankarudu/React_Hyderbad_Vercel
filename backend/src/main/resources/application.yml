@@ -10,11 +10,26 @@ server:
 
 spring:
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:ollama}
+    active: ${SPRING_PROFILES_ACTIVE:default}
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      chat:
+        options:
+          model: gpt-4o-mini
+          max-tokens: 800
+          temperature: 0.3
 
   autoconfigure:
     exclude:
       - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+      - org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiChatAutoConfiguration
+      - org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiEmbeddingAutoConfiguration
+      - org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiImageAutoConfiguration
+      - org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiAudioTranscriptionAutoConfiguration
+      - org.springframework.ai.model.ollama.autoconfigure.OllamaChatAutoConfiguration
+      - org.springframework.ai.model.ollama.autoconfigure.OllamaEmbeddingAutoConfiguration
 
   application:
     name: smart-quiz-ai-hub
