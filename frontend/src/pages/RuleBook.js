@@ -3,7 +3,8 @@ import {
   PenLine, Send, Search, CheckCircle2, RotateCcw, UserRound, ClipboardCheck,
   Scale, RefreshCw, Library, Code2, Shield, Brain, FileText, Lock,
   Bot, Target, SlidersHorizontal, Link2, BarChart3, Zap, RefreshCcw, Users,
-  Keyboard, Server, Activity, Gauge, Cpu, Wrench, Plug, Database, AlertTriangle
+  Keyboard, Server, Activity, Gauge, Cpu, Wrench, Plug, Database, AlertTriangle,
+  Layers, Upload, Play, Trophy
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import './RuleBook.css';
@@ -405,6 +406,89 @@ const QUIZ_RULES = [
   { icon: <Zap size={18} />, title: 'Live Mode', desc: 'Real-time multiplayer battles with live leaderboard' },
 ];
 
+const QUESTION_TYPES_DATA = [
+  { id: 'SINGLE_MCQ', icon: '🔘', title: 'Single Choice MCQ', badge: 'Classic', color: '#A100FF', desc: 'Standard multiple-choice with exactly one correct answer. The most common question type.' },
+  { id: 'MULTI_MCQ', icon: '☑️', title: 'Multiple Choice', badge: 'Multi', color: '#059669', desc: 'Select ALL correct answers from multiple options. Partial credit supported.' },
+  { id: 'DRAG_ORDER', icon: '↕️', title: 'Drag & Drop Ordering', badge: 'Interactive', color: '#0EA5E9', desc: 'Arrange items in correct sequential order by dragging. Tests knowledge of lifecycle/steps.' },
+  { id: 'MATCH_PAIRS', icon: '🔗', title: 'Match Concept to Definition', badge: 'Matching', color: '#D97706', desc: 'Connect concepts to their definitions by drawing lines. Great for terminology.' },
+  { id: 'CODE_OUTPUT', icon: '➡️', title: 'Match Code to Output', badge: 'Matching', color: '#7C3AED', desc: 'Match code snippets to their corresponding outputs. Tests code reading skills.' },
+  { id: 'FILL_BLANK', icon: '✏️', title: 'Fill in the Blank', badge: 'Input', color: '#DC2626', desc: 'Complete code by filling missing keywords or identifiers. Tests precise syntax recall.' },
+  { id: 'PREDICT_OUTPUT', icon: '🔮', title: 'Predict Program Output', badge: 'Tracing', color: '#0891B2', desc: 'Read code and predict exactly what the console will output. Deep logic tracing.' },
+  { id: 'DEBUG_CODE', icon: '🐛', title: 'Debug the Code', badge: 'Fix', color: '#16A34A', desc: 'Identify bugs and runtime errors in given code. Tests debugging mindset.' },
+  { id: 'CODE_REARRANGE', icon: '🧩', title: 'Code Rearrangement', badge: 'Puzzle', color: '#B84DFF', desc: 'Rearrange shuffled code blocks into a valid program. Tests structural understanding.' },
+  { id: 'SQL_BUILDER', icon: '🗃️', title: 'Interactive SQL Builder', badge: 'Builder', color: '#E6522C', desc: 'Drag SQL clauses to construct valid queries. Tests database query construction skills.' },
+  { id: 'ARCH_LAYERS', icon: '🏗️', title: 'Architecture Layers', badge: 'Design', color: '#4F46E5', desc: 'Drag components into correct architecture layers (Controller/Service/Repo). System design.' },
+  { id: 'CODE_REVIEW', icon: '👁️', title: 'Code Review Challenge', badge: 'Review', color: '#9333EA', desc: 'Identify security and performance issues in PR-style code. OWASP awareness.' },
+  { id: 'PIPELINE_BUILD', icon: '🔧', title: 'Stream Pipeline Builder', badge: 'Builder', color: '#0F766E', desc: 'Build a Java Stream pipeline from available operators. Functional programming mastery.' },
+  { id: 'FLOWCHART', icon: '📊', title: 'Flowchart Question', badge: 'Visual', color: '#0369A1', desc: 'Answer questions based on flowchart/algorithm diagrams. Visual logic reasoning.' },
+  { id: 'DEVOPS_PIPE', icon: '🚀', title: 'DevOps Pipeline', badge: 'CI/CD', color: '#0891B2', desc: 'Arrange CI/CD pipeline stages in the correct order. DevOps process knowledge.' },
+  { id: 'SECURE_CODE', icon: '🛡️', title: 'Secure Coding', badge: 'Security', color: '#B45309', desc: 'Identify OWASP vulnerabilities and write secure fixes. Security-first mindset.' },
+  { id: 'RIDDLE', icon: '🧩', title: 'Tech Riddles', badge: 'Fun', color: '#7C3AED', desc: 'Solve creative riddles about programming concepts. Engagement + lateral thinking.' },
+  { id: 'CROSSWORD', icon: '✚', title: 'Crossword Puzzle', badge: 'Puzzle', color: '#6D28D9', desc: 'Fill the crossword grid with tech terms from clues. Vocabulary reinforcement.' },
+];
+
+const BULK_COLUMNS = [
+  { num: 1, name: 'ID', req: false, desc: 'Question ID / sequence number — ignored by system, for your reference only', example: '1' },
+  { num: 2, name: 'Tech Stack', req: true, desc: 'Must match an existing tech stack exactly (e.g. Spring Boot, Core Java). Click any name in the panel below to copy it.', example: 'Spring Boot' },
+  { num: 3, name: 'Topic', req: false, desc: 'Topic name within the tech stack — optional, but helps with filtering', example: 'Dependency Injection' },
+  { num: 4, name: 'Difficulty', req: true, desc: 'EASY, MEDIUM, or HARD — must be uppercase exactly as shown', example: 'MEDIUM' },
+  { num: 5, name: 'Question Stem', req: true, desc: 'The MCQ question text — the actual question being asked', example: 'What is the purpose of @Autowired?' },
+  { num: 6, name: 'Option A', req: true, desc: 'Text for option A', example: 'Dependency injection' },
+  { num: 7, name: 'Option B', req: true, desc: 'Text for option B', example: 'Marks a bean as singleton' },
+  { num: 8, name: 'Option C', req: true, desc: 'Text for option C', example: 'Enables AOP' },
+  { num: 9, name: 'Option D', req: true, desc: 'Text for option D', example: 'Creates a new thread' },
+  { num: 10, name: 'Correct Answer', req: true, desc: 'Letter of the correct option: A, B, C, or D — uppercase only', example: 'A' },
+];
+
+const LIVE_QUIZ_FLOW = [
+  { icon: '🎯', step: 'Create Session', role: 'Host', color: '#A100FF', desc: 'Host opens Live Quiz page, selects an existing Quiz or Assessment, sets session name' },
+  { icon: '🔑', step: 'Session Code', role: 'System', color: '#059669', desc: 'System generates a 6-character join code (e.g. SPRING) + opens WebSocket channel' },
+  { icon: '👥', step: 'Join Lobby', role: 'Players', color: '#0EA5E9', desc: 'Players navigate to /live/join, enter session code — all see live lobby with player list' },
+  { icon: '▶️', step: 'Start Battle', role: 'Host', color: '#D97706', desc: 'Host clicks Start — all connected players receive first question simultaneously via WebSocket' },
+  { icon: '⚡', step: 'Answer & Score', role: 'Players', color: '#DC2626', desc: 'Per-question countdown timer. Correct answer + faster speed = more points (speed bonus)' },
+  { icon: '📊', step: 'Live Board', role: 'All', color: '#7C3AED', desc: 'Leaderboard updates in real-time after each question. Position shifts visible live' },
+  { icon: '🏆', step: 'Final Results', role: 'All', color: '#16A34A', desc: 'Session ends with full breakdown: final rank, score, per-question accuracy, time taken' },
+];
+
+const LEADERBOARD_MODES = [
+  {
+    mode: 'Reviewers',
+    icon: '🏅',
+    color: '#A100FF',
+    desc: 'Ranks all reviewers by number of MCQs reviewed. Encourages fast, thorough review cycles. Resets never — cumulative all-time count.',
+    badges: [
+      { icon: '👑', label: 'Champion', rule: 'Rank #1' },
+      { icon: '🔥', label: 'Hot Streak', rule: '≥10 reviews' },
+      { icon: '⭐', label: 'Rising Star', rule: '≥5 reviews' },
+      { icon: '💪', label: 'Contributor', rule: '≥3 reviews' },
+    ],
+  },
+  {
+    mode: 'Assessment',
+    icon: '📝',
+    color: '#059669',
+    desc: 'Ranks candidates by score % on a specific exam. Filter by assessment name and tech stack. Exportable to CSV.',
+    badges: [
+      { icon: '👑', label: 'Topper', rule: 'Rank #1' },
+      { icon: '🔥', label: 'Expert', rule: '≥90%' },
+      { icon: '⭐', label: 'Proficient', rule: '≥75%' },
+      { icon: '💪', label: 'Learner', rule: '≥50%' },
+    ],
+  },
+  {
+    mode: 'Live Quiz',
+    icon: '⚡',
+    color: '#D97706',
+    desc: 'Ranks players within a specific live session by combined score (accuracy + speed bonus). Filter by session date.',
+    badges: [
+      { icon: '👑', label: 'Battle King', rule: 'Rank #1 in session' },
+      { icon: '🔥', label: 'Speed Demon', rule: 'Fastest correct answer' },
+      { icon: '⭐', label: 'Accurate', rule: '≥90% correct answers' },
+      { icon: '💪', label: 'Fighter', rule: 'Completed full session' },
+    ],
+  },
+];
+
 export default function RuleBook() {
   const [activeTab, setActiveTab] = useState('lifecycle');
   const thresholdCount = useCountUp(30, 1500);
@@ -420,6 +504,10 @@ export default function RuleBook() {
     { id: 'mcp', icon: <Plug size={15} />, label: 'MCP Tools' },
     { id: 'security', icon: <Lock size={15} />, label: 'Security' },
     { id: 'shortcuts', icon: <Keyboard size={15} />, label: 'Shortcuts' },
+    { id: 'question_types', icon: <Layers size={15} />, label: 'Q Types' },
+    { id: 'bulk_upload', icon: <Upload size={15} />, label: 'Bulk Upload' },
+    { id: 'live_quiz', icon: <Play size={15} />, label: 'Live Quiz' },
+    { id: 'leaderboard', icon: <Trophy size={15} />, label: 'Leaderboard' },
   ];
 
   // Number key tab switching on the RuleBook page
@@ -453,8 +541,8 @@ export default function RuleBook() {
             <div className="rb-hero-stats">
               <div className="rb-stat"><span className="rb-stat-num">5</span><span className="rb-stat-label">Stages</span></div>
               <div className="rb-stat"><span className="rb-stat-num">2</span><span className="rb-stat-label">Roles</span></div>
+              <div className="rb-stat"><span className="rb-stat-num">18</span><span className="rb-stat-label">Q Types</span></div>
               <div className="rb-stat"><span className="rb-stat-num">30%</span><span className="rb-stat-label">Dup Threshold</span></div>
-              <div className="rb-stat"><span className="rb-stat-num">8</span><span className="rb-stat-label">Review Steps</span></div>
               <div className="rb-stat"><span className="rb-stat-num">8</span><span className="rb-stat-label">MCP Tools</span></div>
               <div className="rb-stat"><span className="rb-stat-num">29</span><span className="rb-stat-label">Metrics</span></div>
             </div>
@@ -780,6 +868,161 @@ export default function RuleBook() {
                 <Keyboard size={16} />
                 <span>Pro tip: press <kbd className="rb-kbd">G</kbd> then a letter within <strong>800 ms</strong> to jump to any page instantly</span>
               </div>
+            </div>
+          )}
+
+          {/* ── QUESTION TYPES ── */}
+          {activeTab === 'question_types' && (
+            <div className="rb-qt-panel">
+              <h2 className="rb-panel-title">🎮 18 Question Types — Interactive Challenge Formats</h2>
+              <p className="rb-qt-intro">Beyond standard MCQ, QuizHub supports 18 interactive question formats. Each type is playable in Live Quiz battles and Assessments. Access via the Question Types page or Quiz Builder.</p>
+              <div className="rb-qt-grid">
+                {QUESTION_TYPES_DATA.map((qt, i) => (
+                  <AnimateIn key={qt.id} delay={i * 60}>
+                    <div className="rb-qt-card">
+                      <div className="rb-qt-card-top" style={{ borderTopColor: qt.color }}>
+                        <span className="rb-qt-icon">{qt.icon}</span>
+                        <span className="rb-qt-badge" style={{ background: qt.color }}>{qt.badge}</span>
+                      </div>
+                      <div className="rb-qt-body">
+                        <h4 className="rb-qt-title" style={{ color: qt.color }}>{qt.title}</h4>
+                        <p className="rb-qt-desc">{qt.desc}</p>
+                        <code className="rb-qt-id">{qt.id}</code>
+                      </div>
+                    </div>
+                  </AnimateIn>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── BULK UPLOAD ── */}
+          {activeTab === 'bulk_upload' && (
+            <div className="rb-bulk-panel">
+              <h2 className="rb-panel-title">📤 Bulk Upload — CSV / Excel Format Spec</h2>
+              <p className="rb-bulk-intro">Upload hundreds of MCQs at once via CSV or Excel. Download the official template from the Bulk Upload page. All uploaded questions are saved as <strong>DRAFT</strong> — no direct approval.</p>
+              <AnimateIn>
+                <div className="rb-bulk-tip">
+                  <Upload size={16} style={{ color: '#A100FF' }} />
+                  <span>Go to <strong>Bulk Upload page</strong> → click <strong>"Download Template_MCQs.xlsx"</strong> to get the pre-formatted Excel file with all headers.</span>
+                </div>
+              </AnimateIn>
+              <div className="rb-bulk-table-wrap">
+                <table className="rb-bulk-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Column Name</th>
+                      <th>Required?</th>
+                      <th>Description</th>
+                      <th>Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {BULK_COLUMNS.map((col, i) => (
+                      <tr key={i} className={col.req ? 'rb-bulk-required' : ''}>
+                        <td className="rb-bulk-num">{col.num}</td>
+                        <td className="rb-bulk-name">{col.name}</td>
+                        <td><span className={`rb-bulk-req-badge ${col.req ? 'yes' : 'no'}`}>{col.req ? 'Yes' : 'No'}</span></td>
+                        <td className="rb-bulk-desc">{col.desc}</td>
+                        <td><code className="rb-bulk-example">{col.example}</code></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="rb-bulk-rules">
+                {[
+                  'Supported formats: .csv, .xlsx, .xls — max 10 MB',
+                  'Duplicate check runs on every row — duplicates ≥30% are flagged but NOT blocked (imported as DRAFT)',
+                  'Row validation runs before save — any row with missing required column is skipped with error shown',
+                  'Tech stack names must match exactly — use the copy-to-clipboard buttons on the Bulk Upload page',
+                  'DIFFICULTY must be uppercase: EASY, MEDIUM, or HARD. Any other value fails the row',
+                  'Upload result shows: imported count, failed count, per-row error details',
+                ].map((rule, i) => (
+                  <AnimateIn key={i} delay={i * 80}>
+                    <div className="rb-bulk-rule">
+                      <div className="rb-bulk-rule-dot" />
+                      <p>{rule}</p>
+                    </div>
+                  </AnimateIn>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── LIVE QUIZ ── */}
+          {activeTab === 'live_quiz' && (
+            <div className="rb-live-panel">
+              <h2 className="rb-panel-title">⚡ Live Quiz — Real-Time Multiplayer Battles</h2>
+              <p className="rb-live-intro">Live Quiz is a Kahoot-style real-time battle. A host runs the session; players join via session code. All communication happens over WebSocket — no page refresh needed.</p>
+              <div className="rb-live-flow">
+                {LIVE_QUIZ_FLOW.map((step, i) => (
+                  <AnimateIn key={i} delay={i * 120}>
+                    <div className="rb-live-step">
+                      <div className="rb-live-step-icon" style={{ background: step.color }}>{step.icon}</div>
+                      {i < LIVE_QUIZ_FLOW.length - 1 && <div className="rb-live-connector"><div className="rb-live-pulse" /></div>}
+                      <div className="rb-live-step-card">
+                        <div className="rb-live-step-header">
+                          <span className="rb-live-step-num">{i + 1}</span>
+                          <strong>{step.step}</strong>
+                          <span className="rb-live-role-badge" style={{ background: step.color }}>{step.role}</span>
+                        </div>
+                        <p>{step.desc}</p>
+                      </div>
+                    </div>
+                  </AnimateIn>
+                ))}
+              </div>
+              <AnimateIn delay={600}>
+                <div className="rb-live-tech-note">
+                  <Activity size={16} style={{ color: '#A100FF' }} />
+                  <span><strong>Tech stack:</strong> Spring WebSocket with STOMP over SockJS. Session state held in-memory (SimpleBroker). For clustered deployment, replace with RabbitMQ STOMP broker. Live sessions tracked in <code>QuizSessionController</code> → <code>LiveSessionController</code>.</span>
+                </div>
+              </AnimateIn>
+            </div>
+          )}
+
+          {/* ── LEADERBOARD ── */}
+          {activeTab === 'leaderboard' && (
+            <div className="rb-lb-panel">
+              <h2 className="rb-panel-title">🏆 Leaderboard — 3 Ranking Modes</h2>
+              <p className="rb-lb-intro">Three independent leaderboards track different kinds of achievement. Each has its own badge system. Access via the Leaderboard page — switch modes with the tab bar.</p>
+              <div className="rb-lb-modes">
+                {LEADERBOARD_MODES.map((lb, i) => (
+                  <AnimateIn key={lb.mode} delay={i * 150}>
+                    <div className="rb-lb-card">
+                      <div className="rb-lb-card-header" style={{ background: `linear-gradient(135deg, ${lb.color}, ${lb.color}88)` }}>
+                        <span className="rb-lb-mode-icon">{lb.icon}</span>
+                        <div>
+                          <h3>{lb.mode} Leaderboard</h3>
+                        </div>
+                      </div>
+                      <p className="rb-lb-desc">{lb.desc}</p>
+                      <div className="rb-lb-badges">
+                        <h5>Badges</h5>
+                        <div className="rb-lb-badge-row">
+                          {lb.badges.map((b, j) => (
+                            <div key={j} className="rb-lb-badge">
+                              <span className="rb-lb-badge-icon">{b.icon}</span>
+                              <div>
+                                <strong>{b.label}</strong>
+                                <span>{b.rule}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </AnimateIn>
+                ))}
+              </div>
+              <AnimateIn delay={500}>
+                <div className="rb-lb-export-note">
+                  <BarChart3 size={16} style={{ color: '#059669' }} />
+                  <span>Assessment and Live Quiz leaderboards are <strong>exportable to CSV</strong>. Filter by exam name, tech stack, or date range before exporting.</span>
+                </div>
+              </AnimateIn>
             </div>
           )}
 
