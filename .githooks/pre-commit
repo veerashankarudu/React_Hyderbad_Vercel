@@ -2,13 +2,14 @@
 # QuizHub Hook: pre-commit
 # Runs automatically every time you do: git commit
 # Checks code quality BEFORE the commit is saved
+set -o pipefail
 
 echo "🔍 QuizHub pre-commit checks running..."
 
 # ── 1. Run backend tests ──────────────────────────────────────────
 echo "  ▸ Running backend tests..."
-cd backend && mvn test -q 2>&1 | tail -5
-if [ $? -ne 0 ]; then
+cd backend && mvn test -q -DforkCount=0 2>&1; BACKEND_EXIT=$?
+if [ $BACKEND_EXIT -ne 0 ]; then
   echo "  ❌ Backend tests FAILED. Fix before committing."
   exit 1
 fi
@@ -17,8 +18,8 @@ cd ..
 
 # ── 2. Check frontend builds without errors ───────────────────────
 echo "  ▸ Checking frontend build..."
-cd frontend && npx react-scripts build --silent 2>&1 | tail -3
-if [ $? -ne 0 ]; then
+cd frontend && npx react-scripts build --silent 2>&1; FRONTEND_EXIT=$?
+if [ $FRONTEND_EXIT -ne 0 ]; then
   echo "  ❌ Frontend build FAILED. Fix before committing."
   exit 1
 fi
