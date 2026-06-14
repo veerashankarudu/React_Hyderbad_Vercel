@@ -9,6 +9,7 @@ import {
   AlertTriangle, Activity, Layers, Star, Settings, RotateCcw, X
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import SystemHealth from '../components/SystemHealth';
 import API, { cachedGet, getCacheSync } from '../api';
 import { useTranslation } from 'react-i18next';
 import { useContentTranslation } from '../hooks/useContentTranslation';
@@ -377,6 +378,9 @@ export default function Home() {
             <span className="ai-sparkle ai-sparkle-3" />
           </div>
         </div>
+
+        {/* ── System Health Pings ── */}
+        <SystemHealth />
 
         {/* ── Customize Dashboard Drawer ── */}
         {showCustomize && <div className="cust-overlay" onClick={() => setShowCustomize(false)} aria-hidden="true" />}
