@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   PenLine, Send, Search, CheckCircle2, RotateCcw, UserRound, ClipboardCheck,
   Scale, RefreshCw, Library, Code2, Shield, Brain, FileText, Lock,
-  Bot, Target, SlidersHorizontal, Link2, BarChart3, Zap, RefreshCcw, Users
+  Bot, Target, SlidersHorizontal, Link2, BarChart3, Zap, RefreshCcw, Users,
+  Keyboard, Server, Activity, Gauge, Cpu, Wrench, Plug, Database, AlertTriangle
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import './RuleBook.css';
@@ -98,6 +99,303 @@ const AI_FEATURES = [
   { icon: <Bot size={18} />, title: 'AI Check', desc: 'Manual duplicate scan anytime via the AI button on the edit form' },
 ];
 
+const ALL_SHORTCUTS = [
+  {
+    section: '🌐 Global — always active',
+    color: '#A100FF',
+    rows: [
+      { keys: ['?'], desc: 'Show / hide this shortcuts overlay' },
+      { keys: ['Esc'], desc: 'Close any modal or panel' },
+      { keys: ['Ctrl', 'K'], desc: 'Focus search on current page' },
+      { keys: ['Ctrl', 'N'], desc: 'Create a new question' },
+      { keys: ['Ctrl', 'D'], desc: 'Go to Dashboard' },
+      { keys: ['Ctrl', 'H'], desc: 'Open Rule Book (help)' },
+      { keys: ['Ctrl', 'B'], desc: 'Go to Bulk Upload' },
+      { keys: ['Ctrl', 'Shift', 'A'], desc: 'Open AI Studio' },
+      { keys: ['Ctrl', 'Shift', 'D'], desc: 'Toggle dark / light mode' },
+      { keys: ['Ctrl', '/'], desc: 'Toggle sidebar' },
+      { keys: ['Alt', 'T'], desc: 'Toggle notifications panel' },
+    ],
+  },
+  {
+    section: '🧭 Navigation — press G then a letter',
+    color: '#059669',
+    rows: [
+      { keys: ['G', 'D'], desc: 'Dashboard' },
+      { keys: ['G', 'Q'], desc: 'My Questions' },
+      { keys: ['G', 'K'], desc: 'Kanban Board' },
+      { keys: ['G', 'R'], desc: 'Pending Reviews' },
+      { keys: ['G', 'A'], desc: 'Analytics' },
+      { keys: ['G', 'L'], desc: 'Leaderboard' },
+      { keys: ['G', 'B'], desc: 'Question Bank' },
+      { keys: ['G', 'I'], desc: 'Inbox' },
+      { keys: ['G', 'U'], desc: 'Bulk Upload' },
+      { keys: ['G', 'S'], desc: 'Settings' },
+    ],
+  },
+  {
+    section: '📝 My Questions page',
+    color: '#D97706',
+    rows: [
+      { keys: ['N'], desc: 'New question' },
+      { keys: ['F'], desc: 'Focus search / filter bar' },
+      { keys: ['J'], desc: 'Next question in list' },
+      { keys: ['K'], desc: 'Previous question in list' },
+    ],
+  },
+  {
+    section: '✅ Pending Reviews page',
+    color: '#DC2626',
+    rows: [
+      { keys: ['A'], desc: 'Approve selected' },
+      { keys: ['R'], desc: 'Reject selected' },
+      { keys: ['J'], desc: 'Next item' },
+      { keys: ['K'], desc: 'Previous item' },
+    ],
+  },
+  {
+    section: '🗂️ Kanban Board page',
+    color: '#0EA5E9',
+    rows: [
+      { keys: ['←'], desc: 'Move card left' },
+      { keys: ['→'], desc: 'Move card right' },
+      { keys: ['F'], desc: 'Filter cards' },
+    ],
+  },
+  {
+    section: '🏦 Question Bank page',
+    color: '#7C3AED',
+    rows: [
+      { keys: ['F'], desc: 'Focus search' },
+      { keys: ['E'], desc: 'Export questions' },
+      { keys: ['B'], desc: 'Go to Bulk Upload' },
+    ],
+  },
+  {
+    section: '📊 Analytics page',
+    color: '#0891B2',
+    rows: [
+      { keys: ['1'], desc: 'Overview tab' },
+      { keys: ['2'], desc: 'Trends tab' },
+      { keys: ['3'], desc: 'Breakdown tab' },
+    ],
+  },
+  {
+    section: '⚡ Live Quiz page',
+    color: '#16A34A',
+    rows: [
+      { keys: ['S'], desc: 'Start new session' },
+      { keys: ['J'], desc: 'Join session' },
+    ],
+  },
+  {
+    section: '🤖 AI Studio page',
+    color: '#9333EA',
+    rows: [
+      { keys: ['Ctrl', 'Enter'], desc: 'Send message' },
+      { keys: ['C'], desc: 'Clear chat history' },
+      { keys: ['G'], desc: 'Generate new MCQ' },
+    ],
+  },
+  {
+    section: '📖 Rule Book page',
+    color: '#B84DFF',
+    rows: [
+      { keys: ['1'], desc: 'Lifecycle tab' },
+      { keys: ['2'], desc: 'Roles tab' },
+      { keys: ['3'], desc: 'Duplicate tab' },
+      { keys: ['4'], desc: 'AI Rules tab' },
+      { keys: ['5'], desc: 'Workflow tab' },
+      { keys: ['6'], desc: 'Quizzes tab' },
+      { keys: ['7'], desc: 'Infra tab' },
+      { keys: ['8'], desc: 'MCP Tools tab' },
+      { keys: ['9'], desc: 'Security tab' },
+      { keys: ['0'], desc: 'Shortcuts tab' },
+    ],
+  },
+];
+
+const INFRA_SERVICES = [
+  {
+    name: 'Prometheus',
+    color: '#E6522C',
+    gradient: 'linear-gradient(135deg, #E6522C, #FF7F50)',
+    icon: <Activity size={20} />,
+    port: '9090',
+    url: 'http://localhost:9090',
+    badge: 'Metrics Store',
+    facts: [
+      'Scrapes /actuator/prometheus every 10 seconds',
+      '29 custom QuizHub business metrics tracked',
+      'Metrics: MCQ counts, review rates, AI calls, live quiz activity',
+      'Labels: tech_stack, difficulty, status, user_role',
+      'Retention: 15 days (default)',
+      'Targets page: http://localhost:9090/targets',
+    ],
+  },
+  {
+    name: 'Grafana',
+    color: '#F46800',
+    gradient: 'linear-gradient(135deg, #F46800, #FFAA44)',
+    icon: <BarChart3 size={20} />,
+    port: '3001',
+    url: 'http://localhost:3001',
+    badge: 'Dashboard',
+    facts: [
+      'Login: admin / quizhub',
+      'Pre-provisioned Business Metrics dashboard (17 panels)',
+      'Panels: MCQ pipeline, approval rate, AI usage, live quiz stats',
+      'Datasource auto-wired to Prometheus on startup',
+      'Dashboard JSON at observability/dashboards/quizhub-business.json',
+      'Started via: docker-compose -f docker-compose.observability.yml up -d',
+    ],
+  },
+  {
+    name: 'Redis',
+    color: '#DC382C',
+    gradient: 'linear-gradient(135deg, #DC382C, #FF6B6B)',
+    icon: <Database size={20} />,
+    port: '6379',
+    url: 'redis://localhost:6379',
+    badge: 'Cache + Blacklist',
+    facts: [
+      'Rate limiter: sliding window counter per IP per endpoint',
+      'Login: 100 req/60s | Join: 10/60s | Validate: 20/60s',
+      'AI endpoints: 60 req/60s | MCQ writes: 60 req/60s',
+      'JWT token blacklist: logout writes token hash, auth filter checks it',
+      'Fallback: in-memory ConcurrentHashMap when Redis is unavailable',
+      'Start: brew services start redis (or included in start.sh)',
+    ],
+  },
+];
+
+const MCP_TOOLS = [
+  {
+    num: 1, name: 'searchQuestions',
+    desc: 'Search MCQs by keyword, tech stack, or status. Returns ID, stem, difficulty, status.',
+    params: ['keyword', 'techStack?', 'status?'],
+    color: '#A100FF',
+  },
+  {
+    num: 2, name: 'checkDuplicate',
+    desc: 'Check if a question already exists. Returns similar Qs with similarity %. Use before creating.',
+    params: ['questionStem', 'techStackId?'],
+    color: '#059669',
+  },
+  {
+    num: 3, name: 'getTechStacks',
+    desc: 'Get all tech stacks with IDs and topic counts. Use to find the correct techStackId.',
+    params: [],
+    color: '#0EA5E9',
+  },
+  {
+    num: 4, name: 'getDashboardStats',
+    desc: 'Get live dashboard stats: total MCQs, approved count, pending reviews, per-stack breakdown.',
+    params: [],
+    color: '#D97706',
+  },
+  {
+    num: 5, name: 'createMcq',
+    desc: 'Create a new MCQ. AI validates inputs before save.',
+    params: ['questionStem', 'optionA-D', 'correctAnswer', 'difficulty', 'techStackId', 'topicId'],
+    color: '#DC2626',
+  },
+  {
+    num: 6, name: 'getMcqById',
+    desc: 'Get full MCQ detail by ID: question, options, correct answer, review history.',
+    params: ['mcqId'],
+    color: '#7C3AED',
+  },
+  {
+    num: 7, name: 'generateQuestions',
+    desc: 'Use AI to generate MCQ questions for a topic + difficulty. Returns draft questions to review.',
+    params: ['topic', 'difficulty', 'count (1-10)'],
+    color: '#0891B2',
+  },
+  {
+    num: 8, name: 'checkQuality',
+    desc: 'Score an MCQ 0-100: clarity, distractor quality, technical accuracy, difficulty fit.',
+    params: ['questionStem', 'optionA-D', 'correctAnswer', 'difficulty'],
+    color: '#16A34A',
+  },
+];
+
+const SECURITY_FEATURES = [
+  {
+    icon: <Shield size={20} />,
+    title: 'HTTP Security Headers',
+    color: '#7C3AED',
+    items: [
+      'Content-Security-Policy — blocks inline scripts & unsafe eval',
+      'HSTS — forces HTTPS for 1 year including subdomains',
+      'X-Frame-Options: DENY — prevents clickjacking iframes',
+      'Referrer-Policy: strict-origin-when-cross-origin',
+      'Permissions-Policy — disables camera, mic, geolocation, payment',
+    ],
+  },
+  {
+    icon: <Gauge size={20} />,
+    title: 'Redis Rate Limiting',
+    color: '#DC2626',
+    items: [
+      'Sliding window counter: Redis INCR + EXPIRE per IP per route',
+      'Login: 100 req / 60s — brute-force protection',
+      'Live Join: 10 req / 60s — flood protection',
+      'AI endpoints: 60 req / 60s — cost control',
+      'Fallback to in-memory bucket when Redis unavailable',
+      '429 Too Many Requests with Retry-After header',
+    ],
+  },
+  {
+    icon: <Lock size={20} />,
+    title: 'JWT Blacklist (Logout)',
+    color: '#D97706',
+    items: [
+      'POST /api/v1/auth/logout extracts token from Authorization header',
+      'Token hash stored in Redis with TTL = remaining token lifetime',
+      'Every request: JwtAuthFilter checks blacklist before trusting token',
+      'Prevents token reuse after logout — true stateless invalidation',
+      '@PostConstruct validates JWT secret on startup — fails fast if missing',
+    ],
+  },
+  {
+    icon: <AlertTriangle size={20} />,
+    title: 'AI Input Sanitizer',
+    color: '#059669',
+    items: [
+      'Strips PII before sending to LLM: email, phone, SSN, credit card, IP',
+      'Prompt injection detection: blocks "ignore previous", "jailbreak", "DAN", etc.',
+      'Applied to: chatReply, chatReplyWithHistory, streamChat, toolChat',
+      'Returns 400 Bad Request if injection pattern is detected',
+      'Zero cloud exposure — Ollama LLM runs fully local',
+    ],
+  },
+  {
+    icon: <Activity size={20} />,
+    title: 'CI/CD Pipeline',
+    color: '#0EA5E9',
+    items: [
+      'GitHub Actions: triggers on push/PR to main & develop branches',
+      'Jobs: backend-test (Java 17 + MySQL) → frontend-test (Node 20)',
+      'OWASP dependency-check security scan on every build',
+      'Docker build validation for both backend and frontend images',
+      'Backend uses H2 in-memory DB for tests — zero external deps',
+    ],
+  },
+  {
+    icon: <Server size={20} />,
+    title: 'Production Profile',
+    color: '#B84DFF',
+    items: [
+      'application-prod.yml: ddl-auto=validate, Flyway enabled',
+      'Restricted actuator: only /health and /prometheus exposed',
+      'Log level WARN — no DEBUG in production',
+      'No JWT secret default — must be set via environment variable',
+      'Graceful shutdown: 30s drain before process exits',
+    ],
+  },
+];
+
 const QUIZ_RULES = [
   { icon: <CheckCircle2 size={18} />, title: 'Approved Only', desc: 'Only APPROVED questions can be used in quizzes' },
   { icon: <SlidersHorizontal size={18} />, title: 'Quiz Builder', desc: 'Set title, time limit, passing score, question count' },
@@ -118,7 +416,26 @@ export default function RuleBook() {
     { id: 'ai', icon: <Bot size={15} />, label: 'AI Rules' },
     { id: 'review', icon: <FileText size={15} />, label: 'Workflow' },
     { id: 'quiz', icon: <Target size={15} />, label: 'Quizzes' },
+    { id: 'infra', icon: <Server size={15} />, label: 'Infra' },
+    { id: 'mcp', icon: <Plug size={15} />, label: 'MCP Tools' },
+    { id: 'security', icon: <Lock size={15} />, label: 'Security' },
+    { id: 'shortcuts', icon: <Keyboard size={15} />, label: 'Shortcuts' },
   ];
+
+  // Number key tab switching on the RuleBook page
+  useEffect(() => {
+    const tabIds = ['lifecycle', 'roles', 'duplicate', 'ai', 'review', 'quiz', 'infra', 'mcp', 'security', 'shortcuts'];
+    const handler = (e) => {
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
+      const raw = Number.parseInt(e.key, 10);
+      // 1-9 → index 0-8, 0 → index 9 (shortcuts)
+      const idx = e.key === '0' ? 9 : (raw >= 1 && raw <= 9 ? raw - 1 : -1);
+      if (idx >= 0 && idx < tabIds.length) setActiveTab(tabIds[idx]);
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
 
   return (
     <div className="app-layout">
@@ -138,6 +455,8 @@ export default function RuleBook() {
               <div className="rb-stat"><span className="rb-stat-num">2</span><span className="rb-stat-label">Roles</span></div>
               <div className="rb-stat"><span className="rb-stat-num">30%</span><span className="rb-stat-label">Dup Threshold</span></div>
               <div className="rb-stat"><span className="rb-stat-num">8</span><span className="rb-stat-label">Review Steps</span></div>
+              <div className="rb-stat"><span className="rb-stat-num">8</span><span className="rb-stat-label">MCP Tools</span></div>
+              <div className="rb-stat"><span className="rb-stat-num">29</span><span className="rb-stat-label">Metrics</span></div>
             </div>
           </div>
         </div>
@@ -314,6 +633,156 @@ export default function RuleBook() {
               </div>
             </div>
           )}
+          {/* ── INFRA ── */}
+          {activeTab === 'infra' && (
+            <div className="rb-infra-panel">
+              <h2 className="rb-panel-title">🖥️ Infrastructure — Prometheus · Grafana · Redis</h2>
+              <p className="rb-infra-intro">Three always-on backing services that give QuizHub observability, caching, and rate-limiting without any code changes to your workflow.</p>
+              <div className="rb-infra-grid">
+                {INFRA_SERVICES.map((svc, i) => (
+                  <AnimateIn key={svc.name} delay={i * 150}>
+                    <div className="rb-infra-card">
+                      <div className="rb-infra-card-header" style={{ background: svc.gradient }}>
+                        <span className="rb-infra-icon">{svc.icon}</span>
+                        <div className="rb-infra-title-block">
+                          <h3>{svc.name}</h3>
+                          <span className="rb-infra-badge">{svc.badge}</span>
+                        </div>
+                        <div className="rb-infra-port">:{svc.port}</div>
+                      </div>
+                      <ul className="rb-infra-facts">
+                        {svc.facts.map((f, j) => (
+                          <li key={`${svc.name}-${j}`}>
+                            <span className="rb-infra-dot" style={{ background: svc.color }} />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                      <a className="rb-infra-link" href={svc.url} target="_blank" rel="noopener noreferrer">
+                        Open {svc.name} →
+                      </a>
+                    </div>
+                  </AnimateIn>
+                ))}
+              </div>
+              <AnimateIn delay={500}>
+                <div className="rb-infra-start-tip">
+                  <Cpu size={16} />
+                  <span>Start all infra in one command: <code>bash start.sh</code> — or run Docker Compose directly: <code>docker-compose -f docker-compose.observability.yml up -d</code></span>
+                </div>
+              </AnimateIn>
+            </div>
+          )}
+
+          {/* ── MCP ── */}
+          {activeTab === 'mcp' && (
+            <div className="rb-mcp-panel">
+              <h2 className="rb-panel-title">🔌 MCP Tools — Model Context Protocol</h2>
+              <div className="rb-mcp-intro-row">
+                <div className="rb-mcp-intro-card">
+                  <Plug size={28} style={{ color: '#A100FF' }} />
+                  <div>
+                    <h4>What is MCP?</h4>
+                    <p>Model Context Protocol lets AI assistants (Claude, GitHub Copilot, etc.) call live QuizHub APIs as tools. The MCP server runs at <strong>localhost:8085</strong> and exposes 8 callable tools.</p>
+                  </div>
+                </div>
+                <div className="rb-mcp-intro-card">
+                  <Wrench size={28} style={{ color: '#059669' }} />
+                  <div>
+                    <h4>How to use</h4>
+                    <p>Connect any MCP-compatible client to <strong>http://localhost:8085/sse</strong>. The AI can then search, create, and evaluate questions without leaving the chat.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="rb-mcp-tools-grid">
+                {MCP_TOOLS.map((tool, i) => (
+                  <AnimateIn key={tool.name} delay={i * 80}>
+                    <div className="rb-mcp-tool-card">
+                      <div className="rb-mcp-tool-num" style={{ background: tool.color }}>{tool.num}</div>
+                      <div className="rb-mcp-tool-body">
+                        <code className="rb-mcp-tool-name" style={{ color: tool.color }}>{tool.name}()</code>
+                        <p className="rb-mcp-tool-desc">{tool.desc}</p>
+                        {tool.params.length > 0 && (
+                          <div className="rb-mcp-tool-params">
+                            {tool.params.map(p => (
+                              <span key={p} className="rb-mcp-param">{p}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </AnimateIn>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── SECURITY ── */}
+          {activeTab === 'security' && (
+            <div className="rb-security-panel">
+              <h2 className="rb-panel-title">🔒 Security & Production Features</h2>
+              <p className="rb-security-intro">Production-grade hardening built into the Spring Boot backend — active on every request.</p>
+              <div className="rb-security-grid">
+                {SECURITY_FEATURES.map((feat, i) => (
+                  <AnimateIn key={feat.title} delay={i * 100}>
+                    <div className="rb-security-card">
+                      <div className="rb-security-card-header" style={{ borderLeftColor: feat.color }}>
+                        <span className="rb-security-icon" style={{ color: feat.color }}>{feat.icon}</span>
+                        <h4 style={{ color: feat.color }}>{feat.title}</h4>
+                      </div>
+                      <ul className="rb-security-items">
+                        {feat.items.map((item, j) => (
+                          <li key={`${feat.title}-${j}`}>
+                            <span className="rb-security-bullet" style={{ background: feat.color }} />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </AnimateIn>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── SHORTCUTS ── */}
+          {activeTab === 'shortcuts' && (
+            <div className="rb-shortcuts-panel">
+              <h2 className="rb-panel-title">⌨️ Keyboard Shortcuts — Full Reference</h2>
+              <p className="rb-shortcuts-intro">Press <kbd className="rb-kbd">?</kbd> anywhere to open the live overlay. These shortcuts work site-wide — no configuration needed.</p>
+              <div className="rb-shortcuts-grid">
+                {ALL_SHORTCUTS.map((group, gi) => (
+                  <AnimateIn key={gi} delay={gi * 80}>
+                    <div className="rb-shortcut-group">
+                      <div className="rb-shortcut-group-header" style={{ borderLeftColor: group.color }}>
+                        <span>{group.section}</span>
+                      </div>
+                      <div className="rb-shortcut-rows">
+                        {group.rows.map((row, ri) => (
+                          <div key={ri} className="rb-shortcut-row">
+                            <span className="rb-shortcut-keys">
+                              {row.keys.map((k, ki) => (
+                                <React.Fragment key={ki}>
+                                  {ki > 0 && <span className="rb-key-plus">+</span>}
+                                  <kbd className="rb-kbd">{k}</kbd>
+                                </React.Fragment>
+                              ))}
+                            </span>
+                            <span className="rb-shortcut-desc">{row.desc}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </AnimateIn>
+                ))}
+              </div>
+              <div className="rb-shortcuts-tip">
+                <Keyboard size={16} />
+                <span>Pro tip: press <kbd className="rb-kbd">G</kbd> then a letter within <strong>800 ms</strong> to jump to any page instantly</span>
+              </div>
+            </div>
+          )}
+
         </div>
       </main>
     </div>

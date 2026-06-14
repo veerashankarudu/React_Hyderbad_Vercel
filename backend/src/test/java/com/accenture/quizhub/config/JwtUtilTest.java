@@ -2,6 +2,7 @@ package com.accenture.quizhub.config;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,7 +13,7 @@ class JwtUtilTest {
 
     @BeforeEach
     void setUp() {
-        jwtUtil = new JwtUtil();
+        jwtUtil = new JwtUtil(new StandardEnvironment());
         ReflectionTestUtils.setField(jwtUtil, "secret",
                 "testSecretKeyForJunitTestingPurposesOnlyAtLeast256BitsLong");
         ReflectionTestUtils.setField(jwtUtil, "expirationMs", 3600000L);

@@ -1,0 +1,12 @@
+-- Flyway V1 Baseline Migration
+-- This is a baseline marker for existing databases.
+-- The schema was previously managed by Hibernate ddl-auto=update.
+-- All future schema changes must be new versioned migration files:
+--   V2__add_column_xyz.sql
+--   V3__create_table_abc.sql
+--
+-- To generate this baseline from a running local DB:
+--   mysqldump --no-data -u root quizhub > V1__baseline.sql
+--
+-- For now this file is intentionally empty because baseline-on-migrate=true
+-- in application-prod.yml will mark the existing schema as V1 on first run.

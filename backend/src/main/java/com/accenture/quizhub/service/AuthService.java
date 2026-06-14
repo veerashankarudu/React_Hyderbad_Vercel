@@ -1,6 +1,7 @@
 package com.accenture.quizhub.service;
 
 import com.accenture.quizhub.config.JwtUtil;
+import com.accenture.quizhub.config.QuizHubMetrics;
 import com.accenture.quizhub.dto.request.ChangePasswordRequest;
 import com.accenture.quizhub.dto.request.LoginRequest;
 import com.accenture.quizhub.dto.request.RegisterRequest;
@@ -40,23 +41,27 @@ public class AuthService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final QuizHubMetrics metrics;
 
     @Value("${app.url:http://localhost:3000}")
     private String appUrl;
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEnterpriseId(request.getEnterpriseId())
-                .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
+                .orElseThrow(() -> { metrics.loginFailure.increment(); return new BadCredentialsException("Invalid credentials"); });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            metrics.loginFailure.increment();
             throw new BadCredentialsException("Invalid credentials");
         }
 
         if (!user.isApproved()) {
+            metrics.loginFailure.increment();
             throw new BadRequestException("Your account is pending admin approval. Please wait for an admin to activate your account.");
         }
 
         String token = jwtUtil.generateToken(user.getEnterpriseId(), user.getRole().name());
+        metrics.loginSuccess.increment();
         return AuthResponse.builder()
                 .token(token)
                 .enterpriseId(user.getEnterpriseId())

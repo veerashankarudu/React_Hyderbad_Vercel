@@ -1,5 +1,6 @@
 package com.accenture.quizhub.controller;
 
+import com.accenture.quizhub.config.JwtUtil;
 import com.accenture.quizhub.dto.request.ChangePasswordRequest;
 import com.accenture.quizhub.dto.request.LoginRequest;
 import com.accenture.quizhub.dto.request.RegisterRequest;
@@ -25,6 +26,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -82,5 +84,15 @@ public class AuthController {
         String newPassword = body.get("newPassword");
         authService.resetPassword(token, newPassword);
         return ResponseEntity.ok(Map.of("message", "Password reset successful. You can now log in."));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(
+            @org.springframework.web.bind.annotation.RequestHeader(
+                value = "Authorization", required = false) String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwtUtil.blacklist(authHeader.substring(7));
+        }
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully."));
     }
 }

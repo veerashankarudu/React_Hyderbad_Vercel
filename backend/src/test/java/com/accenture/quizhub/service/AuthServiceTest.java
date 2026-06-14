@@ -1,6 +1,7 @@
 package com.accenture.quizhub.service;
 
 import com.accenture.quizhub.config.JwtUtil;
+import com.accenture.quizhub.config.QuizHubMetrics;
 import com.accenture.quizhub.dto.request.ChangePasswordRequest;
 import com.accenture.quizhub.dto.request.LoginRequest;
 import com.accenture.quizhub.dto.request.RegisterRequest;
@@ -10,6 +11,7 @@ import com.accenture.quizhub.entity.User;
 import com.accenture.quizhub.enums.Role;
 import com.accenture.quizhub.exception.BadRequestException;
 import com.accenture.quizhub.repository.*;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +47,7 @@ class AuthServiceTest {
         // Inject real BCrypt encoder via reflection so password checks actually work
         org.springframework.test.util.ReflectionTestUtils.setField(authService, "passwordEncoder", realEncoder);
         org.springframework.test.util.ReflectionTestUtils.setField(authService, "appUrl", "http://localhost:3000");
+        org.springframework.test.util.ReflectionTestUtils.setField(authService, "metrics", new QuizHubMetrics(new SimpleMeterRegistry()));
 
         approvedUser = User.builder()
                 .id(1L)

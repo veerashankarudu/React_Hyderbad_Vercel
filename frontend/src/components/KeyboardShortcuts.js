@@ -11,6 +11,9 @@ const GLOBAL_SHORTCUTS = [
   { keys: ['?'], description: 'Show this shortcuts panel' },
   { keys: ['Ctrl', 'K'], description: 'Quick search / command palette' },
   { keys: ['Ctrl', 'N'], description: 'Create new question' },
+  { keys: ['Ctrl', 'H'], description: 'Open Rule Book (help)' },
+  { keys: ['Ctrl', 'B'], description: 'Go to Bulk Upload' },
+  { keys: ['Ctrl', 'Shift', 'A'], description: 'Open AI Studio' },
   { keys: ['Ctrl', '/'], description: 'Toggle sidebar' },
   { keys: ['Ctrl', 'D'], description: 'Go to Dashboard' },
   { keys: ['Ctrl', 'Shift', 'D'], description: 'Toggle dark/light mode' },
@@ -54,6 +57,27 @@ const PAGE_SHORTCUTS = {
     { keys: ['S'], description: 'Start new session' },
     { keys: ['J'], description: 'Join session' },
   ],
+  '/ai-studio': [
+    { keys: ['Ctrl', 'Enter'], description: 'Send message' },
+    { keys: ['C'], description: 'Clear chat history' },
+    { keys: ['G'], description: 'Generate new MCQ' },
+  ],
+  '/rulebook': [
+    { keys: ['1'], description: 'Lifecycle tab' },
+    { keys: ['2'], description: 'Roles tab' },
+    { keys: ['3'], description: 'Duplicate tab' },
+    { keys: ['4'], description: 'AI Rules tab' },
+    { keys: ['5'], description: 'Workflow tab' },
+    { keys: ['6'], description: 'Quizzes tab' },
+    { keys: ['7'], description: 'Infra tab' },
+    { keys: ['8'], description: 'MCP Tools tab' },
+    { keys: ['9'], description: 'Security tab' },
+    { keys: ['0'], description: 'Shortcuts tab' },
+  ],
+  '/leaderboard': [
+    { keys: ['F'], description: 'Filter / search' },
+    { keys: ['R'], description: 'Refresh rankings' },
+  ],
 };
 
 const NAV_SHORTCUTS = [
@@ -63,6 +87,9 @@ const NAV_SHORTCUTS = [
   { keys: ['G', 'R'], description: 'Go to Pending Reviews' },
   { keys: ['G', 'A'], description: 'Go to Analytics' },
   { keys: ['G', 'L'], description: 'Go to Leaderboard' },
+  { keys: ['G', 'B'], description: 'Go to Question Bank' },
+  { keys: ['G', 'I'], description: 'Go to Inbox' },
+  { keys: ['G', 'U'], description: 'Go to Bulk Upload' },
   { keys: ['G', 'S'], description: 'Go to Settings' },
 ];
 
@@ -98,6 +125,27 @@ export default function KeyboardShortcuts() {
       if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         setVisible(v => !v);
+        return;
+      }
+
+      // Ctrl+H — Rule Book
+      if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+        e.preventDefault();
+        navigate('/rulebook');
+        return;
+      }
+
+      // Ctrl+B — Bulk Upload
+      if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+        e.preventDefault();
+        navigate('/bulk-upload');
+        return;
+      }
+
+      // Ctrl+Shift+A — AI Studio
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        navigate('/ai-studio');
         return;
       }
 
@@ -152,7 +200,7 @@ export default function KeyboardShortcuts() {
         if (pendingG) {
           setPendingG(false);
           clearTimeout(gTimeout);
-          const routes = { d: '/', q: '/my-questions', k: '/kanban', r: '/pending-reviews', a: '/analytics', l: '/leaderboard', s: '/admin-settings' };
+          const routes = { d: '/', q: '/my-questions', k: '/kanban', r: '/pending-reviews', a: '/analytics', l: '/leaderboard', b: '/question-bank', i: '/inbox', u: '/bulk-upload', s: '/admin-settings' };
           const route = routes[e.key];
           if (route) { navigate(route); return; }
         }

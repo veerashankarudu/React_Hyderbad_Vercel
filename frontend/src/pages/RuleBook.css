@@ -594,6 +594,107 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   SHORTCUTS TAB
+   ═══════════════════════════════════════════════════════════════ */
+.rb-shortcuts-panel { padding: 0.5rem 0; }
+
+.rb-shortcuts-intro {
+  font-size: 0.93rem;
+  color: #6B7280;
+  margin-bottom: 1.8rem;
+  line-height: 1.6;
+}
+
+.rb-shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.2rem;
+}
+
+.rb-shortcut-group {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.rb-shortcut-group:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border-color: #c4b5fd;
+}
+
+.rb-shortcut-group-header {
+  padding: 0.65rem 1rem;
+  background: #f9fafb;
+  border-left: 4px solid #A100FF;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #374151;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.rb-shortcut-rows { padding: 0.5rem 0; }
+
+.rb-shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 1rem;
+  transition: background 0.15s;
+}
+.rb-shortcut-row:hover { background: #f5f3ff; }
+
+.rb-shortcut-keys {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.rb-kbd {
+  display: inline-block;
+  padding: 2px 7px;
+  background: #fff;
+  border: 1.5px solid #d1d5db;
+  border-bottom-width: 3px;
+  border-radius: 5px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  white-space: nowrap;
+}
+
+.rb-key-plus {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin: 0 2px;
+}
+
+.rb-shortcut-desc {
+  font-size: 0.83rem;
+  color: #4B5563;
+  line-height: 1.4;
+}
+
+.rb-shortcuts-tip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+  padding: 0.85rem 1.2rem;
+  background: linear-gradient(135deg, #fdf4ff, #f5f3ff);
+  border: 1px solid #e9d5ff;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: #6D28D9;
+}
+.rb-shortcuts-tip kbd { margin: 0 2px; }
+
+/* ═══════════════════════════════════════════════════════════════
    DARK MODE
    ═══════════════════════════════════════════════════════════════ */
 body.dark-mode .rb-hero {
@@ -663,6 +764,317 @@ body.dark-mode .rb-quiz-card h4 { color: #e2e8f0; }
 body.dark-mode .rb-quiz-card p { color: #8b949e; }
 
 /* ═══════════════════════════════════════════════════════════════
+   INFRA TAB
+   ═══════════════════════════════════════════════════════════════ */
+.rb-infra-intro {
+  font-size: 0.93rem;
+  color: #6B7280;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.rb-infra-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.rb-infra-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.rb-infra-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.rb-infra-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.2rem;
+  color: #fff;
+}
+
+.rb-infra-icon {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.rb-infra-title-block { flex: 1; }
+.rb-infra-title-block h3 { margin: 0; font-size: 1.05rem; font-weight: 700; }
+
+.rb-infra-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 1px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.rb-infra-port {
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.rb-infra-facts {
+  list-style: none;
+  margin: 0;
+  padding: 0.75rem 1.2rem;
+}
+.rb-infra-facts li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  font-size: 0.82rem;
+  color: #4B5563;
+  line-height: 1.4;
+  border-bottom: 1px solid #f3f4f6;
+}
+.rb-infra-facts li:last-child { border-bottom: none; }
+
+.rb-infra-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.rb-infra-link {
+  display: block;
+  text-align: center;
+  padding: 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #A100FF;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.rb-infra-link:hover { background: #f5f3ff; }
+
+.rb-infra-start-tip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.2rem;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: #15803D;
+}
+.rb-infra-start-tip code {
+  background: #dcfce7;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MCP TAB
+   ═══════════════════════════════════════════════════════════════ */
+.rb-mcp-intro-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+}
+
+.rb-mcp-intro-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.2rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+}
+.rb-mcp-intro-card h4 { margin: 0 0 0.3rem; font-size: 0.95rem; color: #111827; }
+.rb-mcp-intro-card p  { margin: 0; font-size: 0.83rem; color: #6B7280; line-height: 1.5; }
+
+.rb-mcp-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.rb-mcp-tool-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.rb-mcp-tool-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border-color: #c4b5fd;
+}
+
+.rb-mcp-tool-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.rb-mcp-tool-body { flex: 1; }
+
+.rb-mcp-tool-name {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  margin-bottom: 0.3rem;
+}
+
+.rb-mcp-tool-desc {
+  font-size: 0.81rem;
+  color: #6B7280;
+  margin: 0 0 0.5rem;
+  line-height: 1.4;
+}
+
+.rb-mcp-tool-params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.rb-mcp-param {
+  background: #f3f4f6;
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 0.72rem;
+  font-family: ui-monospace, monospace;
+  color: #374151;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SECURITY TAB
+   ═══════════════════════════════════════════════════════════════ */
+.rb-security-intro {
+  font-size: 0.93rem;
+  color: #6B7280;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.rb-security-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.2rem;
+}
+
+.rb-security-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.rb-security-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+
+.rb-security-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem 1.1rem;
+  background: #f9fafb;
+  border-left: 4px solid;
+  border-bottom: 1px solid #e5e7eb;
+}
+.rb-security-card-header h4 { margin: 0; font-size: 0.9rem; font-weight: 700; }
+
+.rb-security-icon { display: flex; align-items: center; }
+
+.rb-security-items {
+  list-style: none;
+  margin: 0;
+  padding: 0.6rem 1.1rem;
+}
+.rb-security-items li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.38rem 0;
+  font-size: 0.82rem;
+  color: #4B5563;
+  line-height: 1.4;
+  border-bottom: 1px solid #f3f4f6;
+}
+.rb-security-items li:last-child { border-bottom: none; }
+
+.rb-security-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Shortcuts tab — dark mode */
+/* Shortcuts tab — dark mode */
+body.dark-mode .rb-shortcuts-intro { color: #8b949e; }
+body.dark-mode .rb-shortcut-group { background: #161b22; border-color: #30363d; }
+body.dark-mode .rb-shortcut-group:hover { border-color: #7c3aed; }
+body.dark-mode .rb-shortcut-group-header { background: #0d1117; color: #c9d1d9; border-bottom-color: #30363d; }
+body.dark-mode .rb-shortcut-row:hover { background: #1c1531; }
+body.dark-mode .rb-shortcut-desc { color: #c9d1d9; }
+body.dark-mode .rb-kbd { background: #21262d; border-color: #444c56; color: #e2e8f0; }
+body.dark-mode .rb-shortcuts-tip { background: linear-gradient(135deg, #1a0d2e, #130d1f); border-color: #4c1d95; color: #c4b5fd; }
+
+/* Infra tab — dark mode */
+body.dark-mode .rb-infra-intro { color: #8b949e; }
+body.dark-mode .rb-infra-card { border-color: #30363d; }
+body.dark-mode .rb-infra-facts li { color: #c9d1d9; border-bottom-color: #21262d; }
+body.dark-mode .rb-infra-link { background: #0d1117; color: #c4b5fd; border-top-color: #30363d; }
+body.dark-mode .rb-infra-link:hover { background: #1c1531; }
+body.dark-mode .rb-infra-start-tip { background: #0d1f17; border-color: #166534; color: #86efac; }
+body.dark-mode .rb-infra-start-tip code { background: #14532d; color: #bbf7d0; }
+
+/* MCP tab — dark mode */
+body.dark-mode .rb-mcp-intro-card { background: #161b22; border-color: #30363d; }
+body.dark-mode .rb-mcp-intro-card h4 { color: #e2e8f0; }
+body.dark-mode .rb-mcp-intro-card p  { color: #8b949e; }
+body.dark-mode .rb-mcp-tool-card { background: #161b22; border-color: #30363d; }
+body.dark-mode .rb-mcp-tool-card:hover { border-color: #7c3aed; }
+body.dark-mode .rb-mcp-tool-desc { color: #8b949e; }
+body.dark-mode .rb-mcp-param { background: #21262d; color: #c9d1d9; }
+
+/* Security tab — dark mode */
+body.dark-mode .rb-security-intro { color: #8b949e; }
+body.dark-mode .rb-security-card { background: #161b22; border-color: #30363d; }
+body.dark-mode .rb-security-card-header { background: #0d1117; border-bottom-color: #30363d; }
+body.dark-mode .rb-security-items li { color: #c9d1d9; border-bottom-color: #21262d; }
+
+/* ═══════════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
@@ -682,4 +1094,9 @@ body.dark-mode .rb-quiz-card p { color: #8b949e; }
   .rb-tl-item.left, .rb-tl-item.right { flex-direction: row; padding-left: 50px; }
   .rb-tl-card { width: 100%; }
   .rb-quiz-grid { grid-template-columns: 1fr; }
+  .rb-infra-grid { grid-template-columns: 1fr; }
+  .rb-mcp-intro-row { grid-template-columns: 1fr; }
+  .rb-mcp-tools-grid { grid-template-columns: 1fr; }
+  .rb-security-grid { grid-template-columns: 1fr; }
+  .rb-shortcuts-grid { grid-template-columns: 1fr; }
 }

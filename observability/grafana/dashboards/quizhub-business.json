@@ -1,0 +1,183 @@
+{
+  "id": null,
+  "uid": "quizhub-business",
+  "title": "QuizHub — Business Metrics",
+  "tags": ["quizhub"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "MCQs Created (total)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "targets": [{ "expr": "quizhub_mcq_created_total", "legendFormat": "Created", "datasource": "Prometheus" }],
+      "options": { "colorMode": "background", "graphMode": "area", "orientation": "auto" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "blue", "value": null }] } } }
+    },
+    {
+      "id": 2,
+      "title": "MCQs Submitted for Review",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "targets": [{ "expr": "quizhub_mcq_submitted_for_review_total", "legendFormat": "Submitted", "datasource": "Prometheus" }],
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "orange", "value": null }] } } }
+    },
+    {
+      "id": 3,
+      "title": "MCQs Approved",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "targets": [{ "expr": "quizhub_mcq_approved_total", "legendFormat": "Approved", "datasource": "Prometheus" }],
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }] } } }
+    },
+    {
+      "id": 4,
+      "title": "MCQs Rejected",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "targets": [{ "expr": "quizhub_mcq_rejected_total", "legendFormat": "Rejected", "datasource": "Prometheus" }],
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "red", "value": null }] } } }
+    },
+    {
+      "id": 5,
+      "title": "Login Success vs Failure",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
+      "targets": [
+        { "expr": "quizhub_auth_login_success_total", "legendFormat": "Success", "datasource": "Prometheus" },
+        { "expr": "quizhub_auth_login_failure_total", "legendFormat": "Failure", "datasource": "Prometheus" }
+      ],
+      "options": { "colorMode": "background", "graphMode": "area", "orientation": "horizontal" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "semi-dark-green", "value": null }] } } }
+    },
+    {
+      "id": 6,
+      "title": "Active Live Sessions",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "targets": [{ "expr": "quizhub_live_sessions_active", "legendFormat": "Active", "datasource": "Prometheus" }],
+      "options": { "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "purple", "value": null }] } } }
+    },
+    {
+      "id": 10,
+      "title": "MCQ Lifecycle Rate (per minute)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        { "expr": "rate(quizhub_mcq_created_total[5m]) * 60", "legendFormat": "Created/min", "datasource": "Prometheus" },
+        { "expr": "rate(quizhub_mcq_submitted_for_review_total[5m]) * 60", "legendFormat": "Submitted/min", "datasource": "Prometheus" },
+        { "expr": "rate(quizhub_mcq_approved_total[5m]) * 60", "legendFormat": "Approved/min", "datasource": "Prometheus" },
+        { "expr": "rate(quizhub_mcq_rejected_total[5m]) * 60", "legendFormat": "Rejected/min", "datasource": "Prometheus" }
+      ],
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "fieldConfig": { "defaults": { "custom": { "lineWidth": 2, "fillOpacity": 10 } } }
+    },
+    {
+      "id": 11,
+      "title": "Auth Events Rate (per minute)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        { "expr": "rate(quizhub_auth_login_success_total[5m]) * 60", "legendFormat": "Login Success/min", "datasource": "Prometheus" },
+        { "expr": "rate(quizhub_auth_login_failure_total[5m]) * 60", "legendFormat": "Login Failure/min", "datasource": "Prometheus" },
+        { "expr": "rate(quizhub_auth_login_rate_limited_total[5m]) * 60", "legendFormat": "Rate Limited/min", "datasource": "Prometheus" }
+      ],
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "fieldConfig": { "defaults": { "custom": { "lineWidth": 2, "fillOpacity": 10 } } }
+    },
+    {
+      "id": 20,
+      "title": "HTTP Request Rate by Endpoint",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        { "expr": "sum by(uri) (rate(http_server_requests_seconds_count{application=\"quizhub\"}[5m]) * 60)", "legendFormat": "{{uri}}", "datasource": "Prometheus" }
+      ],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] } }
+    },
+    {
+      "id": 21,
+      "title": "HTTP P95 Latency (ms)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum by(le, uri) (rate(http_server_requests_seconds_bucket{application=\"quizhub\"}[5m]))) * 1000", "legendFormat": "p95 {{uri}}", "datasource": "Prometheus" }
+      ],
+      "options": { "legend": { "displayMode": "table", "placement": "right" } },
+      "fieldConfig": { "defaults": { "unit": "ms" } }
+    },
+    {
+      "id": 30,
+      "title": "Email Sent vs Failed",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 20 },
+      "targets": [
+        { "expr": "quizhub_email_sent_total", "legendFormat": "Sent", "datasource": "Prometheus" },
+        { "expr": "quizhub_email_failed_total", "legendFormat": "Failed", "datasource": "Prometheus" }
+      ]
+    },
+    {
+      "id": 31,
+      "title": "AI Feature Calls",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 20 },
+      "targets": [
+        { "expr": "quizhub_ai_generate_total", "legendFormat": "Generate", "datasource": "Prometheus" },
+        { "expr": "quizhub_ai_rewrite_total", "legendFormat": "Rewrite", "datasource": "Prometheus" },
+        { "expr": "quizhub_ai_validate_total", "legendFormat": "Validate", "datasource": "Prometheus" },
+        { "expr": "quizhub_ai_chat_total", "legendFormat": "Chat", "datasource": "Prometheus" },
+        { "expr": "quizhub_ai_semantic_duplicate_blocked_total", "legendFormat": "Duplicate Blocked", "datasource": "Prometheus" }
+      ]
+    },
+    {
+      "id": 32,
+      "title": "Bulk Upload",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 20 },
+      "targets": [
+        { "expr": "quizhub_bulk_upload_success_total", "legendFormat": "Success", "datasource": "Prometheus" },
+        { "expr": "quizhub_bulk_upload_failed_total", "legendFormat": "Failed", "datasource": "Prometheus" },
+        { "expr": "quizhub_bulk_upload_rows_imported_total", "legendFormat": "Rows Imported", "datasource": "Prometheus" }
+      ]
+    },
+    {
+      "id": 40,
+      "title": "JVM Heap Used (MB)",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 26 },
+      "targets": [{ "expr": "jvm_memory_used_bytes{area=\"heap\",application=\"quizhub\"} / 1024 / 1024", "legendFormat": "Heap MB", "datasource": "Prometheus" }],
+      "fieldConfig": { "defaults": { "unit": "mbytes", "min": 0, "max": 512, "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 300 }, { "color": "red", "value": 450 }] } } }
+    },
+    {
+      "id": 41,
+      "title": "DB Connection Pool",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 26 },
+      "targets": [{ "expr": "hikaricp_connections_active{application=\"quizhub\"}", "legendFormat": "Active", "datasource": "Prometheus" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 10, "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 7 }, { "color": "red", "value": 9 }] } } }
+    },
+    {
+      "id": 42,
+      "title": "CPU Usage (%)",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 26 },
+      "targets": [{ "expr": "process_cpu_usage{application=\"quizhub\"} * 100", "legendFormat": "CPU %", "datasource": "Prometheus" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 70 }, { "color": "red", "value": 90 }] } } }
+    },
+    {
+      "id": 43,
+      "title": "Active WebSocket Connections",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 26 },
+      "targets": [{ "expr": "quizhub_websocket_connections_active", "legendFormat": "WS Connections", "datasource": "Prometheus" }],
+      "fieldConfig": { "defaults": { "min": 0, "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 50 }, { "color": "red", "value": 90 }] } } }
+    }
+  ]
+}

@@ -5,6 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -12,47 +14,45 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Rate-limits POST /api/v1/auth/login to MAX_ATTEMPTS per IP within WINDOW_SECONDS.
- * Also rate-limits live session join (10/min), PIN validation (20/min),
- * MCQ creation (30/min), and AI generation (10/min).
- * After exceeding the limit the IP is blocked until the window expires.
- * Uses in-memory ConcurrentHashMap — sufficient for single-instance demo;
- * swap for Redis in multi-node production.
+ * Rate-limits sensitive endpoints per IP using Redis sliding-window counters.
+ * Cluster-safe: all instances share the same Redis counter.
+ * Falls back to in-memory ConcurrentHashMap if Redis is unavailable.
+ *
+ * Redis key format:  rl:{endpoint_type}:{ip}
+ * TTL is set to WINDOW_SECONDS on first increment — auto-expires.
  */
 @Slf4j
 @Component
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
-    private static final int    MAX_ATTEMPTS           = 100; // login attempts
-    private static final int    MAX_JOIN_ATTEMPTS      = 10;  // join attempts per minute
-    private static final int    MAX_VALIDATE_ATTEMPTS  = 20;  // validate attempts per minute
-    private static final int    MAX_MCQ_WRITE_ATTEMPTS = 60;  // MCQ create/update per minute
-    private static final int    MAX_AI_ATTEMPTS        = 60;  // AI generation per minute
-    private static final long   WINDOW_SECONDS         = 60;
+    private static final int  MAX_ATTEMPTS           = 100;
+    private static final int  MAX_JOIN_ATTEMPTS      = 10;
+    private static final int  MAX_VALIDATE_ATTEMPTS  = 20;
+    private static final int  MAX_MCQ_WRITE_ATTEMPTS = 60;
+    private static final int  MAX_AI_ATTEMPTS        = 60;
+    private static final long WINDOW_SECONDS         = 60;
 
-    /** Per-IP-per-endpoint attempt counter + window start time. */
+    @Autowired(required = false)
+    private StringRedisTemplate redisTemplate;
+
+    /** Fallback in-memory buckets (used when Redis is unavailable) */
     private record Bucket(AtomicInteger count, Instant windowStart) {}
-
-    // Separate bucket maps per endpoint category
-    private final ConcurrentHashMap<String, Bucket> loginBuckets    = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Bucket> joinBuckets     = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Bucket> validateBuckets = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Bucket> mcqWriteBuckets = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Bucket> aiBuckets       = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Bucket> fallbackBuckets = new ConcurrentHashMap<>();
 
     private enum EndpointType { LOGIN, JOIN, VALIDATE, MCQ_WRITE, AI_GENERATE, OTHER }
 
     private EndpointType classify(HttpServletRequest request) {
         String uri    = request.getRequestURI();
         String method = request.getMethod();
-        if ("POST".equalsIgnoreCase(method) && "/api/v1/auth/login".equals(uri))        return EndpointType.LOGIN;
-        if ("POST".equalsIgnoreCase(method) && uri.matches("/api/v1/live/sessions/[^/]+/join")) return EndpointType.JOIN;
-        if ("GET".equalsIgnoreCase(method)  && uri.matches("/api/v1/live/sessions/[^/]+/validate")) return EndpointType.VALIDATE;
-        if ("POST".equalsIgnoreCase(method) && uri.startsWith("/api/v1/ai/"))           return EndpointType.AI_GENERATE;
-        if ("POST".equalsIgnoreCase(method) && "/api/v1/mcqs".equals(uri))              return EndpointType.MCQ_WRITE;
+        if ("POST".equalsIgnoreCase(method) && "/api/v1/auth/login".equals(uri))                     return EndpointType.LOGIN;
+        if ("POST".equalsIgnoreCase(method) && uri.matches("/api/v1/live/sessions/[^/]+/join"))      return EndpointType.JOIN;
+        if ("GET".equalsIgnoreCase(method)  && uri.matches("/api/v1/live/sessions/[^/]+/validate"))  return EndpointType.VALIDATE;
+        if ("POST".equalsIgnoreCase(method) && uri.startsWith("/api/v1/ai/"))                        return EndpointType.AI_GENERATE;
+        if ("POST".equalsIgnoreCase(method) && "/api/v1/mcqs".equals(uri))                           return EndpointType.MCQ_WRITE;
         return EndpointType.OTHER;
     }
 
@@ -66,42 +66,61 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
 
-        String ip  = resolveClientIp(request);
+        String ip   = resolveClientIp(request);
         EndpointType type = classify(request);
-        Instant now = Instant.now();
 
-        int maxAllowed;
-        ConcurrentHashMap<String, Bucket> bucketMap;
-        switch (type) {
-            case JOIN         -> { maxAllowed = MAX_JOIN_ATTEMPTS;      bucketMap = joinBuckets; }
-            case VALIDATE     -> { maxAllowed = MAX_VALIDATE_ATTEMPTS;  bucketMap = validateBuckets; }
-            case MCQ_WRITE    -> { maxAllowed = MAX_MCQ_WRITE_ATTEMPTS; bucketMap = mcqWriteBuckets; }
-            case AI_GENERATE  -> { maxAllowed = MAX_AI_ATTEMPTS;        bucketMap = aiBuckets; }
-            default           -> { maxAllowed = MAX_ATTEMPTS;           bucketMap = loginBuckets; }
+        int maxAllowed = switch (type) {
+            case JOIN        -> MAX_JOIN_ATTEMPTS;
+            case VALIDATE    -> MAX_VALIDATE_ATTEMPTS;
+            case MCQ_WRITE   -> MAX_MCQ_WRITE_ATTEMPTS;
+            case AI_GENERATE -> MAX_AI_ATTEMPTS;
+            default          -> MAX_ATTEMPTS;
+        };
+
+        int attempts = increment(type.name().toLowerCase(), ip);
+
+        if (attempts > maxAllowed) {
+            log.warn("Rate limit exceeded for IP {} on {} — {} attempts in {}s window", ip, type, attempts, WINDOW_SECONDS);
+            response.setStatus(429);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().write(
+                "{\"error\":\"Too many requests. Please wait " + WINDOW_SECONDS + " seconds before trying again.\"}"
+            );
+            return;
         }
 
-        Bucket bucket = bucketMap.compute(ip, (k, existing) -> {
+        chain.doFilter(request, response);
+    }
+
+    /**
+     * Increments the counter for (endpoint, ip) and returns the new count.
+     * Uses Redis INCR + EXPIRE if Redis is available, otherwise falls back to in-memory.
+     */
+    private int increment(String endpoint, String ip) {
+        if (redisTemplate != null) {
+            try {
+                String key = "rl:" + endpoint + ":" + ip;
+                Long count = redisTemplate.opsForValue().increment(key);
+                if (count != null && count == 1) {
+                    // First increment — set TTL so the key auto-expires after the window
+                    redisTemplate.expire(key, WINDOW_SECONDS, TimeUnit.SECONDS);
+                }
+                return count != null ? count.intValue() : 1;
+            } catch (Exception e) {
+                log.debug("Redis rate-limit unavailable, falling back to in-memory: {}", e.getMessage());
+            }
+        }
+        // In-memory fallback
+        String key = endpoint + ":" + ip;
+        Instant now = Instant.now();
+        Bucket bucket = fallbackBuckets.compute(key, (k, existing) -> {
             if (existing == null || now.isAfter(existing.windowStart().plusSeconds(WINDOW_SECONDS))) {
                 return new Bucket(new AtomicInteger(1), now);
             }
             existing.count().incrementAndGet();
             return existing;
         });
-
-        int attempts = bucket.count().get();
-        long secondsLeft = WINDOW_SECONDS - (now.getEpochSecond() - bucket.windowStart().getEpochSecond());
-
-        if (attempts > maxAllowed) {
-            log.warn("Rate limit exceeded for IP {} on {} — {} attempts in window", ip, type, attempts);
-            response.setStatus(429);
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.getWriter().write(
-                "{\"error\":\"Too many requests. Please wait " + secondsLeft + " seconds before trying again.\"}"
-            );
-            return;
-        }
-
-        chain.doFilter(request, response);
+        return bucket.count().get();
     }
 
     /** Resolves real client IP, honouring X-Forwarded-For (proxy/load-balancer). */

@@ -1,5 +1,6 @@
 server:
   port: 8080
+  shutdown: graceful
   servlet:
     async:
       timeout: 300000
@@ -7,10 +8,16 @@ server:
     enabled: true
     mime-types: application/json,application/xml,text/html,text/plain,text/css,application/javascript
     min-response-size: 1024
+  tomcat:
+    max-http-form-post-size: 2MB
+    max-swallow-size: 2MB
 
 spring:
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:default}
+    active: ${SPRING_PROFILES_ACTIVE:ollama}
+
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
   ai:
     openai:
@@ -30,6 +37,7 @@ spring:
       - org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiAudioTranscriptionAutoConfiguration
       - org.springframework.ai.model.ollama.autoconfigure.OllamaChatAutoConfiguration
       - org.springframework.ai.model.ollama.autoconfigure.OllamaEmbeddingAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 
   application:
     name: smart-quiz-ai-hub
@@ -58,14 +66,23 @@ spring:
         format_sql: false
 
   cache:
-    type: caffeine
-    caffeine:
-      spec: maximumSize=500,expireAfterWrite=300s
+    type: none   # managed by CacheConfig.java (Redis with Caffeine fallback)
     cache-names: techStacks,topics,mcqCount,analytics,reviewers
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      connect-timeout: 1000ms
 
   sql:
     init:
       mode: always
+
+  flyway:
+    enabled: false       # disabled locally — uses data.sql seed instead
+    # Set to true in application-prod.yml after creating V1__init.sql baseline
 
   servlet:
     multipart:
@@ -94,9 +111,40 @@ app:
   url: ${APP_URL:http://localhost:3000}
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers,env,caches
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+    prometheus:
+      enabled: true
+    loggers:
+      enabled: true
+    caches:
+      enabled: true
   health:
     mail:
       enabled: false
+    redis:
+      enabled: true
+    db:
+      enabled: true
+  metrics:
+    tags:
+      application: quizhub
+      environment: ${SPRING_PROFILES_ACTIVE:local}
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 50ms, 100ms, 200ms, 500ms, 1000ms, 2000ms
 
 logging:
   level:

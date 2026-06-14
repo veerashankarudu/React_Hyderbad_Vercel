@@ -7,8 +7,12 @@
 [![React](https://img.shields.io/badge/React-19.2.6-61DAFB?logo=react)](https://react.dev)
 [![Spring AI](https://img.shields.io/badge/Powered%20by-Spring%20AI%20%2B%20GPT--4o--mini-412991?logo=openai)](https://spring.io/projects/spring-ai)
 [![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?logo=mysql)](https://mysql.com)
+[![Redis](https://img.shields.io/badge/Redis-8.x-DC382D?logo=redis)](https://redis.io)
+[![Prometheus](https://img.shields.io/badge/Prometheus-2.51-E6522C?logo=prometheus)](https://prometheus.io)
+[![Grafana](https://img.shields.io/badge/Grafana-10.4-F46800?logo=grafana)](https://grafana.com)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docs.docker.com/compose)
 [![i18n](https://img.shields.io/badge/i18n-7%20Languages-brightgreen)](https://www.i18next.com)
-[![Tests](https://img.shields.io/badge/Tests-2%2C044%20Passing-brightgreen?logo=checkmarx)](https://github.com)
+[![Tests](https://img.shields.io/badge/Tests-2%2C029%20Passing-brightgreen?logo=checkmarx)](https://github.com)
 [![Backend Coverage](https://img.shields.io/badge/Backend%20Coverage-92.5%25-brightgreen?logo=jacoco)](https://github.com)
 [![Frontend Coverage](https://img.shields.io/badge/Frontend%20Coverage-80.37%25-brightgreen?logo=jest)](https://github.com)
 
@@ -42,7 +46,8 @@ flowchart TD
 
     subgraph Data["🗄️ Data Layer"]
         DB[("MySQL 8.x\nquizhub DB\n19 Entities")]
-        SpringCache["Spring Cache\n@Cacheable TechStacks · Topics"]
+        Redis[("Redis 7.x\nDistributed Cache\nTTL 5 min")]
+        SpringCache["Spring Cache (CacheConfig)\nRedis primary · Caffeine fallback\n@Cacheable TechStacks · Topics · Analytics"]
     end
 
     subgraph External["☁️ External Services"]
@@ -59,11 +64,266 @@ flowchart TD
     Services -->|"JavaMail"| Mail
     Services -->|"HTTP"| Lingva
     Lingva -.->|"fallback"| MyMemory
+
+    subgraph Observability["📊 Observability (Docker)"]
+        Prometheus["Prometheus :9090\nScrapes /actuator/prometheus\nevery 10s"]
+        Grafana["Grafana :3001\nQuizHub Business Dashboard\n+ JVM + Spring Boot"]
+    end
+
+    BE -->|"Micrometer — 25 quizhub.*\nmetrics + JVM + HTTP SLOs"| Prometheus
+    Prometheus -->|"datasource"| Grafana
 ```
 
 ---
 
-## 🗃️ ER Diagram (Entity Relationship)
+## 🗄️ Caching Architecture
+
+QuizHub uses a **two-tier caching strategy** at the application level:
+
+```
+Request → Spring @Cacheable check
+              │
+              ├─ Cache HIT  → return cached value (0 DB hits)
+              │
+              └─ Cache MISS → MySQL query → store in cache → return
+```
+
+### Provider Selection (Automatic at Startup)
+
+```
+App starts → CacheConfig.java → redis-cli PING
+                  │
+                  ├─ PONG received  → RedisCacheManager  (distributed, survives restart)
+                  │                   log: "Cache: Redis is available"
+                  │
+                  └─ Connection refused → CaffeineCacheManager (in-process, zero setup)
+                                          log: "Cache: Redis unavailable, falling back to Caffeine"
+```
+
+### Layers
+
+| Layer | Technology | Scope | TTL |
+|---|---|---|---|
+| **Application cache (L1 equivalent)** | Redis (primary) | Distributed — shared across all app instances | 5 min |
+| **Application cache fallback** | Caffeine | In-process — per JVM instance | 5 min |
+| **Hibernate session cache** | JPA L1 (built-in) | Per-transaction — entities loaded once per session | Transaction-scoped |
+
+### What's Cached
+
+| Cache Name | Method | Evicted On |
+|---|---|---|
+| `techStacks` | `getAllTechStacks()` | create / update / delete tech stack |
+| `topics` | `getTopicsByTechStack(id)` | create / update / delete topic |
+| `mcqCount` | MCQ count stats | MCQ mutation |
+| `analytics` | Analytics data | MCQ mutation |
+| `reviewers` | Eligible reviewer list | User role change |
+
+### Verify Redis Cache Live
+
+```bash
+# Start Redis
+brew services start redis
+
+# Check Redis is up
+redis-cli ping   # → PONG
+
+# After first API call to /api/v1/master/tech-stacks:
+redis-cli KEYS "*"
+# → 1) "techStacks::SimpleKey []"
+
+# See the cached value:
+redis-cli GET "techStacks::SimpleKey []"
+```
+
+### Redis Config (`application.yml`)
+
+```yaml
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      connect-timeout: 1000ms
+```
+
+> **Without Redis:** Just don't install Redis. The app starts fine and logs:  
+> `WARN CacheConfig : Cache: Redis ping failed, falling back to Caffeine`
+
+---
+
+## 📊 Observability & Monitoring
+
+QuizHub AI ships a **production-grade observability stack** out of the box — Prometheus + Grafana + structured JSON logs, zero manual wiring.
+
+### 🚀 One-Command: Start Prometheus + Grafana
+
+```bash
+# Requires Docker Desktop running
+docker compose -f docker-compose.observability.yml up -d
+```
+
+| Tool | URL | Credentials |
+|------|-----|-------------|
+| **Grafana** | http://localhost:3001 | `admin` / `quizhub` |
+| **Prometheus** | http://localhost:9090 | (no auth) |
+
+Grafana opens directly on the **QuizHub Business Metrics** dashboard (auto-provisioned — no manual import needed).
+
+To stop:
+```bash
+docker compose -f docker-compose.observability.yml down
+```
+
+### Grafana Dashboards
+
+| Dashboard | Source | What it shows |
+|-----------|--------|---------------|
+| **QuizHub — Business Metrics** | `observability/grafana/dashboards/quizhub-business.json` | MCQ lifecycle rates, auth events, AI calls, email stats, HTTP latency, JVM heap, CPU, DB pool |
+| **JVM Micrometer** | Grafana.com ID `4701` (import manually) | Detailed JVM internals |
+| **Spring Boot** | Grafana.com ID `12900` (import manually) | HTTP request rates, SLO burn |
+
+Import community dashboards: Grafana → Dashboards → Import → enter ID → Load → select **Prometheus** datasource.
+
+### Actuator Endpoints (always available, no Docker needed)
+
+| Endpoint | URL | Purpose |
+|----------|-----|---------|
+| Health (full detail) | `http://localhost:8080/actuator/health` | Liveness + DB + Redis + Cache status |
+| Prometheus metrics | `http://localhost:8080/actuator/prometheus` | All metrics in Prometheus text format |
+| All metrics | `http://localhost:8080/actuator/metrics` | Metric names catalog |
+| Specific metric | `http://localhost:8080/actuator/metrics/{name}` | Live value for one metric |
+| Logger levels | `http://localhost:8080/actuator/loggers` | View / change log levels at runtime |
+| Caches | `http://localhost:8080/actuator/caches` | Live cache names + backend |
+
+### Business Metrics (25 total, all prefixed `quizhub.*`)
+
+All appear automatically in `/actuator/prometheus` and Grafana from first startup:
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `quizhub.mcq.created.total` | Counter | MCQs created by SMEs |
+| `quizhub.mcq.submitted_for_review.total` | Counter | MCQs sent for review |
+| `quizhub.mcq.approved.total` | Counter | MCQs approved by reviewers |
+| `quizhub.mcq.rejected.total` | Counter | MCQs rejected by reviewers |
+| `quizhub.mcq.deleted.total` | Counter | MCQs deleted |
+| `quizhub.auth.login.success.total` | Counter | Successful logins |
+| `quizhub.auth.login.failure.total` | Counter | Failed login attempts |
+| `quizhub.auth.login.rate_limited.total` | Counter | Rate-limited login attempts |
+| `quizhub.auth.password_reset.total` | Counter | Password reset requests |
+| `quizhub.bulk_upload.success.total` | Counter | Successful bulk upload jobs |
+| `quizhub.bulk_upload.rows_imported.total` | Counter | Total MCQ rows imported |
+| `quizhub.ai.generate.total` | Counter | AI MCQ generation calls |
+| `quizhub.ai.rewrite.total` | Counter | AI rewrite calls |
+| `quizhub.ai.validate.total` | Counter | AI validate calls |
+| `quizhub.ai.chat.total` | Counter | AI chatbot calls |
+| `quizhub.ai.semantic_duplicate_blocked.total` | Counter | MCQs blocked by AI duplicate detection |
+| `quizhub.quiz.session_created.total` | Counter | Live quiz battle sessions created |
+| `quizhub.quiz.attempt_completed.total` | Counter | Quiz attempts completed |
+| `quizhub.email.sent.total` | Counter | Emails sent successfully |
+| `quizhub.email.failed.total` | Counter | Email send failures |
+| `quizhub.live_sessions.active` | Gauge | Currently active live quiz battle sessions |
+| `quizhub.websocket.connections.active` | Gauge | Active WebSocket connections |
+| `quizhub.ai.generate.duration` | Timer | AI MCQ generation latency |
+| `quizhub.bulk_upload.duration` | Timer | Bulk upload processing time |
+| `http.server.requests` | Timer+Histogram | HTTP latency with SLOs: 50/100/200/500/1000/2000ms |
+
+### Prometheus + Grafana — File Structure
+
+```
+observability/
+├── prometheus.yml                              # Scrape config (targets quizhub backend on host)
+└── grafana/
+    ├── provisioning/
+    │   ├── datasources/prometheus.yml          # Auto-wires Prometheus as default datasource
+    │   └── dashboards/dashboards.yml           # Tells Grafana where to load dashboards from
+    └── dashboards/
+        └── quizhub-business.json              # Custom QuizHub business metrics dashboard
+docker-compose.observability.yml               # One command to start Prometheus + Grafana
+```
+
+### Datadog Integration (optional)
+
+If you have a Datadog account, the backend exports to Datadog Agent via OTLP with zero code changes:
+
+```bash
+# Set before starting backend
+export DD_API_KEY=<your-datadog-api-key>
+export DD_SITE=datadoghq.com
+
+# Run Datadog Agent alongside (Docker)
+docker run -d \
+  -e DD_API_KEY=$DD_API_KEY \
+  -e DD_SITE=$DD_SITE \
+  -e DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_GRPC_ENDPOINT=0.0.0.0:4317 \
+  -p 4317:4317 \
+  gcr.io/datadoghq/agent:7
+```
+
+Alternatively, use the static Datadog [integration for Spring Boot](https://docs.datadoghq.com/integrations/java/) by pointing the Agent at `/actuator/prometheus`.
+
+### Structured Logging
+
+Logs are profile-aware:
+
+| Profile | Format | Output |
+|---------|--------|--------|
+| `local` (default) | Human-readable colour | Console only |
+| `prod` | JSON (Logstash encoder) | Console + rolling file |
+
+**JSON log fields** (every line):
+```json
+{
+  "@timestamp": "2025-01-01T10:00:00.000Z",
+  "level": "INFO",
+  "logger_name": "com.accenture.quizhub...",
+  "message": "[abc12345] GET /api/tech-stacks → 200 (34ms)",
+  "requestId": "abc12345",
+  "userId": "divya.madhanasekar",
+  "userRole": "ADMIN",
+  "app": "quizhub",
+  "env": "local"
+}
+```
+
+JSON logs ship directly to **Datadog**, **Grafana Loki**, **Splunk**, or **ELK** without a parsing rule.
+
+Activate prod profile:
+```bash
+export SPRING_PROFILES_ACTIVE=prod
+mvn spring-boot:run
+```
+
+Log file location (prod profile): `logs/quizhub.log` (rolling, 50 MB/file, 14-day retention, gzip compressed, 500 MB total cap).
+
+### Request Correlation
+
+Every HTTP response includes:
+- `X-Request-Id` header — UUID prefix (8 chars), propagated to all log lines for that request
+- `X-Powered-By: QuizHub-AI`
+
+Logs are annotated by severity: `INFO` for 2xx/3xx, `WARN` for 4xx, `ERROR` for 5xx.
+
+### Health Check Components
+
+```bash
+curl http://localhost:8080/actuator/health | python3 -m json.tool
+```
+
+```json
+{
+  "status": "UP",
+  "components": {
+    "cacheSystem": { "status": "UP", "details": { "mode": "distributed (Redis)", "caches": ["techStacks","topics","..."] } },
+    "db":          { "status": "UP", "details": { "database": "MySQL", "validationQuery": "isValid()" } },
+    "redis":       { "status": "UP", "details": { "version": "8.8.0" } }
+  }
+}
+```
+
+---
+
+�🗃️ ER Diagram (Entity Relationship)
 
 ```mermaid
 erDiagram
@@ -272,6 +532,7 @@ ReviewService              OpenAI GPT-4o-mini
 | **State Machine** | MCQ status transitions | Enforces valid lifecycle transitions |
 | **Singleton** | Spring Beans (`@Service`, `@Repository`) | Single instance per application context |
 | **Template Method** | `BaseController` error handling | Common error handling across controllers |
+| **Fallback / Circuit Breaker** | `CacheConfig.java` — Redis → Caffeine | PING Redis at startup; silently degrades to in-process cache if unavailable |
 
 ---
 
@@ -372,15 +633,20 @@ flowchart TD
 | Spring Boot | 3.2.5 | REST API framework |
 | Spring Security | 6.x | Authentication & authorization |
 | Spring Data JPA | 3.x | ORM / database access |
-| Hibernate | latest | JPA implementation |
+| Hibernate | latest | JPA implementation (L1 cache active by default) |
 | MySQL | 8.x | Relational database |
 | JWT (JJWT) | 0.11.5 | Token-based authentication |
 | Spring AI | 1.0.0 | AI integration (GPT-4o-mini) |
+| Spring Cache | 3.x | `@Cacheable` / `@CacheEvict` abstraction layer |
+| Redis | 7.x | Distributed cache (primary — auto-detected on startup) |
+| Caffeine | latest | In-process cache fallback (when Redis unavailable) |
 | Apache POI | 5.2.5 | Excel bulk upload (.xlsx) |
 | OpenCSV | 5.9 | CSV bulk upload |
 | Springdoc OpenAPI | 2.5.0 | Swagger UI / API documentation |
 | Spring Mail | 3.x | Email notifications |
-| Spring Actuator | 3.x | Health monitoring (`/actuator/health`) |
+| Spring Actuator | 3.x | Health checks, Prometheus, loggers, caches endpoints |
+| Micrometer Prometheus | 1.12.x | Exports 25 business metrics + JVM/HTTP to Prometheus |
+| Logstash Logback Encoder | 7.4 | Structured JSON logs (Datadog / Grafana Loki / Splunk) |
 | Lombok | latest | Boilerplate reduction |
 | Maven | 3.8+ | Build & dependency management |
 
@@ -407,6 +673,15 @@ flowchart TD
 | Lingva API | Dynamic MCQ content translation (primary) |
 | MyMemory API | Translation fallback (if Lingva fails) |
 
+### Observability Stack
+| Technology | Version | Purpose |
+|---|---|---|
+| Prometheus | 2.51.2 | Metrics scraping + storage + alerting |
+| Grafana | 10.4.2 | Dashboards — QuizHub Business Metrics (auto-provisioned) |
+| Docker Compose | v2 | One-command observability stack (`docker-compose.observability.yml`) |
+| Micrometer Registry | 1.12.x | Bridge between Spring Boot and Prometheus |
+| Logstash Logback Encoder | 7.4 | JSON structured logging for Loki/Datadog/Splunk |
+
 ### 🔌 MCP Server
 | Technology | Version | Purpose |
 |---|---|---|
@@ -425,12 +700,41 @@ flowchart TD
 - Maven 3.8+
 - Node.js 18+ ([download](https://nodejs.org))
 - MySQL 8.x
+- Redis 7.x — `brew install redis && brew services start redis` *(optional — app falls back to Caffeine if Redis is not running)*
 - (Optional) OpenAI API key for AI features
 - (Optional) Postman for API testing
 
 ---
 
 ## 🚀 How to Run
+
+### ⚡ One-Command Quick Start (Recommended)
+
+```bash
+bash start.sh
+```
+
+That's it. This single command:
+1. Checks prerequisites (Java, Maven, Node, npm)
+2. Creates the MySQL `quizhub` database
+3. Starts **Prometheus + Grafana** via Docker
+4. Builds the backend JAR (skipped if sources unchanged)
+5. Starts the **Spring Boot** backend and waits until healthy
+6. Installs npm packages (skipped if up to date) and starts **React** frontend
+
+```
+bash start.sh           # start everything
+bash start.sh --stop    # stop everything
+bash start.sh --status  # health check all 7 services
+```
+
+> **VS Code:** Opens the workspace → the full stack starts **automatically** (`runOn: folderOpen` task). VS Code will ask "Allow automatic tasks?" once — click **Allow**.
+
+Logs are written to `.logs/backend.log` and `.logs/frontend.log`.
+
+---
+
+### Manual Setup (step by step)
 
 ### 1. Database Setup
 ```sql
@@ -451,7 +755,16 @@ spring:
 
 > **Note:** Set `password` to match your local MySQL root password. If you left it blank during MySQL installation, keep `password:` empty.
 
-### 3. Backend
+### 3. Redis Cache (Optional but Recommended)
+```bash
+brew install redis
+brew services start redis
+redis-cli ping   # → PONG
+```
+
+> **Auto-detection:** If Redis is running, the app uses `RedisCacheManager` (distributed, TTL 5 min). If Redis is not running, it falls back silently to `CaffeineCacheManager` (in-process). No code changes needed — the switch is automatic on startup.
+
+### 4. Backend
 ```bash
 cd backend
 
@@ -466,7 +779,7 @@ Backend starts at: `http://localhost:8080`
 
 > **Note:** `data.sql` auto-seeds all required data (tech stacks, topics, users) on first run via `spring.jpa.hibernate.ddl-auto: update`.
 
-### 4. Frontend
+### 5. Frontend
 ```bash
 cd frontend
 npm install
@@ -474,19 +787,19 @@ npm start
 ```
 Frontend starts at: `http://localhost:3000`
 
-### 5. Swagger UI (API Testing)
+### 6. Swagger UI (API Testing)
 ```
 http://localhost:8080/swagger-ui/index.html
 ```
 Alternatively use **Postman** — import the base URL `http://localhost:8080` and pass `Authorization: Bearer <token>` header.
 
-### 6. Health Check
+### 7. Health Check
 ```
 http://localhost:8080/actuator/health
 # Expected: {"status":"UP"}
 ```
 
-### 7. MCP Server (Optional — for AI agent integration)
+### 8. MCP Server (Optional — for AI agent integration)
 ```bash
 cd mcp-server
 
@@ -501,6 +814,21 @@ mvn spring-boot:run
 MCP Server starts at: `http://localhost:8085`  
 SSE endpoint for Claude/Copilot: `http://localhost:8085/sse`  
 8 tools registered: `searchQuestions`, `checkDuplicate`, `createMcq`, `getStats`, and more.
+
+### 9. Prometheus + Grafana (Optional — requires Docker)
+```bash
+# Requires Docker Desktop or Colima running
+docker-compose -f docker-compose.observability.yml up -d
+```
+
+| Tool | URL | Login |
+|------|-----|-------|
+| **Grafana** | http://localhost:3001 | `admin` / `quizhub` |
+| **Prometheus** | http://localhost:9090 | (no auth) |
+
+Grafana opens automatically on the **QuizHub Business Metrics** dashboard (pre-provisioned — no manual import needed). Prometheus starts scraping `/actuator/prometheus` every 10 seconds.
+
+To stop: `docker-compose -f docker-compose.observability.yml down`
 
 ---
 
@@ -524,9 +852,9 @@ English · French · German · Hindi · Kannada · Telugu · Urdu (RTL)
 
 ---
 
-## ✨ Features (440 Total)
+## ✨ Features (450 Total)
 
-> **Core PPT requirements: ~50 | Bonus features: ~381** — Over 8× what most hackathon teams build.
+> **Core PPT requirements: ~50 | Bonus features: ~400** — Over 9× what most hackathon teams build.
 
 ---
 
@@ -1121,13 +1449,17 @@ English · French · German · Hindi · Kannada · Telugu · Urdu (RTL)
 
 ---
 
-### ⚙️ Backend Infrastructure (6 features)
-404. **Spring Cache** — `@Cacheable` on tech stacks + topics; `@CacheEvict` on mutations; `@EnableCaching`
-405. **Axios request interceptor** — auto-injects `Authorization: Bearer <token>` on every API call
-406. **Axios response interceptor** — catches 401 → auto-logout + redirect to login
-407. Spring Actuator health endpoint (`/actuator/health`)
-408. **Spring Mail** — email notifications (assigned, approved, rejected)
-409. Swagger UI / OpenAPI documentation (`/swagger-ui/index.html`)
+### ⚙️ Backend Infrastructure (10 features)
+404. **Spring Cache abstraction** — `@Cacheable` on tech stacks, topics, analytics, reviewers; `@CacheEvict` on mutations; `@EnableCaching`
+405. **Redis distributed cache (primary)** — `RedisCacheManager` with `GenericJackson2JsonRedisSerializer`; TTL 5 minutes; auto-detected via PING on startup; keys visible via `redis-cli KEYS "*"`
+406. **Caffeine in-process fallback** — `CaffeineCacheManager` activates automatically if Redis is unavailable; max 500 entries, TTL 5 min; zero setup required
+407. **`CacheConfig.java`** — custom `@Configuration` that PINGs Redis on startup; logs which provider was selected; seamless switch requires no code change
+408. **Hibernate L1 cache** — active by default (JPA session-scoped); entities loaded once per transaction
+409. **Axios request interceptor** — auto-injects `Authorization: Bearer <token>` on every API call
+410. **Axios response interceptor** — catches 401 → auto-logout + redirect to login
+411. Spring Actuator health endpoint (`/actuator/health`)
+412. **Spring Mail** — email notifications (assigned, approved, rejected)
+413. Swagger UI / OpenAPI documentation (`/swagger-ui/index.html`)
 
 ---
 
@@ -1151,12 +1483,22 @@ English · French · German · Hindi · Kannada · Telugu · Urdu (RTL)
 
 ---
 
-### **Total: 440 distinct features** ✅
+### 📊 Observability & Production Monitoring (6 features)
+435. **Prometheus metrics export** — `/actuator/prometheus` exposes 25 `quizhub.*` business counters/gauges/timers (MCQ lifecycle, auth, AI, email, bulk upload, live sessions, WebSocket) + full JVM/HTTP metrics; all pre-declared so they appear from first startup
+436. **Grafana dashboard (auto-provisioned)** — `docker-compose.observability.yml` starts Prometheus + Grafana; QuizHub Business Metrics dashboard auto-loads (stat panels, time-series rates, P95 latency, JVM heap/CPU/DB pool gauges); no manual import needed
+437. **Structured JSON logging** — `logback-spring.xml` with profile routing: `local` → coloured human-readable; `prod` → JSON (Logstash encoder) to console + rolling file; ships directly to Datadog / Grafana Loki / Splunk / ELK without parsing rules
+438. **Request correlation tracing** — `RequestCorrelationFilter` adds `X-Request-Id` (8-char UUID) to every request/response; MDC enriches every log line with `requestId`, `userId`, `userRole`; log level by HTTP status (INFO/WARN/ERROR)
+439. **Custom health indicator** — `CacheHealthIndicator` exposes `cacheSystem` component at `/actuator/health` showing Redis vs Caffeine mode, implementation class, and all cache names; auto-configured DB + Redis health components also enabled
+440. **SLO histograms** — `http.server.requests` configured with Prometheus histogram buckets at 50/100/200/500/1000/2000ms SLO boundaries; `application` + `environment` tags on all metrics for multi-instance filtering
+
+---
+
+### **Total: 450 distinct features** ✅
 
 | Category | Count |
 |---|---|
 | Core PPT requirements | ~50 |
-| Bonus features built on top | ~390 |
+| Bonus features built on top | ~394 |
 | AI-powered features (AI Studio + ChatBot + MCQ AI) | 37 |
 | Live Quiz Battle features | 38 |
 | Interactive Question Types | 20 |
@@ -1164,6 +1506,8 @@ English · French · German · Hindi · Kannada · Telugu · Urdu (RTL)
 | Security features | 6 |
 | Mobile responsive pages | 11 |
 | Languages supported | 7 |
+| Caching (Redis + Caffeine + L1) | 5 |
+| **Observability (Prometheus + Grafana + Structured Logs)** | **6** |
 | API endpoints | 140 |
 | Database entities | 19 |
 
@@ -1503,15 +1847,21 @@ hack-n-stack/
 ├── backend/                    # Spring Boot application
 │   ├── src/main/java/
 │   │   └── com/accenture/quizhub/
+│   │       ├── config/         # App configuration
+│   │       │   ├── CacheConfig.java          # Redis ↔ Caffeine auto-fallback
+│   │       │   ├── CacheHealthIndicator.java # /actuator/health cacheSystem component
+│   │       │   ├── QuizHubMetrics.java       # 25 Prometheus business metrics
+│   │       │   ├── RequestCorrelationFilter.java # X-Request-Id MDC tracing
+│   │       │   └── SecurityConfig.java       # JWT + Spring Security
 │   │       ├── controller/     # REST endpoints
 │   │       ├── service/        # Business logic
 │   │       ├── entity/         # JPA entities
 │   │       ├── repository/     # Spring Data repositories
 │   │       ├── dto/            # Request/Response DTOs
-│   │       ├── security/       # JWT + Spring Security config
 │   │       └── enums/          # McqStatus, Role, etc.
 │   └── src/main/resources/
-│       ├── application.yml     # Configuration
+│       ├── application.yml     # Configuration (Actuator, Prometheus, Redis, SLOs)
+│       ├── logback-spring.xml  # Structured JSON logging (prod) / coloured (local)
 │       └── data.sql            # Seed data
 ├── frontend/                   # React application
 │   └── src/
@@ -1521,6 +1871,16 @@ hack-n-stack/
 │       ├── hooks/              # Custom React hooks
 │       ├── utils/              # Helper utilities
 │       └── AuthContext.js      # Auth state management
+├── observability/              # Prometheus + Grafana config
+│   ├── prometheus.yml          # Scrape config (quizhub-backend + self)
+│   └── grafana/
+│       ├── provisioning/
+│       │   ├── datasources/prometheus.yml  # Auto-wires Prometheus
+│       │   └── dashboards/dashboards.yml   # Dashboard loader
+│       └── dashboards/
+│           └── quizhub-business.json       # Custom business metrics dashboard
+├── docker-compose.observability.yml  # One-command: Prometheus + Grafana
+├── mcp-server/                 # Spring AI MCP server (optional)
 └── README.md
 ```
 
@@ -1548,7 +1908,12 @@ hack-n-stack/
 | GET | `/api/v1/chat/messages` | Get chat messages |
 | POST | `/api/v1/chat/messages` | Post a chat message |
 | GET | `/swagger-ui/index.html` | Swagger API docs (full endpoint reference) |
-| GET | `/actuator/health` | Health check |
+| GET | `/actuator/health` | Health check — DB + Redis + Cache status |
+| GET | `/actuator/prometheus` | All metrics in Prometheus text format |
+| GET | `/actuator/metrics` | Metric names catalog |
+| GET | `/actuator/caches` | Live cache stats |
+| GET | `/actuator/loggers` | View all logger names and levels; POST to change level at runtime |
+| GET | `/actuator/env` | Active configuration values and property sources |
 
 ---
 
@@ -1576,6 +1941,8 @@ The following is auto-seeded via `data.sql`:
 - Role-based access control — ADMIN and SME endpoints fully separated via `@PreAuthorize`
 - Input validation at both frontend (React form validation) and backend (`@Valid` + Spring Validation)
 - XSS safe — all user content rendered as plain text, never as HTML (`QuestionStemRenderer` component)
+- `X-Request-Id` response header on every request for distributed tracing; `X-Powered-By: QuizHub-AI` for request identification
+- Sensitive actuator endpoints (`/actuator/loggers`, `/actuator/env`) require authentication; public read-only monitoring endpoints (`/actuator/health`, `/actuator/prometheus`, `/actuator/metrics`, `/actuator/caches`) intentionally open for Prometheus scraping
 - Optimistic locking (`@Version`) on MCQ entity prevents lost updates on concurrent edits
 - **Login rate limiting** — `LoginRateLimitFilter`: max 10 attempts per IP per 60-second window, returns HTTP 429 with seconds-remaining; honours `X-Forwarded-For` for proxy setups
 - **Global exception handler** (`@RestControllerAdvice`) — consistent JSON error format, no stack traces leaked to client
@@ -1592,6 +1959,9 @@ The following is auto-seeded via `data.sql`:
 - **Proctored quiz engine** — `visibilitychange` + `fullscreenchange` event listeners; `useRef` for violation count (avoids stale closure); `html2canvas` screenshot on 1st violation stored in `screenshotRef` and submitted with results; `sessionStorage` ExamLockGuard blocks 2nd tab
 - **Login rate limiting in-process** — `ConcurrentHashMap<IP, Bucket>` with `AtomicInteger` counters; no Redis needed for single-instance demo; swap comment in code documents the path to Redis for production
 - **Spring Cache for master data** — tech stacks and topics are read far more than written; `@Cacheable` eliminates DB hits on every MCQ form load; `@CacheEvict` keeps cache consistent on admin mutations
+- **Centralised metrics registry (`QuizHubMetrics`)** — all 25 counters/gauges/timers declared in one `@Component`; pre-registered at startup so they appear in `/actuator/prometheus` at value `0.0` even before first event — avoids gaps in Grafana graphs
+- **Profile-aware structured logging** — `logback-spring.xml` routes to plain colour output in `local` profile and full JSON (Logstash encoder) in `prod`; same codebase, zero config change for deployment to any log aggregator
+- **Request tracing with MDC** — `RequestCorrelationFilter` runs at `HIGHEST_PRECEDENCE`; injects `requestId` before the chain, then enriches MDC post-chain with `userId`/`userRole` from `SecurityContextHolder`; all three keys appear in every log line for that request
 - **Axios interceptors** — request interceptor auto-attaches JWT so no component ever manually sets auth headers; response interceptor catches 401 and triggers logout + redirect
 - **Inbox auto-draft** — `useRef` debounce timer (1.5s), `localStorage` key `qh_inbox_draft`; survives page refresh, browser back, accidental close
 - **ChatBot context window** — last 8 non-deleted messages fetched and passed as conversation history to GPT-4o-mini; gives coherent multi-turn answers without full chat history cost
@@ -1608,6 +1978,8 @@ The following is auto-seeded via `data.sql`:
 - MySQL password in `application.yml` matches your local MySQL root password
 - Node.js 18+ installed for frontend
 - Java 17+ and Maven 3.8+ installed for backend
+- Redis 7+ optional but recommended for distributed caching — app falls back to Caffeine (in-process) automatically if Redis is unavailable
+- Docker Desktop or Colima installed to run the Prometheus + Grafana observability stack (Step 9 in How to Run)
 - OpenAI API key is optional — all non-AI features work without it
 - Email notifications require valid SMTP credentials (Gmail or Accenture SMTP)
 - Modern browser (Chrome, Firefox, Edge, Safari)
@@ -1619,7 +1991,11 @@ The following is auto-seeded via `data.sql`:
 **Frontend:** http://localhost:3000  
 **Backend API:** http://localhost:8080  
 **Swagger UI:** http://localhost:8080/swagger-ui/index.html  
-**Health Check:** http://localhost:8080/actuator/health
+**Health Check:** http://localhost:8080/actuator/health  
+**Prometheus Metrics:** http://localhost:8080/actuator/prometheus  
+**Grafana Dashboards:** http://localhost:3001 *(admin / quizhub — requires Docker)*  
+**Prometheus UI:** http://localhost:9090 *(requires Docker)*  
+**Redis Commander:** http://localhost:8081 *(requires `npm install -g redis-commander && redis-commander --port 8081`)*
 
 ---
 

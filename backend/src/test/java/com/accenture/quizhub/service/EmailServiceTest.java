@@ -1,11 +1,13 @@
 package com.accenture.quizhub.service;
 
+import com.accenture.quizhub.config.QuizHubMetrics;
 import com.accenture.quizhub.entity.Mcq;
 import com.accenture.quizhub.entity.TechStack;
 import com.accenture.quizhub.entity.User;
 import com.accenture.quizhub.enums.Difficulty;
 import com.accenture.quizhub.enums.McqStatus;
 import com.accenture.quizhub.enums.Role;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +38,7 @@ class EmailServiceTest {
     @BeforeEach
     void setUp() {
         mailSender = mock(JavaMailSender.class);
-        emailService = new EmailService(mailSender);
+        emailService = new EmailService(mailSender, new QuizHubMetrics(new SimpleMeterRegistry()));
         // Don't set mailUsername so it defaults to mock mode (just logs)
         ReflectionTestUtils.setField(emailService, "mailUsername", "");
         ReflectionTestUtils.setField(emailService, "fromAddress", "quizhub@test.com");

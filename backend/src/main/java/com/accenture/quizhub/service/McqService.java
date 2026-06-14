@@ -1,5 +1,6 @@
 package com.accenture.quizhub.service;
 
+import com.accenture.quizhub.config.QuizHubMetrics;
 import com.accenture.quizhub.dto.request.McqRequest;
 import com.accenture.quizhub.dto.response.CommentResponse;
 import com.accenture.quizhub.dto.response.McqResponse;
@@ -33,6 +34,7 @@ public class McqService {
     private final McqVersionRepository mcqVersionRepository;
     private final InboxMessageService inboxMessageService;
     private final AppConfigService appConfigService;
+    private final QuizHubMetrics metrics;
 
     @Transactional
     public McqResponse createMcq(McqRequest request, User creator) {
@@ -105,6 +107,7 @@ public class McqService {
         }
 
         Mcq saved = mcqRepository.save(mcq);
+        metrics.mcqCreated.increment();
         McqResponse response = toResponse(saved);
         response.setAiWarning(aiWarning);
         return response;
@@ -281,6 +284,7 @@ public class McqService {
         } catch (Exception ignored) {}
 
         Mcq saved = mcqRepository.save(mcq);
+        metrics.mcqSubmittedForReview.increment();
 
         // Notify all ADMIN users that a new MCQ is ready for review
         String preview = saved.getQuestionStem().length() > 70
@@ -339,6 +343,7 @@ public class McqService {
             throw new BadRequestException("Only DRAFT MCQs can be deleted");
         }
         mcqRepository.delete(mcq);
+        metrics.mcqDeleted.increment();
     }
 
     /** Saves a version snapshot of the MCQ before modification. */

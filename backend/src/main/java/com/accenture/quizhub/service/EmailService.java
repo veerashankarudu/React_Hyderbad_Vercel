@@ -2,6 +2,7 @@ package com.accenture.quizhub.service;
 
 import com.accenture.quizhub.entity.Mcq;
 import com.accenture.quizhub.entity.User;
+import com.accenture.quizhub.config.QuizHubMetrics;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ public class EmailService {
     private static final String DIVIDER = "─".repeat(60);
 
     private final JavaMailSender mailSender;
+    private final QuizHubMetrics metrics;
 
     @Value("${app.email.from:quizhub-noreply@accenture.com}")
     private String fromAddress;
@@ -34,8 +36,9 @@ public class EmailService {
     @Value("${app.url:http://localhost:3000}")
     private String appUrl;
 
-    public EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender, QuizHubMetrics metrics) {
         this.mailSender = mailSender;
+        this.metrics = metrics;
     }
 
     // ── Public trigger methods ────────────────────────────────────────────────
@@ -104,8 +107,10 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(body, false);
             mailSender.send(message);
+            metrics.emailSent.increment();
             log.info("📧 Email sent → {} <{}>  Subject: {}", toName, to, subject);
         } catch (Exception e) {
+            metrics.emailFailed.increment();
             log.error("📧 Email failed → {} <{}>  Error: {}", toName, to, e.getMessage());
             // Fall back to mock so the workflow is never blocked by email failures
             sendMockEmail(to, toName, subject, body);

@@ -1,5 +1,6 @@
 package com.accenture.quizhub.service;
 
+import com.accenture.quizhub.config.AiInputSanitizer;
 import com.accenture.quizhub.entity.Mcq;
 import com.accenture.quizhub.enums.Difficulty;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -28,6 +29,7 @@ public class AIService {
 
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final AiInputSanitizer sanitizer;
 
     @Autowired(required = false)
     private EmbeddingModel embeddingModel;
@@ -61,8 +63,9 @@ public class AIService {
     }
 
     @Autowired
-    public AIService(ChatClient.Builder chatClientBuilder) {
+    public AIService(ChatClient.Builder chatClientBuilder, AiInputSanitizer sanitizer) {
         this.chatClient = chatClientBuilder.build();
+        this.sanitizer = sanitizer;
     }
 
     /**
@@ -1172,8 +1175,9 @@ public class AIService {
     }
 
     public String chatReplyWithHistory(String userMessage, List<String> history) {
-        if (userMessage == null || userMessage.isBlank()) {
-            return "Hi! I'm QuizHub AI 🤖\n\n" +
+        // Sanitize user input before any processing — removes PII and prompt injection attempts
+        userMessage = sanitizer.sanitize(userMessage, "chatbot");
+        if (userMessage == null || userMessage.isBlank()) {            return "Hi! I'm QuizHub AI 🤖\n\n" +
                    "💡 Commands:\n" +
                    "• `@bot generate [N] [type] questions on [topic]` — Generate interactive questions\n" +
                    "• `@bot difficulty [MCQ]` — Rate difficulty\n" +
@@ -2119,8 +2123,9 @@ public class AIService {
         if (!isApiKeyConfigured()) {
             return Flux.just("[ERROR] " + noKeyMessage());
         }
+        String safe = sanitizer.sanitize(userMessage, "stream-chat");
         return chatClient.prompt()
-                .user(userMessage)
+                .user(safe)
                 .stream()
                 .content();
     }
@@ -2137,8 +2142,9 @@ public class AIService {
         if (!isApiKeyConfigured()) {
             return noKeyMessage();
         }
+        String safe = sanitizer.sanitize(userMessage, "tool-chat");
         return chatClient.prompt()
-                .user(userMessage)
+                .user(safe)
                 .tools(tools)
                 .call()
                 .content();

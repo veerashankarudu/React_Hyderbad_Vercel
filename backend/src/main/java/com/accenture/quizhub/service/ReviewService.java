@@ -1,5 +1,6 @@
 package com.accenture.quizhub.service;
 
+import com.accenture.quizhub.config.QuizHubMetrics;
 import com.accenture.quizhub.dto.request.ReviewRequest;
 import com.accenture.quizhub.dto.response.McqResponse;
 import com.accenture.quizhub.entity.*;
@@ -23,6 +24,7 @@ public class ReviewService {
     private final EmailService emailService;
     private final InboxMessageService inboxMessageService;
     private final AppConfigService appConfigService;
+    private final QuizHubMetrics metrics;
 
     @Transactional(readOnly = true)
     public Page<McqResponse> getAssignedReviews(User reviewer, McqStatus status, int page, int size) {
@@ -72,8 +74,7 @@ public class ReviewService {
             mcq.setStatus(McqStatus.APPROVED);
         }
 
-        if (request.getComment() != null && !request.getComment().isBlank()) {
-            ReviewComment comment = new ReviewComment();
+        if (request.getComment() != null && !request.getComment().isBlank()) {            ReviewComment comment = new ReviewComment();
             comment.setMcq(mcq);
             comment.setReviewer(reviewer);
             comment.setComment(request.getComment());
@@ -81,6 +82,12 @@ public class ReviewService {
         }
 
         McqResponse result = mcqService.toResponse(mcqRepository.save(mcq));
+
+        if (isRejection) {
+            metrics.mcqRejected.increment();
+        } else {
+            metrics.mcqApproved.increment();
+        }
 
         String preview = mcq.getQuestionStem().length() > 60
                 ? mcq.getQuestionStem().substring(0, 60) + "..."
