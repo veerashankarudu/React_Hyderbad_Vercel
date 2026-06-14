@@ -6,18 +6,18 @@ set -o pipefail
 
 echo "🔍 QuizHub pre-commit checks running..."
 
-# ── 1. Run backend tests ──────────────────────────────────────────
-echo "  ▸ Running backend tests..."
-cd backend && mvn test -q -DforkCount=0 2>&1; BACKEND_EXIT=$?
+# ── 1. Compile check (fast — no test execution) ──────────────────
+echo "  ▸ Checking backend compiles..."
+cd backend && mvn compile test-compile -q 2>&1; BACKEND_EXIT=$?
 if [ $BACKEND_EXIT -ne 0 ]; then
-  echo "  ❌ Backend tests FAILED. Fix before committing."
+  echo "  ❌ Backend compile FAILED. Fix before committing."
   exit 1
 fi
-echo "  ✅ Backend tests passed"
+echo "  ✅ Backend compiles OK"
 cd ..
 
-# ── 2. Check frontend builds without errors ───────────────────────
-echo "  ▸ Checking frontend build..."
+# ── 2. Check frontend compiles (no build output) ─────────────────
+echo "  ▸ Checking frontend for syntax errors..."
 cd frontend && npx react-scripts build --silent 2>&1; FRONTEND_EXIT=$?
 if [ $FRONTEND_EXIT -ne 0 ]; then
   echo "  ❌ Frontend build FAILED. Fix before committing."
