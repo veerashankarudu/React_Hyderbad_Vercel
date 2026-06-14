@@ -1,0 +1,53 @@
+{
+  "name": "quizhub-agent",
+  "displayName": "QuizHub AI Agent",
+  "description": "QuizBot — AI agent for QuizHub. Search questions, create MCQs, check duplicates, and get dashboard stats.",
+  "version": "1.0.0",
+  "publisher": "bumblebee-team",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "keywords": [
+    "quizhub",
+    "ai",
+    "agent",
+    "mcp",
+    "mcq"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "quizhub.setupAgent",
+        "title": "QuizHub: Setup AI Agent in this workspace"
+      },
+      {
+        "command": "quizhub.openAgent",
+        "title": "QuizHub: Open QuizBot Agent"
+      }
+    ],
+    "configuration": {
+      "title": "QuizHub AI Agent",
+      "properties": {
+        "quizhub.mcpServerUrl": {
+          "type": "string",
+          "default": "http://localhost:8085/sse",
+          "description": "URL of the QuizHub MCP server. Ask your team lead for the production URL."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "package": "npx @vscode/vsce package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.0.0"
+  }
+}
