@@ -1,0 +1,29 @@
+#!/bin/sh
+# QuizHub Hook: pre-push
+# Runs automatically every time you do: git push
+# Runs full test suite before allowing push to remote
+
+echo "🚀 QuizHub pre-push checks running..."
+
+# ── 1. Full backend test suite ────────────────────────────────────
+echo "  ▸ Running all 1072 backend tests..."
+cd backend && mvn test -q 2>&1 | grep -E "Tests run:|FAIL|ERROR|BUILD"
+if [ $? -ne 0 ]; then
+  echo "  ❌ Backend tests FAILED. Push blocked."
+  exit 1
+fi
+echo "  ✅ Backend tests passed"
+cd ..
+
+# ── 2. Full frontend test suite ───────────────────────────────────
+echo "  ▸ Running all 957 frontend tests..."
+cd frontend && npm test -- --watchAll=false --silent 2>&1 | tail -5
+if [ $? -ne 0 ]; then
+  echo "  ❌ Frontend tests FAILED. Push blocked."
+  exit 1
+fi
+echo "  ✅ Frontend tests passed"
+cd ..
+
+echo "✅ All checks passed. Pushing to remote..."
+exit 0
