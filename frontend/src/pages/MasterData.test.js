@@ -356,7 +356,7 @@ describe('MyQuestions — add dialog and AI modal', () => {
 const QuizBuilder = require('../pages/QuizBuilder').default;
 
 const SESSIONS_DATA = [
-  { id: 1, title: 'Java Exam', questionCount: 10, timeLimitMinutes: 30, attemptCount: 5, shareToken: 'abc123', expiresAt: null, createdAt: '2026-01-01T00:00:00Z', expired: false },
+  { id: 1, title: 'Java Exam', questionCount: 10, timeLimitMinutes: 30, attemptCount: 5, shareToken: 'abc123', expiresAt: null, createdAt: '2026-06-20T00:00:00Z', expired: false },
   { id: 2, title: 'Old React Exam', questionCount: 5, timeLimitMinutes: 20, attemptCount: 2, shareToken: 'xyz789', expiresAt: '2020-01-01T00:00:00Z', createdAt: '2020-01-01T00:00:00Z', expired: true },
 ];
 

@@ -185,7 +185,7 @@ body:not(.dark-mode) .wellness-message {
   left: 0;
   height: 100%;
   width: 100%;
-  background: linear-gradient(90deg, #A100FF, #7c3aed);
+  background: linear-gradient(90deg, #6983FF, #6983FF);
   transform-origin: left;
   animation: wellnessCountdown linear both;
   /* duration set dynamically via inline style */

@@ -3,7 +3,7 @@
   "displayName": "QuizHub AI Agent",
   "description": "QuizBot — AI agent for QuizHub. Search questions, create MCQs, check duplicates, and get dashboard stats.",
   "version": "1.0.0",
-  "publisher": "bumblebee-team",
+  "publisher": "team-valkey",
   "engines": {
     "vscode": "^1.90.0"
   },

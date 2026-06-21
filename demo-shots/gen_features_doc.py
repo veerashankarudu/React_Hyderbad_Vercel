@@ -628,13 +628,13 @@ for _ in range(2):
 
 p4 = doc.add_paragraph()
 p4.alignment = WD_ALIGN_PARAGRAPH.CENTER
-run4 = p4.add_run("Accenture Hack-N-Stack 2026")
+run4 = p4.add_run("Valkey Hack-N-Stack 2026")
 run4.font.size = Pt(14)
 run4.font.bold = True
 
 p5 = doc.add_paragraph()
 p5.alignment = WD_ALIGN_PARAGRAPH.CENTER
-run5 = p5.add_run("May 2026")
+run5 = p5.add_run("June 2026")
 run5.font.size = Pt(12)
 run5.font.color.rgb = RGBColor(100, 100, 120)
 

@@ -10,11 +10,11 @@ const STATUS_META = {
   APPROVED:         { label: 'Approved',         color: '#059669', bg: '#D1FAE5' },
   REJECTED:         { label: 'Rejected',         color: '#DC2626', bg: '#FEE2E2' },
   UNDER_REVIEW:     { label: 'Under Review',     color: '#D97706', bg: '#FEF3C7' },
-  READY_FOR_REVIEW: { label: 'Ready for Review', color: '#A100FF', bg: '#F3E8FF' },
+  READY_FOR_REVIEW: { label: 'Ready for Review', color: '#6983FF', bg: '#F3E8FF' },
   DRAFT:            { label: 'Draft',            color: '#6B7280', bg: '#F3F4F6' },
 };
 
-const PALETTE = ['#A100FF','#3B82F6','#10B981','#F59E0B','#EF4444','#B84DFF','#06B6D4','#84CC16','#EC4899','#14B8A6'];
+const PALETTE = ['#6983FF','#3B82F6','#10B981','#F59E0B','#EF4444','#8BA0FF','#06B6D4','#84CC16','#EC4899','#14B8A6'];
 
 function BarChart({ data, valueKey = 'count', labelKey = 'techStack', title }) {
   const { t } = useTranslation();
@@ -164,7 +164,7 @@ export default function Analytics() {
   ] : [];
 
   const statCards = summary ? [
-    { label: isAdmin ? t('analytics.totalQAdmin') : t('analytics.totalQMine'), value: summary.totalMcqs || 0, icon: '📚', color: '#A100FF', bg: '#F3E8FF', route: isAdmin ? '/question-bank' : '/my-questions' },
+    { label: isAdmin ? t('analytics.totalQAdmin') : t('analytics.totalQMine'), value: summary.totalMcqs || 0, icon: '📚', color: '#6983FF', bg: '#F3E8FF', route: isAdmin ? '/question-bank' : '/my-questions' },
     { label: t('analytics.approved'),     value: summary.approved || 0, icon: '✅', color: '#059669', bg: '#D1FAE5', route: isAdmin ? '/question-bank?status=APPROVED' : '/my-questions?status=APPROVED' },
     { label: t('analytics.inReview'),     value: summary.inReview  || 0, icon: '🔍', color: '#D97706', bg: '#FEF3C7', route: isAdmin ? '/pending-reviews' : '/my-questions?status=UNDER_REVIEW' },
     { label: t('analytics.rejected'),     value: summary.rejected || 0, icon: '❌', color: '#DC2626', bg: '#FEE2E2', route: isAdmin ? '/question-bank?status=REJECTED' : '/my-questions?status=REJECTED' },

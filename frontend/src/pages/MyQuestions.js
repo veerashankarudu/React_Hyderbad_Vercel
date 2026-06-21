@@ -236,12 +236,12 @@ export default function MyQuestions() {
                   <span className="add-option-label">{t('nav.bulkUpload')}</span>
                   <span className="add-option-desc">{t('myQ.bulkUploadDesc')}</span>
                 </button>
-                <button type="button" className="add-option-btn" style={{ '--hover-c': '#A100FF' }} onClick={() => { setShowAddDialog(false); setAiResult(null); setAiError(''); setAiForm({ techStackId: '', topicId: '', count: 3, difficulty: 'MEDIUM', questionType: 'SINGLE' }); setShowAiGen(true); }}>
+                <button type="button" className="add-option-btn" style={{ '--hover-c': '#6983FF' }} onClick={() => { setShowAddDialog(false); setAiResult(null); setAiError(''); setAiForm({ techStackId: '', topicId: '', count: 3, difficulty: 'MEDIUM', questionType: 'SINGLE' }); setShowAiGen(true); }}>
                   <span className="add-option-icon"><Bot size={22} /></span>
                   <span className="add-option-label">{t('ai.generatorTitle')}</span>
                   <span className="add-option-desc">{t('myQ.aiGeneratorDesc')}</span>
                 </button>
-                <button type="button" className="add-option-btn" style={{ '--hover-c': '#B84DFF' }} onClick={() => { setShowAddDialog(false); navigate('/screenshot-mcq'); }}>
+                <button type="button" className="add-option-btn" style={{ '--hover-c': '#8BA0FF' }} onClick={() => { setShowAddDialog(false); navigate('/screenshot-mcq'); }}>
                   <span className="add-option-icon"><Camera size={22} /></span>
                   <span className="add-option-label">{t('common.screenshot')}</span>
                   <span className="add-option-desc">{t('common.screenshotHint')}</span>

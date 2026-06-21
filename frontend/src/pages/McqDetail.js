@@ -18,7 +18,7 @@ function ContentJsonRenderer({ contentJson, questionType }) {
 
   const boxStyle = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.5rem', color: 'var(--text)' };
   const codeStyle = { fontFamily: 'monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap', background: '#1e293b', color: '#e2e8f0', padding: '1rem', borderRadius: '8px', marginBottom: '0.75rem' };
-  const badgeStyle = { display: 'inline-block', background: '#A100FF', color: '#fff', borderRadius: '12px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: 600, marginRight: '0.4rem' };
+  const badgeStyle = { display: 'inline-block', background: '#6983FF', color: '#fff', borderRadius: '12px', padding: '0.15rem 0.6rem', fontSize: '0.75rem', fontWeight: 600, marginRight: '0.4rem' };
 
   switch (questionType) {
     case 'DRAG_ORDER':

@@ -12,7 +12,7 @@
 **[Show: Login page]**
 
 🎙️ VOICEOVER:
-> "Welcome to QuizHub AI — an intelligent MCQ management platform built for Accenture's Hack-N-Stack 2026. This platform enables Subject Matter Experts to create, review, and manage technical interview questions powered by AI. Let's walk through the key features."
+> "Welcome to QuizHub AI — an intelligent MCQ management platform built for Valkey's Hack-N-Stack 2026. This platform enables Subject Matter Experts to create, review, and manage technical interview questions powered by AI. Let's walk through the key features."
 
 **[Action: Login as SME]**
 - Enterprise ID: `indugu.hari.prasad`

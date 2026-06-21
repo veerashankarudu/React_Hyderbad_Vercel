@@ -449,7 +449,7 @@ body.dark-mode .lq-card-footer {
   border-top-color: var(--border, #2d2b45);
 }
 body.dark-mode .lq-card-action {
-  color: #C77DFF;
+  color: #BCB5E7;
 }
 body.dark-mode .lq-card-winner {
   color: #e2e8f0;
@@ -476,7 +476,7 @@ body.dark-mode .lq-create-subtitle {
   color: #9ca3af;
 }
 body.dark-mode .lq-form-row label {
-  color: #c4b5fd;
+  color: #BCB5E7;
 }
 body.dark-mode .lq-input,
 body.dark-mode .lq-select {
@@ -525,7 +525,7 @@ body.dark-mode .lq-toggle span {
   color: #e2e8f0;
 }
 body.dark-mode .lq-advanced-label {
-  color: #C77DFF;
+  color: #BCB5E7;
   border-color: var(--border);
 }
 

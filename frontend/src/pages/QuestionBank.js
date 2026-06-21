@@ -185,8 +185,8 @@ export default function QuestionBank() {
         </div>
 
         {/* Semantic Search Bar */}
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '0.75rem 0', padding: '10px 14px', background: 'rgba(161,0,255,0.05)', border: '1px solid rgba(161,0,255,0.15)', borderRadius: '10px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#A100FF', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>🧠 Semantic Search</span>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '0.75rem 0', padding: '10px 14px', background: 'rgba(105,131,255,0.05)', border: '1px solid rgba(105,131,255,0.15)', borderRadius: '10px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6983FF', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>🧠 Semantic Search</span>
           <input
             type="text"
             placeholder="e.g. thread safety in concurrent Java, REST idempotency..."
@@ -198,7 +198,7 @@ export default function QuestionBank() {
           <button
             onClick={handleSemanticSearch}
             disabled={semanticLoading || !semanticQuery.trim()}
-            style={{ padding: '7px 18px', background: 'linear-gradient(135deg,#A100FF,#7B00C0)', color: '#fff', border: 'none', borderRadius: '7px', fontWeight: 600, fontSize: '0.88rem', cursor: 'pointer', opacity: (semanticLoading || !semanticQuery.trim()) ? 0.55 : 1 }}
+            style={{ padding: '7px 18px', background: 'linear-gradient(135deg,#6983FF,#30176E)', color: '#fff', border: 'none', borderRadius: '7px', fontWeight: 600, fontSize: '0.88rem', cursor: 'pointer', opacity: (semanticLoading || !semanticQuery.trim()) ? 0.55 : 1 }}
           >{semanticLoading ? '⏳ Searching…' : '🔍 Search'}</button>
           {semanticResults && (
             <button onClick={() => { setSemanticResults(null); setSemanticQuery(''); }} style={{ padding: '7px 12px', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '7px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>✕ Clear</button>
@@ -217,17 +217,17 @@ export default function QuestionBank() {
             {semanticResults.error && <div style={{ color: '#dc2626', fontSize: '0.85rem' }}>{semanticResults.error}</div>}
             {(semanticResults.results || []).map(r => (
               <div key={r.id} onClick={() => navigate(`/mcq/${r.id}`)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', marginBottom: '4px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', transition: 'border-color 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor='#A100FF'}
+                onMouseEnter={e => e.currentTarget.style.borderColor='#6983FF'}
                 onMouseLeave={e => e.currentTarget.style.borderColor='#e5e7eb'}>
                 <div style={{ minWidth: '48px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A100FF' }}>{Math.round((r.similarity || 0) * 100)}%</div>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#6983FF' }}>{Math.round((r.similarity || 0) * 100)}%</div>
                   <div style={{ fontSize: '0.7rem', color: '#9ca3af' }}>match</div>
                 </div>
                 <div style={{ flex: 1, fontSize: '0.85rem', color: '#111827' }}>
                   {r.questionStem?.length > 120 ? r.questionStem.substring(0, 120) + '…' : r.questionStem}
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-                  {r.techStack && <span style={{ fontSize: '0.75rem', padding: '2px 8px', background: '#F3E8FF', color: '#7B00C0', borderRadius: '10px' }}>{r.techStack}</span>}
+                  {r.techStack && <span style={{ fontSize: '0.75rem', padding: '2px 8px', background: '#F3E8FF', color: '#30176E', borderRadius: '10px' }}>{r.techStack}</span>}
                   {r.difficulty && <span style={{ fontSize: '0.75rem', padding: '2px 8px', background: r.difficulty==='HARD'?'#fee2e2':r.difficulty==='EASY'?'#dcfce7':'#fef3c7', color: r.difficulty==='HARD'?'#991b1b':r.difficulty==='EASY'?'#166534':'#92400e', borderRadius: '10px' }}>{r.difficulty}</span>}
                 </div>
               </div>

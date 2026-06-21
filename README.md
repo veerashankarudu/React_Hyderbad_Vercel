@@ -20,7 +20,7 @@
 
 ## 📌 Overview
 
-**QuizHub AI** is an enterprise-grade MCQ (Multiple Choice Question) management platform built for Accenture's internal learning ecosystem. It enables SMEs (Subject Matter Experts) to create, review, and manage MCQs through a structured AI-assisted workflow, with full role-based access control, bulk operations, proctored assessments, and multi-language support.
+**QuizHub AI** is an enterprise-grade MCQ (Multiple Choice Question) management platform built for Valkey's internal learning ecosystem. It enables SMEs (Subject Matter Experts) to create, review, and manage MCQs through a structured AI-assisted workflow, with full role-based access control, bulk operations, proctored assessments, and multi-language support.
 
 All MCQs go through a governed lifecycle: **DRAFT → READY_FOR_REVIEW → UNDER_REVIEW → APPROVED / REJECTED**, ensuring quality, consistency, and traceability across the organisation.
 
@@ -274,9 +274,9 @@ Logs are profile-aware:
 **JSON log fields** (every line):
 ```json
 {
-  "@timestamp": "2025-01-01T10:00:00.000Z",
+  "@timestamp": "2026-06-20T10:00:00.000Z",
   "level": "INFO",
-  "logger_name": "com.accenture.quizhub...",
+  "logger_name": "com.valkey.quizhub...",
   "message": "[abc12345] GET /api/tech-stacks → 200 (34ms)",
   "requestId": "abc12345",
   "userId": "divya.madhanasekar",
@@ -860,11 +860,11 @@ English · French · German · Hindi · Kannada · Telugu · Urdu (RTL)
 
 ### 🆕 Latest UI/UX Enhancements (13 features) — *Added June 2026*
 
-422. **Transformers-inspired animated topbar strip** — Full cinematic story sequence cycling every ~33s: saucer flies across, beams each team member's name (Veera ⚡, Teja 🚀, Tarun 🌟, Dilip 💫) one by one with glowing colored light ray
-423. **Bumblebee Camaro car animation** — Yellow/gold CSS-drawn Camaro (Bumblebee movie-style) drives full-width right-to-left across the strip with spinning wheels and golden glow
+422. **Transformers-inspired animated topbar strip** — Full cinematic story sequence cycling every ~33s: saucer flies across, beams each team member's name (Veera 🚀, Teja ⚡) one by one with glowing colored light ray
+423. **Valkey Camaro car animation** — Yellow/gold CSS-drawn Camaro (Valkey-themed) drives full-width right-to-left across the strip with spinning wheels and golden glow
 424. **Explosion burst + 6 sparkle particles** — Car explodes at left end with white→gold→purple radial burst; 6 emoji particles (⭐✨💛🌟) fly outward at different angles
 425. **CSS robot rise** — Robot materialises from explosion with arm-throw animation, then vanishes
-426. **Saucer launch with team label** — Robot launches 🛸 saucer left trailing "✦ BumbleBee Team ✦" purple glowing label
+426. **Saucer launch with team label** — Robot launches 🛸 saucer left trailing "✦ Team Valkey ✦" purple glowing label
 427. **Floating orbs + twinkling stars** — 6 glowing orbs and 10 twinkling stars as topbar background accents
 428. **Drag-to-reorder dashboard widgets** — All 9 Home dashboard widgets are drag-and-droppable; order persisted to `localStorage` and survives page refresh; visual feedback (grab cursor, opacity/scale/glow on drag target)
 429. **Sound effects system** — `useSoundEffects` hook + `GlobalSoundListener`; plays audio cues on navigation and key actions; toggle on/off + volume control in navbar
@@ -1846,7 +1846,7 @@ npm test -- --watchAll=false --coverage
 hack-n-stack/
 ├── backend/                    # Spring Boot application
 │   ├── src/main/java/
-│   │   └── com/accenture/quizhub/
+│   │   └── com/valkey/quizhub/
 │   │       ├── config/         # App configuration
 │   │       │   ├── CacheConfig.java          # Redis ↔ Caffeine auto-fallback
 │   │       │   ├── CacheHealthIndicator.java # /actuator/health cacheSystem component
@@ -1929,7 +1929,7 @@ The following is auto-seeded via `data.sql`:
 
 ---
 
-*Built with ❤️ for Accenture Hack-N-Stack 2026*
+*Built with ❤️ for Valkey Hack-N-Stack 2026*
 
 ---
 
@@ -1981,7 +1981,7 @@ The following is auto-seeded via `data.sql`:
 - Redis 7+ optional but recommended for distributed caching — app falls back to Caffeine (in-process) automatically if Redis is unavailable
 - Docker Desktop or Colima installed to run the Prometheus + Grafana observability stack (Step 9 in How to Run)
 - OpenAI API key is optional — all non-AI features work without it
-- Email notifications require valid SMTP credentials (Gmail or Accenture SMTP)
+- Email notifications require valid SMTP credentials (Gmail or Valkey SMTP)
 - Modern browser (Chrome, Firefox, Edge, Safari)
 
 ---
@@ -1999,4 +1999,4 @@ The following is auto-seeded via `data.sql`:
 
 ---
 
-*Built with ❤️ for Accenture Hack-N-Stack: Code the Future — Java Full Stack with AI | May 2026*
+*Built with ❤️ for Valkey Hack-N-Stack: Code the Future — Java Full Stack with AI | June 2026*

@@ -107,12 +107,12 @@ const ATTEMPTS = [
   {
     id: 1, candidateName: 'Alice', candidateEmail: 'alice@test.com',
     score: 8, total: 10, percent: 80, timeTakenSeconds: 180,
-    status: 'COMPLETED', violationCount: 0, submittedAt: '2026-03-01T12:00:00Z',
+    status: 'COMPLETED', violationCount: 0, submittedAt: '2026-06-20T12:00:00Z',
   },
   {
     id: 2, candidateName: 'Bob', candidateEmail: 'bob@test.com',
     score: 4, total: 10, percent: 40, timeTakenSeconds: 600,
-    status: 'TERMINATED', violationCount: 2, submittedAt: '2026-03-02T13:00:00Z',
+    status: 'TERMINATED', violationCount: 2, submittedAt: '2026-06-20T13:00:00Z',
   },
 ];
 

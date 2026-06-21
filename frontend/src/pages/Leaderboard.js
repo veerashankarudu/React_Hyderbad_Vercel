@@ -27,7 +27,7 @@ function buildInitials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-const AVATAR_COLORS = ['#A100FF','#3B82F6','#10B981','#F59E0B','#EF4444','#B84DFF','#06B6D4','#84CC16','#EC4899','#14B8A6'];
+const AVATAR_COLORS = ['#6983FF','#3B82F6','#10B981','#F59E0B','#EF4444','#8BA0FF','#06B6D4','#84CC16','#EC4899','#14B8A6'];
 
 function rankLabel(idx) {
   if (idx === 0) return '🥇 #1';

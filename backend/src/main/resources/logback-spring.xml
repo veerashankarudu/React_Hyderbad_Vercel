@@ -51,7 +51,7 @@
         <root level="INFO">
             <appender-ref ref="PLAIN_CONSOLE"/>
         </root>
-        <logger name="com.accenture.quizhub" level="DEBUG"/>
+        <logger name="com.valkey.quizhub" level="DEBUG"/>
         <logger name="org.springframework.security" level="WARN"/>
         <logger name="org.hibernate.SQL" level="WARN"/>
         <logger name="org.springframework.data.redis" level="WARN"/>
@@ -63,7 +63,7 @@
             <appender-ref ref="JSON_CONSOLE"/>
             <appender-ref ref="JSON_FILE"/>
         </root>
-        <logger name="com.accenture.quizhub" level="INFO"/>
+        <logger name="com.valkey.quizhub" level="INFO"/>
         <logger name="org.springframework.security" level="WARN"/>
         <logger name="org.hibernate.SQL" level="WARN"/>
         <logger name="org.springframework.data.redis" level="WARN"/>

@@ -199,10 +199,10 @@ SECTIONS = [
    None,
    [
     "422. Transformers-inspired animated topbar strip — cinematic story cycling every ~33s",
-    "423. Bumblebee Camaro car animation — CSS-drawn Camaro drives full-width with spinning wheels",
+    "423. Valkey Camaro car animation — CSS-drawn Camaro drives full-width with spinning wheels",
     "424. Explosion burst + 6 sparkle particles — car explodes with radial burst; 6 emoji particles fly outward",
     "425. CSS robot rise — robot materialises from explosion with arm-throw animation",
-    "426. Saucer launch with team label — robot launches saucer trailing '✦ BumbleBee Team ✦' label",
+    "426. Saucer launch with team label — robot launches saucer trailing '✦ Team Valkey ✦' label",
     "427. Floating orbs + twinkling stars — 6 glowing orbs and 10 twinkling stars as background accents",
     "428. Drag-to-reorder dashboard widgets — 9 Home widgets draggable; order persisted to localStorage",
     "429. Sound effects system — useSoundEffects hook + GlobalSoundListener; toggle on/off + volume control",
@@ -919,8 +919,8 @@ r2.font.color.rgb = RGBColor(0x44,0x44,0x44)
 
 p3 = doc.add_paragraph()
 p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-r3 = p3.add_run("\nAccenture Hack-N-Stack 2026 · BumbleBee Team\n"
-                "Veera · Teja · Tarun · Dilip\n\n"
+r3 = p3.add_run("\nValkey Hack-N-Stack 2026 · Team Valkey\n"
+                "Veera · Teja\n\n"
                 "Backend: Spring Boot 3.2.5 (Java 17)  ·  Frontend: React 19\n"
                 "2,029 Tests  ·  92.5% Backend Coverage  ·  80.37% Frontend Coverage\n"
                 "140 API Endpoints  ·  19 DB Entities  ·  7 Languages\n")

@@ -17,10 +17,10 @@ export function generateCertificate({ name, score, total, percentage, rank, tech
   const title = isRanked ? 'Certificate of Achievement' : 'Certificate of Participation';
   const borderColor = isRanked
     ? rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : '#CD7F32'
-    : '#A100FF';
+    : '#6983FF';
   const accentColor = isRanked
     ? rank === 1 ? '#B8860B' : rank === 2 ? '#6B7280' : '#92400E'
-    : '#7B00C0';
+    : '#30176E';
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -103,7 +103,7 @@ export function generateCertificate({ name, score, total, percentage, rank, tech
 </head>
 <body>
 <div class="cert">
-  <div class="logo">Accenture • QuizHub AI</div>
+  <div class="logo">Valkey • QuizHub AI</div>
   <div class="emoji">${rankEmoji}</div>
   <div class="title">${title}</div>
   ${isRanked ? `<div class="rank-label">${rankLabel}</div>` : '<div style="margin-bottom:16px"></div>'}

@@ -101,7 +101,7 @@ function DemoMultiMCQ() {
             className={`qt-option ${selected.has(o.letter) ? 'selected' : ''} ${submitted && correctSet.has(o.letter) ? 'correct' : ''} ${submitted && selected.has(o.letter) && !correctSet.has(o.letter) ? 'wrong' : ''}`}
             onClick={() => toggle(o.letter)}
           >
-            <input type="checkbox" checked={selected.has(o.letter)} readOnly style={{ accentColor: '#A100FF' }} />
+            <input type="checkbox" checked={selected.has(o.letter)} readOnly style={{ accentColor: '#6983FF' }} />
             <span>{o.text}</span>
             {submitted && correctSet.has(o.letter) && <span style={{ marginLeft: 'auto', color: '#10b981' }}>✓</span>}
           </div>
@@ -1253,7 +1253,7 @@ function GeneratedMultiMCQ({ q, index }) {
       <div className="qt-options">
         {(q.options || []).map(o => (
           <div key={o.letter} className={`qt-option ${selected.has(o.letter) ? 'selected' : ''} ${submitted && correctSet.has(o.letter) ? 'correct' : ''} ${submitted && selected.has(o.letter) && !correctSet.has(o.letter) ? 'wrong' : ''}`} onClick={() => toggle(o.letter)}>
-            <input type="checkbox" checked={selected.has(o.letter)} readOnly style={{ accentColor: '#A100FF' }} />
+            <input type="checkbox" checked={selected.has(o.letter)} readOnly style={{ accentColor: '#6983FF' }} />
             <span>{o.text}</span>
           </div>
         ))}
@@ -1642,13 +1642,13 @@ function GeneratedArchLayers({ q, index }) {
       <div className="qt-demo-question"><strong>Q{index}.</strong> 🏗️ {q.question}</div>
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
         {items.map(it => (
-          <div key={it.text} className={`qt-sql-clause ${selectedItem === it.text ? 'select' : ''}`} onClick={() => handleItemClick(it.text)} style={{ opacity: placed[it.text] ? 0.4 : 1, cursor: placed[it.text] ? 'default' : 'pointer', border: selectedItem === it.text ? '2px solid #A100FF' : '1px solid rgba(255,255,255,0.15)' }}>{it.text}</div>
+          <div key={it.text} className={`qt-sql-clause ${selectedItem === it.text ? 'select' : ''}`} onClick={() => handleItemClick(it.text)} style={{ opacity: placed[it.text] ? 0.4 : 1, cursor: placed[it.text] ? 'default' : 'pointer', border: selectedItem === it.text ? '2px solid #6983FF' : '1px solid rgba(255,255,255,0.15)' }}>{it.text}</div>
         ))}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(${layers.length}, 1fr)`, gap: '0.5rem' }}>
         {layers.map(layer => (
-          <div key={layer} onClick={() => handleLayerClick(layer)} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px dashed rgba(161,0,255,0.3)', background: 'rgba(161,0,255,0.04)', cursor: selectedItem ? 'pointer' : 'default', minHeight: '80px', textAlign: 'center' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#A100FF', marginBottom: '0.4rem', textTransform: 'uppercase' }}>{layer}</div>
+          <div key={layer} onClick={() => handleLayerClick(layer)} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px dashed rgba(105,131,255,0.3)', background: 'rgba(105,131,255,0.04)', cursor: selectedItem ? 'pointer' : 'default', minHeight: '80px', textAlign: 'center' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#6983FF', marginBottom: '0.4rem', textTransform: 'uppercase' }}>{layer}</div>
             {items.filter(it => placed[it.text] === layer).map(it => (
               <div key={it.text} style={{ fontSize: '0.78rem', padding: '0.2rem 0.5rem', margin: '0.15rem 0', borderRadius: '4px', background: submitted ? (it.layer === layer ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)') : 'rgba(255,255,255,0.06)', color: submitted ? (it.layer === layer ? '#10b981' : '#ef4444') : 'inherit' }}>{it.text}</div>
             ))}
@@ -2395,9 +2395,9 @@ function CertificateModal({ show, onClose, data }) {
     grad.addColorStop(0, '#1a1a2e'); grad.addColorStop(1, '#16213e');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, 800, 560);
     // Border
-    ctx.strokeStyle = '#A100FF'; ctx.lineWidth = 4;
+    ctx.strokeStyle = '#6983FF'; ctx.lineWidth = 4;
     ctx.strokeRect(20, 20, 760, 520);
-    ctx.strokeStyle = 'rgba(161,0,255,0.3)'; ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(105,131,255,0.3)'; ctx.lineWidth = 2;
     ctx.strokeRect(30, 30, 740, 500);
     // Title
     ctx.fillStyle = '#a5b4fc'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center';
@@ -2423,7 +2423,7 @@ function CertificateModal({ show, onClose, data }) {
     // Date
     ctx.fillStyle = '#64748b'; ctx.font = '12px Arial';
     ctx.fillText(`Completed: ${new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 400, 460);
-    ctx.fillText('Powered by QuizHub AI • Accenture Hack-N-Stack 2026', 400, 490);
+    ctx.fillText('Powered by QuizHub AI • Valkey Hack-N-Stack 2026', 400, 490);
     // Download
     const link = document.createElement('a');
     link.download = `QuizHub_Certificate_${topic.replace(/\s/g, '_')}.png`;

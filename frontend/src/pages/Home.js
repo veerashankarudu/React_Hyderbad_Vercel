@@ -88,7 +88,7 @@ const STATUS_META = {
   APPROVED:         { labelKey: 'common.approved',       color: '#059669', bg: '#D1FAE5' },
   REJECTED:         { labelKey: 'common.rejected',       color: '#DC2626', bg: '#FEE2E2' },
   UNDER_REVIEW:     { labelKey: 'common.inReview',       color: '#D97706', bg: '#FEF3C7' },
-  READY_FOR_REVIEW: { labelKey: 'common.readyForReview', color: '#A100FF', bg: '#F3E8FF' },
+  READY_FOR_REVIEW: { labelKey: 'common.readyForReview', color: '#6983FF', bg: '#F3E8FF' },
   DRAFT:            { labelKey: 'common.draft',          color: '#6B7280', bg: '#F3F4F6' },
 };
 
@@ -138,7 +138,7 @@ function BarChart({ data }) {
   const { t } = useTranslation();
   if (!data?.length) return <div className="dw-empty">{t('common.noData')}</div>;
   const max = Math.max(...data.map(d => Number(d.count)));
-  const COLORS = ['#A100FF','#3B82F6','#10B981','#F59E0B','#EF4444','#B84DFF','#06B6D4','#84CC16'];
+  const COLORS = ['#6983FF','#3B82F6','#10B981','#F59E0B','#EF4444','#8BA0FF','#06B6D4','#84CC16'];
   return (
     <div className="bar-chart">
       {data.slice(0, 8).map((d, i) => (
@@ -331,7 +331,7 @@ export default function Home() {
   const reviewRate   = summary.totalMcqs > 0 ? Math.round((summary.inReview  / summary.totalMcqs) * 100) : 0;
 
   const STAT_CARDS = [
-    { key: 'totalMcqs', label: isAdmin ? t('home.statTotalAdmin') : t('home.statTotalMy'), icon: <FileText size={22} />, color: '#A100FF', gradBg: 'linear-gradient(135deg,#F3E8FF,#DDD6FE)', route: isAdmin ? '/question-bank' : '/my-questions' },
+    { key: 'totalMcqs', label: isAdmin ? t('home.statTotalAdmin') : t('home.statTotalMy'), icon: <FileText size={22} />, color: '#6983FF', gradBg: 'linear-gradient(135deg,#F3E8FF,#DDD6FE)', route: isAdmin ? '/question-bank' : '/my-questions' },
     { key: 'approved',  label: t('home.statApproved'),  icon: <CheckCircle2 size={22} />, color: '#059669', gradBg: 'linear-gradient(135deg,#D1FAE5,#A7F3D0)', route: isAdmin ? '/question-bank?status=APPROVED'  : '/my-questions?status=APPROVED'  },
     { key: 'inReview',  label: t('home.statInReview'),  icon: <Search size={22} />, color: '#D97706', gradBg: 'linear-gradient(135deg,#FEF3C7,#FDE68A)', route: isAdmin ? '/pending-reviews' : '/my-questions?status=UNDER_REVIEW' },
     { key: 'rejected',  label: t('home.statRejected'),  icon: <XCircle size={22} />, color: '#DC2626', gradBg: 'linear-gradient(135deg,#FEE2E2,#FECACA)', route: isAdmin ? '/question-bank?status=REJECTED'  : '/my-questions?status=REJECTED'  },
@@ -438,12 +438,12 @@ export default function Home() {
                   <span className="add-option-label">{t('nav.bulkUpload')}</span>
                   <span className="add-option-desc">{t('myQ.bulkUploadDesc')}</span>
                 </button>
-                <button type="button" className="add-option-btn" style={{ '--hover-c': '#A100FF' }} onClick={() => { setShowAddDialog(false); openAiGen(); }}>
+                <button type="button" className="add-option-btn" style={{ '--hover-c': '#6983FF' }} onClick={() => { setShowAddDialog(false); openAiGen(); }}>
                   <span className="add-option-icon"><Bot size={22} /></span>
                   <span className="add-option-label">{t('ai.generatorTitle')}</span>
                   <span className="add-option-desc">{t('myQ.aiGeneratorDesc')}</span>
                 </button>
-                <button type="button" className="add-option-btn" style={{ '--hover-c': '#B84DFF' }} onClick={() => { setShowAddDialog(false); navigate('/screenshot-mcq'); }}>
+                <button type="button" className="add-option-btn" style={{ '--hover-c': '#8BA0FF' }} onClick={() => { setShowAddDialog(false); navigate('/screenshot-mcq'); }}>
                   <span className="add-option-icon"><Camera size={22} /></span>
                   <span className="add-option-label">{t('common.screenshot')}</span>
                   <span className="add-option-desc">{t('common.screenshotHint')}</span>
@@ -709,17 +709,17 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="insight-card">
-                      <div className="insight-icon" style={{background:'linear-gradient(135deg,#F3E8FF,#DDD6FE)'}}><TrendingUp size={18} color="#A100FF"/></div>
+                      <div className="insight-icon" style={{background:'linear-gradient(135deg,#F3E8FF,#DDD6FE)'}}><TrendingUp size={18} color="#6983FF"/></div>
                       <div className="insight-info">
-                        <div className="insight-val" style={{color:'#A100FF'}}>{loading ? '—' : `${approvalRate}%`}</div>
+                        <div className="insight-val" style={{color:'#6983FF'}}>{loading ? '—' : `${approvalRate}%`}</div>
                         <div className="insight-lbl">Approval Rate</div>
                       </div>
                     </div>
                   </>) : (<>
                     <div className="insight-card">
-                      <div className="insight-icon" style={{background:'linear-gradient(135deg,#F3E8FF,#DDD6FE)'}}><FileText size={18} color="#A100FF"/></div>
+                      <div className="insight-icon" style={{background:'linear-gradient(135deg,#F3E8FF,#DDD6FE)'}}><FileText size={18} color="#6983FF"/></div>
                       <div className="insight-info">
-                        <div className="insight-val" style={{color:'#A100FF'}}>{loading ? '—' : (reviewerStats?.totalAssigned ?? 0)}</div>
+                        <div className="insight-val" style={{color:'#6983FF'}}>{loading ? '—' : (reviewerStats?.totalAssigned ?? 0)}</div>
                         <div className="insight-lbl">Assigned to Me</div>
                       </div>
                     </div>
@@ -932,7 +932,7 @@ export default function Home() {
                       <span className="qg-stat-lbl">In Review</span>
                     </div>
                     <div className="qg-stat">
-                      <span className="qg-stat-val" style={{color:'#A100FF'}}>{summary.totalMcqs}</span>
+                      <span className="qg-stat-val" style={{color:'#6983FF'}}>{summary.totalMcqs}</span>
                       <span className="qg-stat-lbl">Total</span>
                     </div>
                   </div>

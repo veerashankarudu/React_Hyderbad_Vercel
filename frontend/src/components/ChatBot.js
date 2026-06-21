@@ -28,13 +28,13 @@ function BotAvatar({ size = 32 }) {
       <rect x="14" y="24" width="12" height="2.5" rx="1.25" fill="white" opacity="0.85" />
       {/* Antenna */}
       <line x1="20" y1="10" x2="20" y2="5" stroke="white" strokeWidth="2" strokeLinecap="round" />
-      <circle cx="20" cy="4" r="2" fill="#C77DFF" className="chatbot-bot-antenna" />
+      <circle cx="20" cy="4" r="2" fill="#BCB5E7" className="chatbot-bot-antenna" />
       {/* Ears */}
       <rect x="4" y="16" width="4" height="6" rx="2" fill="url(#botGrad)" />
       <rect x="32" y="16" width="4" height="6" rx="2" fill="url(#botGrad)" />
       <defs>
         <linearGradient id="botGrad" x1="8" y1="10" x2="32" y2="30" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#A100FF" />
+          <stop offset="0%" stopColor="#6983FF" />
           <stop offset="100%" stopColor="#3B82F6" />
         </linearGradient>
       </defs>

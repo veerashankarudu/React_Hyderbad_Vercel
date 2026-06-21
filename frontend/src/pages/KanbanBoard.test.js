@@ -85,7 +85,7 @@ const PENDING_USER = {
 const AUDIT_LOG = [
   {
     id: 1,
-    timestamp: '2026-01-15T12:00:00Z',
+    timestamp: '2026-06-20T12:00:00Z',
     actorEnterpriseId: 'admin.user',
     action: 'USER_APPROVED',
     targetEnterpriseId: 'john.d',
@@ -105,7 +105,7 @@ const MCQS = [
     creatorEnterpriseId: 'john.doe',
     topicName: 'Basics',
     aiScore: 85,
-    createdAt: '2026-01-01T00:00:00Z',
+    createdAt: '2026-06-20T00:00:00Z',
   },
   {
     id: 2,
@@ -118,7 +118,7 @@ const MCQS = [
     creatorEnterpriseId: 'jane.smith',
     topicName: 'Hooks',
     aiScore: null,
-    createdAt: '2026-01-02T00:00:00Z',
+    createdAt: '2026-06-20T00:00:00Z',
   },
   {
     id: 3,
@@ -133,7 +133,7 @@ const MCQS = [
     reviewerEnterpriseId: 'bob.reviewer',
     topicName: 'JVM',
     aiScore: 30,
-    createdAt: '2026-01-03T00:00:00Z',
+    createdAt: '2026-06-20T00:00:00Z',
   },
 ];
 

@@ -142,7 +142,7 @@ describe('McqDetail — AI scoring + navigation', () => {
   test('History tab loads and renders entries', async () => {
     API.get.mockImplementation((url) => {
       if (url.endsWith('/history')) return Promise.resolve({ data: [
-        { id: 1, changedAt: '2026-01-01T00:00:00Z', changedBy: 'alice', changes: 'Updated stem', previousValue: 'Old stem', newValue: 'New stem' }
+        { id: 1, changedAt: '2026-06-20T00:00:00Z', changedBy: 'alice', changes: 'Updated stem', previousValue: 'Old stem', newValue: 'New stem' }
       ]});
       if (url.startsWith('/mcqs/')) return Promise.resolve({ data: SAMPLE_MCQ });
       return Promise.resolve({ data: [] });

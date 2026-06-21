@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Server, Database, Activity, BarChart3, RefreshCw, CheckCircle2, AlertCircle, Loader } from 'lucide-react';
+import { Server, Database, Activity, BarChart3, RefreshCw, CheckCircle2, AlertCircle, Loader, Brain } from 'lucide-react';
 import './SystemHealth.css';
 
 const SERVICES = [
@@ -14,17 +14,36 @@ const SERVICES = [
     },
   },
   {
-    key: 'redis',
-    label: 'Redis',
+    key: 'valkey',
+    label: 'Valkey',
     icon: <Database size={13} />,
     check: async () => {
-      // Redis health is reported inside the Spring Boot actuator health components
+      // Valkey health is reported inside the Spring Boot actuator health components
       const res = await fetch('http://localhost:8080/actuator/health', { signal: AbortSignal.timeout(4000) });
       const data = await res.json();
-      const redisStatus = data?.components?.redis?.status || data?.components?.cache?.status;
-      if (redisStatus) return { up: redisStatus === 'UP', detail: redisStatus };
-      // fallback: if backend is UP, assume Redis OK (it has in-memory fallback)
+      const valkeyStatus = data?.components?.redis?.status || data?.components?.cache?.status;
+      const version = data?.components?.redis?.details?.version;
+      if (valkeyStatus) return { up: valkeyStatus === 'UP', detail: version ? `v${version}` : valkeyStatus };
+      // fallback: if backend is UP, assume Valkey OK (it has in-memory fallback)
       return { up: data.status === 'UP', detail: 'via backend' };
+    },
+  },
+  {
+    key: 'breeth',
+    label: 'Breeth AI',
+    icon: <Brain size={13} />,
+    check: async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:8080/api/v1/breeth/status', {
+          signal: AbortSignal.timeout(4000),
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        });
+        const data = await res.json();
+        return { up: data.configured === true, detail: data.configured ? 'Connected' : 'Not configured' };
+      } catch {
+        return { up: false, detail: 'Unreachable' };
+      }
     },
   },
   {

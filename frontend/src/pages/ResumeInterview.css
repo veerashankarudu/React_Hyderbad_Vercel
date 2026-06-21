@@ -91,7 +91,7 @@
 }
 
 .ri-file-input-wrap:hover .ri-file-label {
-  border-color: #A100FF;
+  border-color: #6983FF;
   background: rgba(124, 58, 237, 0.04);
 }
 
@@ -108,13 +108,13 @@
 
 .ri-input:focus {
   outline: none;
-  border-color: #A100FF;
+  border-color: #6983FF;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
 .ri-analyze-btn {
   padding: 0.85rem 2.5rem;
-  background: linear-gradient(135deg, #A100FF, #A100FF);
+  background: linear-gradient(135deg, #6983FF, #6983FF);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -192,7 +192,7 @@
 
 .ri-tag {
   background: rgba(124, 58, 237, 0.12);
-  color: #A100FF;
+  color: #6983FF;
   padding: 0.25rem 0.65rem;
   border-radius: 20px;
   font-size: 0.78rem;
@@ -330,12 +330,12 @@
 }
 
 .ri-tab:hover {
-  border-color: #A100FF;
-  color: #A100FF;
+  border-color: #6983FF;
+  color: #6983FF;
 }
 
 .ri-tab-active {
-  background: linear-gradient(135deg, #A100FF, #A100FF);
+  background: linear-gradient(135deg, #6983FF, #6983FF);
   color: #fff !important;
   border-color: transparent;
 }
@@ -368,7 +368,7 @@
 }
 
 .ri-question-item:hover {
-  border-color: #A100FF;
+  border-color: #6983FF;
 }
 
 .ri-q-header {
@@ -380,7 +380,7 @@
 }
 
 .ri-q-num {
-  background: #A100FF;
+  background: #6983FF;
   color: white;
   font-size: 0.72rem;
   font-weight: 700;
@@ -444,7 +444,7 @@
 .ri-q-approach summary {
   cursor: pointer;
   font-weight: 600;
-  color: #A100FF;
+  color: #6983FF;
 }
 
 .ri-q-approach p {
@@ -484,7 +484,7 @@ body.dark-mode .ri-questions-card {
 }
 
 body.dark-mode .ri-form-row label {
-  color: #c4b5fd;
+  color: #BCB5E7;
 }
 
 body.dark-mode .ri-input {
@@ -517,8 +517,8 @@ body.dark-mode .ri-tab {
 }
 
 body.dark-mode .ri-tab:hover {
-  color: #C77DFF;
-  border-color: #C77DFF;
+  color: #BCB5E7;
+  border-color: #BCB5E7;
 }
 
 body.dark-mode .ri-question-item {
@@ -540,10 +540,10 @@ body.dark-mode .ri-q-approach {
 }
 
 body.dark-mode .ri-q-approach p {
-  color: #c4b5fd;
+  color: #BCB5E7;
 }
 
 body.dark-mode .ri-q-code-answer {
-  color: #c4b5fd;
+  color: #BCB5E7;
   background: rgba(0, 0, 0, 0.25);
 }

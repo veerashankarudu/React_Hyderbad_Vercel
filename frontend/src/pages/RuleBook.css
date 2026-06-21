@@ -141,7 +141,7 @@
 }
 .rb-tab:hover { background: #F3F4F6; color: #374151; }
 .rb-tab.active {
-  background: linear-gradient(135deg, #A100FF, #B84DFF);
+  background: linear-gradient(135deg, #6983FF, #8BA0FF);
   color: #fff;
   font-weight: 600;
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
@@ -212,7 +212,7 @@
 .rb-pipe-connector-pulse {
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, #A100FF, transparent);
+  background: linear-gradient(180deg, #6983FF, transparent);
   animation: rb-pipe-flow 2s ease-in-out infinite;
 }
 @keyframes rb-pipe-flow {
@@ -413,7 +413,7 @@
 .rb-dup-rule-num {
   min-width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #A100FF, #B84DFF);
+  background: linear-gradient(135deg, #6983FF, #8BA0FF);
   color: #fff;
   border-radius: 50%;
   display: flex;
@@ -498,7 +498,7 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, #A100FF, #B84DFF, #C77DFF);
+  background: linear-gradient(180deg, #6983FF, #8BA0FF, #BCB5E7);
   border-radius: 3px;
   transform: translateX(-50%);
 }
@@ -517,7 +517,7 @@
   width: 40px;
   height: 40px;
   background: #fff;
-  border: 3px solid #A100FF;
+  border: 3px solid #6983FF;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -620,13 +620,13 @@
 }
 .rb-shortcut-group:hover {
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  border-color: #c4b5fd;
+  border-color: #BCB5E7;
 }
 
 .rb-shortcut-group-header {
   padding: 0.65rem 1rem;
   background: #f9fafb;
-  border-left: 4px solid #A100FF;
+  border-left: 4px solid #6983FF;
   font-size: 0.8rem;
   font-weight: 700;
   color: #374151;
@@ -707,7 +707,7 @@ body.dark-mode .rb-tab-bar {
 body.dark-mode .rb-tab { color: #8b949e; }
 body.dark-mode .rb-tab:hover { background: #1c2128; color: #c9d1d9; }
 body.dark-mode .rb-tab.active {
-  background: linear-gradient(135deg, #A100FF, #B84DFF);
+  background: linear-gradient(135deg, #6983FF, #8BA0FF);
   color: #fff;
 }
 body.dark-mode .rb-panel-title { color: #e2e8f0; }
@@ -716,7 +716,7 @@ body.dark-mode .rb-pipe-card {
   background: #161b22;
   border-color: #30363d;
 }
-body.dark-mode .rb-pipe-card:hover { border-color: #A100FF; }
+body.dark-mode .rb-pipe-card:hover { border-color: #6983FF; }
 body.dark-mode .rb-pipe-card p { color: #c9d1d9; }
 body.dark-mode .rb-pipe-connector { background: #30363d; }
 
@@ -735,7 +735,7 @@ body.dark-mode .rb-dup-rule {
   background: #161b22;
   border-color: #30363d;
 }
-body.dark-mode .rb-dup-rule:hover { border-color: #A100FF; }
+body.dark-mode .rb-dup-rule:hover { border-color: #6983FF; }
 body.dark-mode .rb-dup-rule p { color: #c9d1d9; }
 body.dark-mode .rb-dup-bar { background: #21262d; }
 
@@ -743,7 +743,7 @@ body.dark-mode .rb-ai-card {
   background: #161b22;
   border-color: #30363d;
 }
-body.dark-mode .rb-ai-card:hover { border-color: #A100FF; }
+body.dark-mode .rb-ai-card:hover { border-color: #6983FF; }
 body.dark-mode .rb-ai-card h4 { color: #e2e8f0; }
 body.dark-mode .rb-ai-card p { color: #8b949e; }
 
@@ -751,7 +751,7 @@ body.dark-mode .rb-tl-card {
   background: #161b22;
   border-color: #30363d;
 }
-body.dark-mode .rb-tl-card:hover { border-color: #A100FF; }
+body.dark-mode .rb-tl-card:hover { border-color: #6983FF; }
 body.dark-mode .rb-tl-card p { color: #c9d1d9; }
 body.dark-mode .rb-tl-dot { background: #161b22; }
 
@@ -759,7 +759,7 @@ body.dark-mode .rb-quiz-card {
   background: #161b22;
   border-color: #30363d;
 }
-body.dark-mode .rb-quiz-card:hover { border-color: #A100FF; }
+body.dark-mode .rb-quiz-card:hover { border-color: #6983FF; }
 body.dark-mode .rb-quiz-card h4 { color: #e2e8f0; }
 body.dark-mode .rb-quiz-card p { color: #8b949e; }
 
@@ -860,7 +860,7 @@ body.dark-mode .rb-quiz-card p { color: #8b949e; }
   padding: 0.65rem;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #A100FF;
+  color: #6983FF;
   background: #f9fafb;
   border-top: 1px solid #e5e7eb;
   text-decoration: none;
@@ -927,7 +927,7 @@ body.dark-mode .rb-quiz-card p { color: #8b949e; }
 }
 .rb-mcp-tool-card:hover {
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  border-color: #c4b5fd;
+  border-color: #BCB5E7;
 }
 
 .rb-mcp-tool-num {
@@ -1043,18 +1043,18 @@ body.dark-mode .rb-quiz-card p { color: #8b949e; }
 /* Shortcuts tab — dark mode */
 body.dark-mode .rb-shortcuts-intro { color: #8b949e; }
 body.dark-mode .rb-shortcut-group { background: #161b22; border-color: #30363d; }
-body.dark-mode .rb-shortcut-group:hover { border-color: #7c3aed; }
+body.dark-mode .rb-shortcut-group:hover { border-color: #6983FF; }
 body.dark-mode .rb-shortcut-group-header { background: #0d1117; color: #c9d1d9; border-bottom-color: #30363d; }
 body.dark-mode .rb-shortcut-row:hover { background: #1c1531; }
 body.dark-mode .rb-shortcut-desc { color: #c9d1d9; }
 body.dark-mode .rb-kbd { background: #21262d; border-color: #444c56; color: #e2e8f0; }
-body.dark-mode .rb-shortcuts-tip { background: linear-gradient(135deg, #1a0d2e, #130d1f); border-color: #4c1d95; color: #c4b5fd; }
+body.dark-mode .rb-shortcuts-tip { background: linear-gradient(135deg, #1A1528, #140F20); border-color: #30176E; color: #BCB5E7; }
 
 /* Infra tab — dark mode */
 body.dark-mode .rb-infra-intro { color: #8b949e; }
 body.dark-mode .rb-infra-card { border-color: #30363d; }
 body.dark-mode .rb-infra-facts li { color: #c9d1d9; border-bottom-color: #21262d; }
-body.dark-mode .rb-infra-link { background: #0d1117; color: #c4b5fd; border-top-color: #30363d; }
+body.dark-mode .rb-infra-link { background: #0d1117; color: #BCB5E7; border-top-color: #30363d; }
 body.dark-mode .rb-infra-link:hover { background: #1c1531; }
 body.dark-mode .rb-infra-start-tip { background: #0d1f17; border-color: #166534; color: #86efac; }
 body.dark-mode .rb-infra-start-tip code { background: #14532d; color: #bbf7d0; }
@@ -1064,7 +1064,7 @@ body.dark-mode .rb-mcp-intro-card { background: #161b22; border-color: #30363d; 
 body.dark-mode .rb-mcp-intro-card h4 { color: #e2e8f0; }
 body.dark-mode .rb-mcp-intro-card p  { color: #8b949e; }
 body.dark-mode .rb-mcp-tool-card { background: #161b22; border-color: #30363d; }
-body.dark-mode .rb-mcp-tool-card:hover { border-color: #7c3aed; }
+body.dark-mode .rb-mcp-tool-card:hover { border-color: #6983FF; }
 body.dark-mode .rb-mcp-tool-desc { color: #8b949e; }
 body.dark-mode .rb-mcp-param { background: #21262d; color: #c9d1d9; }
 
@@ -1167,7 +1167,7 @@ body.dark-mode .rb-qt-id { background: #21262d; color: #8b949e; }
   align-items: center;
   gap: 0.6rem;
   background: linear-gradient(135deg, #f5f0ff, #ede9fe);
-  border: 1px solid #c4b5fd;
+  border: 1px solid #BCB5E7;
   border-radius: 8px;
   padding: 0.75rem 1rem;
   font-size: 0.85rem;
@@ -1196,8 +1196,8 @@ body.dark-mode .rb-qt-id { background: #21262d; color: #8b949e; }
   border-bottom: 2px solid var(--border, #e5e7eb);
 }
 .rb-bulk-table td { padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--border, #f3f4f6); vertical-align: top; }
-.rb-bulk-required td { background: rgba(161,0,255,0.03); }
-.rb-bulk-num { font-weight: 700; color: #A100FF; width: 30px; }
+.rb-bulk-required td { background: rgba(105,131,255,0.03); }
+.rb-bulk-num { font-weight: 700; color: #6983FF; width: 30px; }
 .rb-bulk-name { font-weight: 600; white-space: nowrap; }
 .rb-bulk-desc { color: var(--text-secondary, #6b7280); line-height: 1.5; max-width: 340px; }
 .rb-bulk-req-badge {
@@ -1213,10 +1213,10 @@ body.dark-mode .rb-qt-id { background: #21262d; color: #8b949e; }
 .rb-bulk-example { font-size: 0.78rem; color: #0891B2; background: #f0f9ff; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
 .rb-bulk-rules { display: flex; flex-direction: column; gap: 0.5rem; }
 .rb-bulk-rule { display: flex; align-items: flex-start; gap: 0.7rem; padding: 0.55rem 0.9rem; background: var(--card-bg, #fff); border: 1px solid var(--border, #e5e7eb); border-radius: 8px; }
-.rb-bulk-rule-dot { width: 8px; height: 8px; border-radius: 50%; background: #A100FF; margin-top: 5px; flex-shrink: 0; }
+.rb-bulk-rule-dot { width: 8px; height: 8px; border-radius: 50%; background: #6983FF; margin-top: 5px; flex-shrink: 0; }
 .rb-bulk-rule p { margin: 0; font-size: 0.84rem; color: var(--text-secondary, #374151); line-height: 1.5; }
 
-body.dark-mode .rb-bulk-tip { background: #1a1242; border-color: #6d28d9; color: #c4b5fd; }
+body.dark-mode .rb-bulk-tip { background: #1A1528; border-color: #30176E; color: #BCB5E7; }
 body.dark-mode .rb-bulk-table { background: #161b22; border-color: #30363d; }
 body.dark-mode .rb-bulk-table th { background: #0d1117; color: #e6edf3; border-bottom-color: #30363d; }
 body.dark-mode .rb-bulk-table td { border-bottom-color: #21262d; }
@@ -1246,7 +1246,7 @@ body.dark-mode .rb-bulk-example { background: #0c1a2e; color: #38bdf8; }
   color: #fff;
 }
 .rb-live-connector { width: 2px; height: 20px; background: var(--border, #e5e7eb); margin: 0 20px; flex-shrink: 0; position: relative; }
-.rb-live-pulse { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: #A100FF; animation: rb-pulse 1.5s infinite; }
+.rb-live-pulse { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: #6983FF; animation: rb-pulse 1.5s infinite; }
 .rb-live-step-card {
   flex: 1;
   background: var(--card-bg, #fff);
@@ -1258,7 +1258,7 @@ body.dark-mode .rb-bulk-example { background: #0c1a2e; color: #38bdf8; }
 .rb-live-step-num {
   width: 22px; height: 22px;
   border-radius: 50%;
-  background: #A100FF;
+  background: #6983FF;
   color: #fff;
   font-size: 0.7rem;
   font-weight: 700;
@@ -1279,7 +1279,7 @@ body.dark-mode .rb-bulk-example { background: #0c1a2e; color: #38bdf8; }
 .rb-live-tech-note {
   display: flex; align-items: flex-start; gap: 0.6rem;
   background: linear-gradient(135deg, #f5f0ff, #ede9fe);
-  border: 1px solid #c4b5fd;
+  border: 1px solid #BCB5E7;
   border-radius: 8px;
   padding: 0.75rem 1rem;
   font-size: 0.83rem;
@@ -1290,7 +1290,7 @@ body.dark-mode .rb-bulk-example { background: #0c1a2e; color: #38bdf8; }
 
 body.dark-mode .rb-live-step-card { background: #161b22; border-color: #30363d; }
 body.dark-mode .rb-live-step-card p { color: #c9d1d9; }
-body.dark-mode .rb-live-tech-note { background: #1a1242; border-color: #6d28d9; color: #c4b5fd; }
+body.dark-mode .rb-live-tech-note { background: #1A1528; border-color: #30176E; color: #BCB5E7; }
 body.dark-mode .rb-live-tech-note code { background: #2d1b69; }
 
 /* ═══════════════════════════════════════════════════════════════

@@ -15,7 +15,7 @@ NC='\033[0m'
 echo ""
 echo -e "${BLUE}╔══════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║     QuizHub AI — Automated Setup Script      ║${NC}"
-echo -e "${BLUE}║     Accenture Hack-N-Stack 2026               ║${NC}"
+echo -e "${BLUE}║     Valkey Hack-N-Stack 2026               ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════════╝${NC}"
 echo ""
 

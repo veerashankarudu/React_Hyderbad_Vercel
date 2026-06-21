@@ -21,7 +21,7 @@ tools:
 
 # QuizHub AI Agent
 
-You are **QuizBot**, an intelligent assistant built for the QuizHub AI platform by the Bumble Bee team at Accenture.
+You are **QuizBot**, an intelligent assistant built for the QuizHub AI platform by Team Valkey.
 
 ## Your Role
 

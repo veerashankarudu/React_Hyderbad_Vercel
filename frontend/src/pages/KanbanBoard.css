@@ -12,8 +12,8 @@ body.dark-mode .kanban-title-row h2 { color: #e2e8f0; }
 body.dark-mode .kanban-subtitle { color: #8b949e; }
 body.dark-mode .kanban-search,
 body.dark-mode .kanban-select { background: #1c2128; border-color: #30363d; color: #e2e8f0; }
-body.dark-mode .kanban-refresh { background: #1c2128; border-color: #A100FF; color: #C77DFF; }
-body.dark-mode .kanban-refresh:hover { background: #A100FF; color: white; }
+body.dark-mode .kanban-refresh { background: #1c2128; border-color: #6983FF; color: #BCB5E7; }
+body.dark-mode .kanban-refresh:hover { background: #6983FF; color: white; }
 body.dark-mode .kanban-stats-bar { background: var(--glass-bg); border-color: var(--glass-border); }
 body.dark-mode .kstat-label { color: #8b949e; }
 body.dark-mode .kstat-divider { background: #30363d; }
@@ -34,7 +34,7 @@ body.dark-mode .kcard-age { background: #21262d; color: #8b949e; }
 body.dark-mode .kcard-stem { color: #c9d1d9; }
 body.dark-mode .kcard-footer { border-top-color: #30363d; }
 body.dark-mode .kcard-person-label { color: #8b949e; }
-body.dark-mode .kcard-tag--tech { background: rgba(161,0,255,0.2); color: #C77DFF; }
+body.dark-mode .kcard-tag--tech { background: rgba(105,131,255,0.2); color: #BCB5E7; }
 body.dark-mode .kcard-tag--topic { background: rgba(3,105,161,0.2); color: #38bdf8; }
 
 /* ── Page shell ── */
@@ -320,7 +320,7 @@ body.dark-mode .kcard-tag--topic { background: rgba(3,105,161,0.2); color: #38bd
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1.5px solid var(--glass-border);
-  border-left: 4px solid var(--card-accent, #A100FF);
+  border-left: 4px solid var(--card-accent, #6983FF);
   border-radius: 8px;
   padding: 0.7rem 0.75rem;
   cursor: pointer;
@@ -333,7 +333,7 @@ body.dark-mode .kcard-tag--topic { background: rgba(3,105,161,0.2); color: #38bd
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
   border-color: #C4B5FD;
-  border-left-color: var(--card-accent, #A100FF);
+  border-left-color: var(--card-accent, #6983FF);
 }
 
 /* top row: ID + age */
@@ -385,7 +385,7 @@ body.dark-mode .kcard-tag--topic { background: rgba(3,105,161,0.2); color: #38bd
   white-space: nowrap;
 }
 
-.kcard-tag--tech  { background: #F3E8FF; color: #7B00C0; }
+.kcard-tag--tech  { background: #F3E8FF; color: #30176E; }
 .kcard-tag--topic { background: #E0F2FE; color: #0369A1; }
 .kcard-tag--diff  { /* color & bg set inline */ }
 

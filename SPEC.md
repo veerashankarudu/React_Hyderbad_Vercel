@@ -29,7 +29,7 @@
 
 ## 1. Problem Overview
 
-Accenture ATCI's Learning and Talent Transformation (L&TT) team currently relies on **third-party tools** (e.g., Google Forms, Kahoot) to create and administer quiz questions. This leads to:
+Valkey ATCI's Learning and Talent Transformation (L&TT) team currently relies on **third-party tools** (e.g., Google Forms, Kahoot) to create and administer quiz questions. This leads to:
 
 - No control over quiz data
 - No customization or branding
@@ -461,8 +461,8 @@ List MCQs created by the logged-in user.
       "topic": "OOP",
       "difficulty": "MEDIUM",
       "status": "DRAFT",
-      "createdAt": "2026-05-18T10:00:00",
-      "updatedAt": "2026-05-18T10:00:00"
+      "createdAt": "2026-06-20T10:00:00",
+      "updatedAt": "2026-06-20T10:00:00"
     }
   ],
   "totalElements": 25,
@@ -494,7 +494,7 @@ Get full MCQ detail (including reviewer comments if REJECTED).
       "reviewer": "jane.smith",
       "comment": "Option A is incomplete. Please elaborate.",
       "action": "REJECTED",
-      "createdAt": "2026-05-17T14:00:00"
+      "createdAt": "2026-06-20T14:00:00"
     }
   ]
 }
@@ -886,7 +886,7 @@ spring:
 ### Standard Error Response
 ```json
 {
-  "timestamp": "2026-05-18T10:00:00",
+  "timestamp": "2026-06-20T10:00:00",
   "status": 400,
   "error": "Bad Request",
   "message": "Correct answer must be A, B, C, or D",
@@ -1304,11 +1304,11 @@ INSERT INTO tech_stacks (id, name) VALUES
 > **Exact enterprise IDs from Slide 16 of Level1_ProblemStatement.pptx**
 ```sql
 INSERT INTO users (enterprise_id, full_name, email, password_hash, role) VALUES
-('divya.madhanasekar', 'Divya Madhanasekar', 'divya.madhanasekar@accenture.com', '<bcrypt>', 'ADMIN'),
-('gaurav.a.bhola',     'Gaurav Bhola',       'gaurav.a.bhola@accenture.com',     '<bcrypt>', 'SME'),
-('birendra.kumar.singh','Birendra Singh',     'birendra.kumar.singh@accenture.com','<bcrypt>', 'SME'),
-('swati.avinash.nikam','Swati Nikam',        'swati.avinash.nikam@accenture.com', '<bcrypt>', 'SME'),
-('indugu.hari.prasad', 'Hari Prasad',        'indugu.hari.prasad@accenture.com',  '<bcrypt>', 'SME');
+('divya.madhanasekar', 'Divya Madhanasekar', 'divya.madhanasekar@valkey.com', '<bcrypt>', 'ADMIN'),
+('gaurav.a.bhola',     'Gaurav Bhola',       'gaurav.a.bhola@valkey.com',     '<bcrypt>', 'SME'),
+('birendra.kumar.singh','Birendra Singh',     'birendra.kumar.singh@valkey.com','<bcrypt>', 'SME'),
+('swati.avinash.nikam','Swati Nikam',        'swati.avinash.nikam@valkey.com', '<bcrypt>', 'SME'),
+('indugu.hari.prasad', 'Hari Prasad',        'indugu.hari.prasad@valkey.com',  '<bcrypt>', 'SME');
 ```
 
 ### SME-to-Tech-Stack Mappings
@@ -1395,7 +1395,7 @@ INSERT INTO mcqs (id, question_stem, option_a, option_b, option_c, option_d, cor
 ```
 hack-n-stack/
 ├── backend/                          ← Spring Boot
-│   ├── src/main/java/com/accenture/quizhub/
+│   ├── src/main/java/com/valkey/quizhub/
 │   │   ├── config/                   ← Security, CORS, AI config
 │   │   ├── controller/               ← REST Controllers
 │   │   ├── service/                  ← Business logic
@@ -1628,7 +1628,7 @@ app:
 logging:
   level:
     root: INFO
-    com.accenture.quizhub: DEBUG
+    com.valkey.quizhub: DEBUG
     org.springframework.security: WARN
   file:
     name: logs/quizhub.log
@@ -1994,7 +1994,7 @@ Keyword search within own MCQs by question stem content.
 
 ---
 
-*Document Version: 2.0 | Updated: May 18, 2026 | Hack-N-Stack Level 1*
+*Document Version: 2.0 | Updated: June 20, 2026 | Hack-N-Stack Level 1*
 
 ---
 
@@ -2003,7 +2003,7 @@ Keyword search within own MCQs by question stem content.
 # SECTION 20: Live Quiz Battle Mode (Kahoot-style)
 ## Spec-Driven Development Document — Phase 2 Feature
 
-> **Version:** 1.0 | **Date:** May 22, 2026 | **Author:** Team Bumblebee
+> **Version:** 1.0 | **Date:** June 20, 2026 | **Author:** Team Valkey
 
 ---
 
@@ -2651,8 +2651,8 @@ Extend existing audit log pattern for live session events:
 
 ---
 
-*Section 20.18 added: May 22, 2026 | Production Gap Resolutions | Team Bumblebee*
+*Section 20.18 added: June 20, 2026 | Production Gap Resolutions | Team Valkey*
 
 ---
 
-*Section 20 added: May 22, 2026 | Live Quiz Battle Mode | Team Bumblebee*
+*Section 20 added: June 20, 2026 | Live Quiz Battle Mode | Team Valkey*

@@ -124,7 +124,7 @@ describe('UserManagement Page', () => {
         id: 1,
         enterpriseId: 'jane.doe',
         fullName: 'Jane Doe',
-        email: 'jane@accenture.com',
+        email: 'jane@valkey.com',
         role: 'SME',
         techStacks: [],
         approved: true,

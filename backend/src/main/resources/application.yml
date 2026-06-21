@@ -110,6 +110,12 @@ app:
     max-rows: 500
   url: ${APP_URL:http://localhost:3000}
 
+# Breeth AI — Intent-aware memory for AI agents (https://docs.thebreeth.com)
+breeth:
+  api-key: ${BREETH_API_KEY:}
+  group-id: ${BREETH_GROUP_ID:quizhub}
+  enabled: ${BREETH_ENABLED:true}
+
 management:
   endpoints:
     web:
@@ -149,7 +155,7 @@ management:
 logging:
   level:
     root: INFO
-    com.accenture.quizhub: DEBUG
+    com.valkey.quizhub: DEBUG
     org.springframework.security: WARN
 
 springdoc:

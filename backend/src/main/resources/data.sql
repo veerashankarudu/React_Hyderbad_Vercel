@@ -65,18 +65,18 @@ INSERT IGNORE INTO topics (name, tech_stack_id) VALUES
 
 -- Admin user: divya.madhanasekar / Admin@123
 INSERT IGNORE INTO users (enterprise_id, full_name, email, password_hash, role) VALUES
-  ('divya.madhanasekar', 'Divya Madhanasekar', 'divya.madhanasekar@accenture.com',
+  ('divya.madhanasekar', 'Divya Madhanasekar', 'divya.madhanasekar@valkey.com',
    '$2b$10$qjj/bDYNep1CvxZV3OznMelfjFqV7EmlzpbsUyR.OwUPpVbAS36Pm', 'ADMIN');
 
 -- SME users: password for all is 'Sme@1234'
 INSERT IGNORE INTO users (enterprise_id, full_name, email, password_hash, role) VALUES
-  ('gaurav.a.bhola', 'Gaurav Bhola', 'gaurav.a.bhola@accenture.com',
+  ('gaurav.a.bhola', 'Gaurav Bhola', 'gaurav.a.bhola@valkey.com',
    '$2b$10$ryi.AMMAW7q48FRt8kGlA.VINXqUS2JW/ump2apcVYoNZHUfwfvyy', 'SME'),
-  ('birendra.kumar.singh', 'Birendra Kumar Singh', 'birendra.kumar.singh@accenture.com',
+  ('birendra.kumar.singh', 'Birendra Kumar Singh', 'birendra.kumar.singh@valkey.com',
    '$2b$10$ryi.AMMAW7q48FRt8kGlA.VINXqUS2JW/ump2apcVYoNZHUfwfvyy', 'SME'),
-  ('swati.avinash.nikam', 'Swati Nikam', 'swati.avinash.nikam@accenture.com',
+  ('swati.avinash.nikam', 'Swati Nikam', 'swati.avinash.nikam@valkey.com',
    '$2b$10$ryi.AMMAW7q48FRt8kGlA.VINXqUS2JW/ump2apcVYoNZHUfwfvyy', 'SME'),
-  ('indugu.hari.prasad', 'Indugu Hari Prasad', 'indugu.hari.prasad@accenture.com',
+  ('indugu.hari.prasad', 'Indugu Hari Prasad', 'indugu.hari.prasad@valkey.com',
    '$2b$10$ryi.AMMAW7q48FRt8kGlA.VINXqUS2JW/ump2apcVYoNZHUfwfvyy', 'SME');
 
 -- SME → Tech Stack mappings (spec-exact)

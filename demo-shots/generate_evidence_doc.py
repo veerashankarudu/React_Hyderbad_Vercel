@@ -486,7 +486,7 @@ def create_document():
     
     info = doc.add_paragraph()
     info.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    info.add_run('Accenture Hack-N-Stack 2026\n').bold = True
+    info.add_run('Valkey Hack-N-Stack 2026\n').bold = True
     info.add_run(f'\nGenerated: {datetime.now().strftime("%B %d, %Y at %I:%M %p")}\n')
     info.add_run(f'\nAutomated E2E Testing with Playwright + API Verification\n')
     info.add_run(f'\n267 Features Tested | 83 Evidence Screenshots\n').bold = True

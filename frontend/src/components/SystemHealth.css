@@ -122,7 +122,7 @@
   border-radius: 4px;
   transition: color 0.2s, transform 0.2s;
 }
-.sh-refresh:hover { color: #A100FF; }
+.sh-refresh:hover { color: #6983FF; }
 .sh-refresh--spin svg { animation: sh-rotate 1s linear infinite; }
 
 .sh-spin { animation: sh-rotate 1s linear infinite; color: #9CA3AF; }
@@ -140,4 +140,4 @@ body.dark-mode .sh-svc--down    { background: #1f0d0d; border-color: #7f1d1d; co
 body.dark-mode .sh-svc--loading { background: #161b22; border-color: #30363d; color: #8b949e; }
 body.dark-mode .sh-time         { color: #6b7280; }
 body.dark-mode .sh-refresh      { color: #6b7280; }
-body.dark-mode .sh-refresh:hover { color: #c4b5fd; }
+body.dark-mode .sh-refresh:hover { color: #BCB5E7; }

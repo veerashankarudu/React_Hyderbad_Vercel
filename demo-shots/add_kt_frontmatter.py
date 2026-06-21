@@ -43,7 +43,7 @@ r2 = p2.add_run("Knowledge Transfer Document"); r2.font.size=Pt(20); r2.font.col
 
 front.add_paragraph()
 p3 = front.add_paragraph(); p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-r3 = p3.add_run("Accenture Hack-N-Stack 2026  ·  Team BumbleBee"); r3.font.size=Pt(13); r3.font.color.rgb=RGBColor(0x88,0x88,0x88)
+r3 = p3.add_run("Valkey Hack-N-Stack 2026  ·  Team Valkey"); r3.font.size=Pt(13); r3.font.color.rgb=RGBColor(0x88,0x88,0x88)
 
 front.add_paragraph()
 p4 = front.add_paragraph(); p4.alignment = WD_ALIGN_PARAGRAPH.CENTER

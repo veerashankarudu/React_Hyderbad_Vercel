@@ -392,10 +392,10 @@ describe('ForgotPassword Page', () => {
 
   test('calls API.post with email when identifier contains @', async () => {
     render(<Wrapper><ForgotPassword /></Wrapper>);
-    fireEvent.change(document.querySelector('input[type="text"]'), { target: { value: 'john@accenture.com' } });
+    fireEvent.change(document.querySelector('input[type="text"]'), { target: { value: 'john@valkey.com' } });
     fireEvent.submit(document.querySelector('form'));
     await waitFor(() => {
-      expect(API.post).toHaveBeenCalledWith('/auth/forgot-password', { email: 'john@accenture.com' });
+      expect(API.post).toHaveBeenCalledWith('/auth/forgot-password', { email: 'john@valkey.com' });
     });
   });
 

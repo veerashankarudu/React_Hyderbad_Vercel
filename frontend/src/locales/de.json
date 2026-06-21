@@ -108,7 +108,7 @@
   },
   "login": {
     "title": "Smart Quiz AI Hub",
-    "subtitle": "by Bumble Bee 2026",
+    "subtitle": "by Team Valkey 2026",
     "tagline": "KI-gestütztes MCQ-Lebenszyklusmanagement",
     "welcomeBack": "Willkommen zurück",
     "signInPrompt": "Melden Sie sich mit Ihrer Unternehmens-ID an",
@@ -125,7 +125,7 @@
     "feat3": "Mehrstufiger Überprüfungs- und Genehmigungsworkflow",
     "feat4": "Massenimport über CSV / Excel",
     "appName": "QuizHub AI",
-    "hackathon": "by Bumble Bee 2026",
+    "hackathon": "by Team Valkey 2026",
     "passwordPlaceholder": "Passwort eingeben",
     "feature1": "MCQs erstellen und verwalten",
     "feature2": "KI-Duplikaterkennung",
@@ -502,7 +502,7 @@
   },
   "reg": {
     "title": "Smart Quiz AI Hub",
-    "hackathon": "by Bumble Bee 2026",
+    "hackathon": "by Team Valkey 2026",
     "submitted": "Registrierung eingereicht!",
     "createAccount": "Konto erstellen",
     "registerPrompt": "Als KMU registrieren, um loszulegen",

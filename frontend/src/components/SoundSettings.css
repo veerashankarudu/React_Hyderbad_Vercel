@@ -153,7 +153,7 @@ body:not(.dark-mode) .sound-settings-panel {
 }
 
 .ss-switch input:checked + .ss-slider {
-  background: #A100FF;
+  background: #6983FF;
 }
 
 .ss-switch input:checked + .ss-slider::before {
@@ -176,7 +176,7 @@ body:not(.dark-mode) .sound-settings-panel {
   -webkit-appearance: none;
   width: 16px;
   height: 16px;
-  background: #A100FF;
+  background: #6983FF;
   border-radius: 50%;
   cursor: pointer;
   transition: transform 0.2s;
@@ -194,7 +194,7 @@ body:not(.dark-mode) .sound-settings-panel {
   border: 1px solid rgba(161, 0, 255, 0.3);
   border-radius: 6px;
   background: transparent;
-  color: #A100FF;
+  color: #6983FF;
   cursor: pointer;
   transition: background 0.2s, transform 0.15s;
 }

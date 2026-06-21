@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 QuizHub AI — Comprehensive Feature Evidence Word Document
-Accenture Hack-N-Stack 2026 | Team Bumble Bee
+Valkey Hack-N-Stack 2026 | Team Valkey
 """
 
 import os
@@ -542,7 +542,7 @@ def add_cover(doc):
     doc.add_paragraph()
     tagline = doc.add_paragraph()
     tagline.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = tagline.add_run("Accenture Hack-N-Stack 2026  ·  Team Bumble Bee  ·  By VEERA & TEJA")
+    run = tagline.add_run("Valkey Hack-N-Stack 2026  ·  Team Valkey  ·  By VEERA & TEJA")
     run.font.size = Pt(13)
     run.font.italic = True
     run.font.color.rgb = RGBColor(0x60, 0x60, 0x80)

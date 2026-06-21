@@ -63,7 +63,7 @@ function ParticlesBg() {
 
 const LIFECYCLE = [
   { stage: 'DRAFT', color: '#6B7280', gradient: 'linear-gradient(135deg, #6B7280, #9CA3AF)', icon: <PenLine size={18} />, desc: 'Question being created. Only author can see & edit.' },
-  { stage: 'READY FOR REVIEW', color: '#A100FF', gradient: 'linear-gradient(135deg, #A100FF, #C77DFF)', icon: <Send size={18} />, desc: 'Submitted for review. Admin assigns a reviewer.' },
+  { stage: 'READY FOR REVIEW', color: '#6983FF', gradient: 'linear-gradient(135deg, #6983FF, #BCB5E7)', icon: <Send size={18} />, desc: 'Submitted for review. Admin assigns a reviewer.' },
   { stage: 'UNDER REVIEW', color: '#D97706', gradient: 'linear-gradient(135deg, #D97706, #FBBF24)', icon: <Search size={18} />, desc: 'Reviewer evaluating. Can approve, reject, or comment.' },
   { stage: 'APPROVED', color: '#059669', gradient: 'linear-gradient(135deg, #059669, #34D399)', icon: <CheckCircle2 size={18} />, desc: 'Passed review! Enters Question Bank for quizzes.' },
   { stage: 'REJECTED', color: '#DC2626', gradient: 'linear-gradient(135deg, #DC2626, #F87171)', icon: <RotateCcw size={18} />, desc: 'Needs revision. Author gets feedback & resubmits.' },
@@ -82,11 +82,11 @@ const REVIEW_STEPS = [
 
 const ROLES = [
   {
-    role: 'SME', fullName: 'Subject Matter Expert', icon: <Code2 size={20} />, color: '#A100FF',
+    role: 'SME', fullName: 'Subject Matter Expert', icon: <Code2 size={20} />, color: '#6983FF',
     perms: ['Create/edit/delete own MCQs', 'Submit for review', 'Bulk upload (CSV/Excel)', 'AI-generate questions', 'View stats & leaderboard', 'Take quizzes', 'Live Quiz battles'],
   },
   {
-    role: 'Admin', fullName: 'Administrator', icon: <Shield size={20} />, color: '#B84DFF',
+    role: 'Admin', fullName: 'Administrator', icon: <Shield size={20} />, color: '#8BA0FF',
     perms: ['All SME permissions +', 'Assign reviewers', 'Manage Question Bank', 'Manage Tech Stacks & Topics', 'Manage users', 'View all analytics & audit logs', 'Build & publish assessments'],
   },
 ];
@@ -103,7 +103,7 @@ const AI_FEATURES = [
 const ALL_SHORTCUTS = [
   {
     section: '🌐 Global — always active',
-    color: '#A100FF',
+    color: '#6983FF',
     rows: [
       { keys: ['?'], desc: 'Show / hide this shortcuts overlay' },
       { keys: ['Esc'], desc: 'Close any modal or panel' },
@@ -200,7 +200,7 @@ const ALL_SHORTCUTS = [
   },
   {
     section: '📖 Rule Book page',
-    color: '#B84DFF',
+    color: '#8BA0FF',
     rows: [
       { keys: ['1'], desc: 'Lifecycle tab' },
       { keys: ['2'], desc: 'Roles tab' },
@@ -252,20 +252,20 @@ const INFRA_SERVICES = [
     ],
   },
   {
-    name: 'Redis',
+    name: 'Valkey',
     color: '#DC382C',
     gradient: 'linear-gradient(135deg, #DC382C, #FF6B6B)',
     icon: <Database size={20} />,
     port: '6379',
-    url: 'redis://localhost:6379',
+    url: 'valkey://localhost:6379',
     badge: 'Cache + Blacklist',
     facts: [
       'Rate limiter: sliding window counter per IP per endpoint',
       'Login: 100 req/60s | Join: 10/60s | Validate: 20/60s',
       'AI endpoints: 60 req/60s | MCQ writes: 60 req/60s',
       'JWT token blacklist: logout writes token hash, auth filter checks it',
-      'Fallback: in-memory ConcurrentHashMap when Redis is unavailable',
-      'Start: brew services start redis (or included in start.sh)',
+      'Fallback: in-memory ConcurrentHashMap when Valkey is unavailable',
+      'Start: brew services start valkey (or included in start.sh)',
     ],
   },
 ];
@@ -275,7 +275,7 @@ const MCP_TOOLS = [
     num: 1, name: 'searchQuestions',
     desc: 'Search MCQs by keyword, tech stack, or status. Returns ID, stem, difficulty, status.',
     params: ['keyword', 'techStack?', 'status?'],
-    color: '#A100FF',
+    color: '#6983FF',
   },
   {
     num: 2, name: 'checkDuplicate',
@@ -336,14 +336,14 @@ const SECURITY_FEATURES = [
   },
   {
     icon: <Gauge size={20} />,
-    title: 'Redis Rate Limiting',
+    title: 'Valkey Rate Limiting',
     color: '#DC2626',
     items: [
-      'Sliding window counter: Redis INCR + EXPIRE per IP per route',
+      'Sliding window counter: Valkey INCR + EXPIRE per IP per route',
       'Login: 100 req / 60s — brute-force protection',
       'Live Join: 10 req / 60s — flood protection',
       'AI endpoints: 60 req / 60s — cost control',
-      'Fallback to in-memory bucket when Redis unavailable',
+      'Fallback to in-memory bucket when Valkey unavailable',
       '429 Too Many Requests with Retry-After header',
     ],
   },
@@ -353,7 +353,7 @@ const SECURITY_FEATURES = [
     color: '#D97706',
     items: [
       'POST /api/v1/auth/logout extracts token from Authorization header',
-      'Token hash stored in Redis with TTL = remaining token lifetime',
+      'Token hash stored in Valkey with TTL = remaining token lifetime',
       'Every request: JwtAuthFilter checks blacklist before trusting token',
       'Prevents token reuse after logout — true stateless invalidation',
       '@PostConstruct validates JWT secret on startup — fails fast if missing',
@@ -386,7 +386,7 @@ const SECURITY_FEATURES = [
   {
     icon: <Server size={20} />,
     title: 'Production Profile',
-    color: '#B84DFF',
+    color: '#8BA0FF',
     items: [
       'application-prod.yml: ddl-auto=validate, Flyway enabled',
       'Restricted actuator: only /health and /prometheus exposed',
@@ -407,7 +407,7 @@ const QUIZ_RULES = [
 ];
 
 const QUESTION_TYPES_DATA = [
-  { id: 'SINGLE_MCQ', icon: '🔘', title: 'Single Choice MCQ', badge: 'Classic', color: '#A100FF', desc: 'Standard multiple-choice with exactly one correct answer. The most common question type.' },
+  { id: 'SINGLE_MCQ', icon: '🔘', title: 'Single Choice MCQ', badge: 'Classic', color: '#6983FF', desc: 'Standard multiple-choice with exactly one correct answer. The most common question type.' },
   { id: 'MULTI_MCQ', icon: '☑️', title: 'Multiple Choice', badge: 'Multi', color: '#059669', desc: 'Select ALL correct answers from multiple options. Partial credit supported.' },
   { id: 'DRAG_ORDER', icon: '↕️', title: 'Drag & Drop Ordering', badge: 'Interactive', color: '#0EA5E9', desc: 'Arrange items in correct sequential order by dragging. Tests knowledge of lifecycle/steps.' },
   { id: 'MATCH_PAIRS', icon: '🔗', title: 'Match Concept to Definition', badge: 'Matching', color: '#D97706', desc: 'Connect concepts to their definitions by drawing lines. Great for terminology.' },
@@ -415,7 +415,7 @@ const QUESTION_TYPES_DATA = [
   { id: 'FILL_BLANK', icon: '✏️', title: 'Fill in the Blank', badge: 'Input', color: '#DC2626', desc: 'Complete code by filling missing keywords or identifiers. Tests precise syntax recall.' },
   { id: 'PREDICT_OUTPUT', icon: '🔮', title: 'Predict Program Output', badge: 'Tracing', color: '#0891B2', desc: 'Read code and predict exactly what the console will output. Deep logic tracing.' },
   { id: 'DEBUG_CODE', icon: '🐛', title: 'Debug the Code', badge: 'Fix', color: '#16A34A', desc: 'Identify bugs and runtime errors in given code. Tests debugging mindset.' },
-  { id: 'CODE_REARRANGE', icon: '🧩', title: 'Code Rearrangement', badge: 'Puzzle', color: '#B84DFF', desc: 'Rearrange shuffled code blocks into a valid program. Tests structural understanding.' },
+  { id: 'CODE_REARRANGE', icon: '🧩', title: 'Code Rearrangement', badge: 'Puzzle', color: '#8BA0FF', desc: 'Rearrange shuffled code blocks into a valid program. Tests structural understanding.' },
   { id: 'SQL_BUILDER', icon: '🗃️', title: 'Interactive SQL Builder', badge: 'Builder', color: '#E6522C', desc: 'Drag SQL clauses to construct valid queries. Tests database query construction skills.' },
   { id: 'ARCH_LAYERS', icon: '🏗️', title: 'Architecture Layers', badge: 'Design', color: '#4F46E5', desc: 'Drag components into correct architecture layers (Controller/Service/Repo). System design.' },
   { id: 'CODE_REVIEW', icon: '👁️', title: 'Code Review Challenge', badge: 'Review', color: '#9333EA', desc: 'Identify security and performance issues in PR-style code. OWASP awareness.' },
@@ -441,7 +441,7 @@ const BULK_COLUMNS = [
 ];
 
 const LIVE_QUIZ_FLOW = [
-  { icon: '🎯', step: 'Create Session', role: 'Host', color: '#A100FF', desc: 'Host opens Live Quiz page, selects an existing Quiz or Assessment, sets session name' },
+  { icon: '🎯', step: 'Create Session', role: 'Host', color: '#6983FF', desc: 'Host opens Live Quiz page, selects an existing Quiz or Assessment, sets session name' },
   { icon: '🔑', step: 'Session Code', role: 'System', color: '#059669', desc: 'System generates a 6-character join code (e.g. SPRING) + opens WebSocket channel' },
   { icon: '👥', step: 'Join Lobby', role: 'Players', color: '#0EA5E9', desc: 'Players navigate to /live/join, enter session code — all see live lobby with player list' },
   { icon: '▶️', step: 'Start Battle', role: 'Host', color: '#D97706', desc: 'Host clicks Start — all connected players receive first question simultaneously via WebSocket' },
@@ -454,7 +454,7 @@ const LEADERBOARD_MODES = [
   {
     mode: 'Reviewers',
     icon: '🏅',
-    color: '#A100FF',
+    color: '#6983FF',
     desc: 'Ranks all reviewers by number of MCQs reviewed. Encourages fast, thorough review cycles. Resets never — cumulative all-time count.',
     badges: [
       { icon: '👑', label: 'Champion', rule: 'Rank #1' },
@@ -724,7 +724,7 @@ export default function RuleBook() {
           {/* ── INFRA ── */}
           {activeTab === 'infra' && (
             <div className="rb-infra-panel">
-              <h2 className="rb-panel-title">🖥️ Infrastructure — Prometheus · Grafana · Redis</h2>
+              <h2 className="rb-panel-title">🖥️ Infrastructure — Prometheus · Grafana · Valkey</h2>
               <p className="rb-infra-intro">Three always-on backing services that give QuizHub observability, caching, and rate-limiting without any code changes to your workflow.</p>
               <div className="rb-infra-grid">
                 {INFRA_SERVICES.map((svc, i) => (
@@ -768,7 +768,7 @@ export default function RuleBook() {
               <h2 className="rb-panel-title">🔌 MCP Tools — Model Context Protocol</h2>
               <div className="rb-mcp-intro-row">
                 <div className="rb-mcp-intro-card">
-                  <Plug size={28} style={{ color: '#A100FF' }} />
+                  <Plug size={28} style={{ color: '#6983FF' }} />
                   <div>
                     <h4>What is MCP?</h4>
                     <p>Model Context Protocol lets AI assistants (Claude, GitHub Copilot, etc.) call live QuizHub APIs as tools. The MCP server runs at <strong>localhost:8085</strong> and exposes 8 callable tools.</p>
@@ -903,7 +903,7 @@ export default function RuleBook() {
               <p className="rb-bulk-intro">Upload hundreds of MCQs at once via CSV or Excel. Download the official template from the Bulk Upload page. All uploaded questions are saved as <strong>DRAFT</strong> — no direct approval.</p>
               <AnimateIn>
                 <div className="rb-bulk-tip">
-                  <Upload size={16} style={{ color: '#A100FF' }} />
+                  <Upload size={16} style={{ color: '#6983FF' }} />
                   <span>Go to <strong>Bulk Upload page</strong> → click <strong>"Download Template_MCQs.xlsx"</strong> to get the pre-formatted Excel file with all headers.</span>
                 </div>
               </AnimateIn>
@@ -976,7 +976,7 @@ export default function RuleBook() {
               </div>
               <AnimateIn delay={600}>
                 <div className="rb-live-tech-note">
-                  <Activity size={16} style={{ color: '#A100FF' }} />
+                  <Activity size={16} style={{ color: '#6983FF' }} />
                   <span><strong>Tech stack:</strong> Spring WebSocket with STOMP over SockJS. Session state held in-memory (SimpleBroker). For clustered deployment, replace with RabbitMQ STOMP broker. Live sessions tracked in <code>QuizSessionController</code> → <code>LiveSessionController</code>.</span>
                 </div>
               </AnimateIn>

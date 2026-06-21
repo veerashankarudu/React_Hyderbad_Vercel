@@ -650,7 +650,7 @@ export default function McqForm({ mode }) {
               <div className="form-group" style={{ marginBottom: '0.5rem' }}>
                 <label htmlFor="questionStem">{t('form.questionStem')} *</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
-                  <button type="button" onClick={wrapCodeBlock} style={{ fontSize: '0.75rem', padding: '0.2rem 0.65rem', borderRadius: '6px', border: '1px solid rgba(161,0,255,0.4)', background: 'rgba(161,0,255,0.12)', color: '#C77DFF', cursor: 'pointer', fontWeight: 600, fontFamily: 'monospace' }}>
+                  <button type="button" onClick={wrapCodeBlock} style={{ fontSize: '0.75rem', padding: '0.2rem 0.65rem', borderRadius: '6px', border: '1px solid rgba(105,131,255,0.4)', background: 'rgba(105,131,255,0.12)', color: '#BCB5E7', cursor: 'pointer', fontWeight: 600, fontFamily: 'monospace' }}>
                     &lt;/&gt; Code Block
                   </button>
                   <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Select code text then click, or click to insert template</span>

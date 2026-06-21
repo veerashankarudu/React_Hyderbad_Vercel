@@ -269,7 +269,7 @@ def create_document():
     
     team = doc.add_paragraph()
     team.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = team.add_run("Accenture Hack-N-Stack 2026 — Team Bumble Bee")
+    run = team.add_run("Valkey Hack-N-Stack 2026 — Team Valkey")
     run.font.size = Pt(14)
     run.bold = True
     

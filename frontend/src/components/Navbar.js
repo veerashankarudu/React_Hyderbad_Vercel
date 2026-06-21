@@ -18,10 +18,8 @@ import './Navbar.css';
 const ICON_SIZE = 18;
 
 const PARADE_MEMBERS = [
-  { name: 'Veera', emoji: '🚀', color: '#C77DFF' },
+  { name: 'Veera', emoji: '🚀', color: '#BCB5E7' },
   { name: 'Teja',  emoji: '⚡', color: '#FF4DA6' },
-  { name: 'Tarun', emoji: '🌟', color: '#00C6FF' },
-  { name: 'Dilip', emoji: '💫', color: '#00FF94' },
 ];
 
 const NAV_ITEMS = [
@@ -73,13 +71,13 @@ export default function Navbar() {
   const [profilePic, setProfilePic] = useState(() => localStorage.getItem('profilePic') || null);
   const [paradeStep, setParadeStep] = useState(0);
 
-  // Story sequence: 0-3 = saucer reveals Veera/Teja/Tarun/Dilip, 4 = transformer
+  // Story sequence: 0-1 = saucer reveals Veera/Teja, 2 = transformer
   useEffect(() => {
-      const DURS = [6000, 6000, 6000, 6000, 9000];
+      const DURS = [6000, 6000, 9000];
     let t;
     const schedule = (step) => {
       t = setTimeout(() => {
-        const next = (step + 1) % 5;
+        const next = (step + 1) % 3;
         setParadeStep(next);
         schedule(next);
       }, DURS[step]);
@@ -157,11 +155,11 @@ export default function Navbar() {
     <aside className={`sidebar${collapsed ? ' sidebar-collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}`}>
       {/* Logo */}
       <button className="sb-logo" onClick={() => { navigate('/'); setMobileOpen(false); }} type="button">
-        <div className="sb-logo-icon"><Brain size={20} /></div>
+        <img src="/valkey-logo.svg" alt="Valkey" className="sb-valkey-logo" style={{ width: collapsed ? 28 : 110, height: 'auto' }} />
         {!collapsed && (
           <div className="sb-logo-text">
             <span className="sb-logo-name">QuizHub AI</span>
-            <span className="sb-logo-sub">by Bumble Bee 2026</span>
+            <span className="sb-logo-sub">by Team Valkey 2026</span>
           </div>
         )}
       </button>
@@ -267,8 +265,8 @@ export default function Navbar() {
         <span className="tbg-star tbg-s8" />
         <span className="tbg-star tbg-s9" />
         <span className="tbg-star tbg-s10" />
-        {/* SAUCER NAME REVEAL (steps 0-3): saucer flies in, beams down each member's name */}
-        {paradeStep < 4 && (
+        {/* SAUCER NAME REVEAL (steps 0-1): saucer flies in, beams down each member's name */}
+        {paradeStep < 2 && (
           <div className="tbg-parade" key={`p-${paradeStep}`}
                style={{ '--pc': PARADE_MEMBERS[paradeStep].color }}>
             <span className="tbg-sfly">🛸</span>
@@ -281,8 +279,8 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* TRANSFORMER SEQUENCE (step 4): car right→left, transforms → robot, robot launches saucer */}
-        {paradeStep === 4 && (
+        {/* TRANSFORMER SEQUENCE (step 2): car right→left, transforms → robot, robot launches saucer */}
+        {paradeStep === 2 && (
           <div className="tbg-xform" key="xform">
             <div className="tbg-css-car">
               <div className="tbg-car-cabin"><div className="tbg-car-stripe"></div></div>
@@ -306,15 +304,15 @@ export default function Navbar() {
               <div className="tbg-rl tbg-rl-r"></div>
             </div>
             <div className="tbg-bot-saucer">🛸</div>
-            <div className="tbg-bot-label">✦ BumbleBee Team ✦</div>
+            <div className="tbg-bot-label">✦ Team Valkey ✦</div>
           </div>
         )}
         <div className="tbg-center">
-          <span className="tbg-name">QuizHub <span className="tbg-ai">AI</span></span>
+          <span className="tbg-name"><img src="/valkey-logo.svg" alt="Valkey" style={{ height: 20, verticalAlign: 'middle', marginRight: 8 }} /><span style={{ opacity: 0.5, margin: '0 8px' }}>×</span>React Hyderabad</span>
           <div className="tbg-credits">
             <div className="tbg-credits-inner">
-              <span className="tbg-credits-text">✦ Made with ♥ by BumbleBee Team &nbsp;·&nbsp; <em>Veera</em> &nbsp;·&nbsp; <em>Teja</em> &nbsp;·&nbsp; <em>Tarun</em> &nbsp;·&nbsp; <em>Dilip</em> &nbsp;·&nbsp; Hack-N-Stack 2026 &nbsp;·&nbsp; </span>
-              <span className="tbg-credits-text">✦ Made with ♥ by BumbleBee Team &nbsp;·&nbsp; <em>Veera</em> &nbsp;·&nbsp; <em>Teja</em> &nbsp;·&nbsp; <em>Tarun</em> &nbsp;·&nbsp; <em>Dilip</em> &nbsp;·&nbsp; Hack-N-Stack 2026 &nbsp;·&nbsp; </span>
+              <span className="tbg-credits-text">✦ Build Beyond Limits 2.0 &nbsp;·&nbsp; <em>Veera</em> &nbsp;·&nbsp; <em>Teja</em> &nbsp;·&nbsp; June 20–21, 2026 &nbsp;·&nbsp; </span>
+              <span className="tbg-credits-text">✦ Build Beyond Limits 2.0 &nbsp;·&nbsp; <em>Veera</em> &nbsp;·&nbsp; <em>Teja</em> &nbsp;·&nbsp; June 20–21, 2026 &nbsp;·&nbsp; </span>
             </div>
           </div>
         </div>

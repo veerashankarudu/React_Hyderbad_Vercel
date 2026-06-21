@@ -185,7 +185,7 @@ export default function PendingReviews() {
         {loading ? <div className="loading">Loading reviews...</div> : null}
         {!loading && reviews.length === 0 && !selected && (
           <div className="empty-state">
-            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}><PartyPopper size={40} color="#A100FF" /></div>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}><PartyPopper size={40} color="#6983FF" /></div>
             <h3>{t('pr.allCaughtUp')}</h3>
             <p>{t('pr.noPending')}</p>
           </div>

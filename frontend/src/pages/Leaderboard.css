@@ -1,7 +1,7 @@
 .lb-page { max-width: 900px; margin: 0 auto; padding: 2rem 2.5rem; min-height: 100vh; }
 
 .lb-header {
-  background: linear-gradient(135deg, #1E1B4B 0%, #7B00C0 100%);
+  background: linear-gradient(135deg, #1E1B4B 0%, #30176E 100%);
   border-radius: 20px; padding: 2.2rem 2.5rem; margin-bottom: 2rem;
   display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
   flex-wrap: wrap;
@@ -92,7 +92,7 @@
 .badge-champion { background: linear-gradient(90deg,#FCD34D,#F59E0B); color: #78350F; }
 .badge-hot      { background: #FEE2E2; color: #DC2626; }
 .badge-star     { background: #FEF3C7; color: #92400E; }
-.badge-contrib  { background: #F3E8FF; color: #7B00C0; }
+.badge-contrib  { background: #F3E8FF; color: #30176E; }
 
 /* Search */
 .lb-search-input {
@@ -100,17 +100,17 @@
   border: 1px solid var(--border); background: var(--glass-bg);
   color: var(--text); font-size: 0.875rem; min-width: 240px; outline: none;
 }
-.lb-search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(161,0,255,0.12); }
+.lb-search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(105,131,255,0.12); }
 
 /* Table */
 .lb-table-wrap { background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); overflow: hidden; }
 .lb-table { width: 100%; border-collapse: collapse; }
-.lb-table thead tr { background: rgba(161,0,255,0.06); }
+.lb-table thead tr { background: rgba(105,131,255,0.06); }
 .lb-table th { padding: 0.85rem 1.25rem; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; text-align: left; border-bottom: 1px solid var(--border); }
 .lb-table td { padding: 0.85rem 1.25rem; border-bottom: 1px solid rgba(0,0,0,0.04); vertical-align: middle; }
 .lb-table tbody tr:last-child td { border-bottom: none; }
-.lb-table tbody tr:hover { background: rgba(161,0,255,0.04); }
-.lb-top3-row { background: linear-gradient(90deg, rgba(161,0,255,0.05), transparent) !important; }
+.lb-table tbody tr:hover { background: rgba(105,131,255,0.04); }
+.lb-top3-row { background: linear-gradient(90deg, rgba(105,131,255,0.05), transparent) !important; }
 .lb-me-row { background: linear-gradient(90deg, rgba(16,185,129,0.07), transparent) !important; outline: 1px solid rgba(16,185,129,0.25); }
 
 .lb-rank-cell { font-size: 1.1rem; width: 70px; }
@@ -211,7 +211,7 @@
 .lb-table td { padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
 .lb-table tbody tr:last-child td { border-bottom: none; }
 .lb-table tbody tr:hover { background: var(--surface-hover); }
-.lb-top3-row { background: linear-gradient(90deg, rgba(161,0,255,0.04), transparent) !important; }
+.lb-top3-row { background: linear-gradient(90deg, rgba(105,131,255,0.04), transparent) !important; }
 
 .lb-rank-cell { font-size: 1.1rem; width: 70px; }
 .lb-rank-num { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); }
@@ -262,15 +262,15 @@
 body.dark-mode .lb-table thead tr { background: rgba(255,255,255,0.04); }
 body.dark-mode .lb-table th { border-bottom-color: rgba(255,255,255,0.08); }
 body.dark-mode .lb-table td { border-bottom-color: rgba(255,255,255,0.05); }
-body.dark-mode .lb-table tbody tr:hover { background: rgba(161,0,255,0.07); }
-body.dark-mode .lb-top3-row { background: linear-gradient(90deg, rgba(161,0,255,0.12), transparent); }
+body.dark-mode .lb-table tbody tr:hover { background: rgba(105,131,255,0.07); }
+body.dark-mode .lb-top3-row { background: linear-gradient(90deg, rgba(105,131,255,0.12), transparent); }
 body.dark-mode .lb-me-row { background: linear-gradient(90deg, rgba(16,185,129,0.1), transparent); }
 body.dark-mode .lb-bar-bg { background: rgba(255,255,255,0.08); }
 body.dark-mode .lb-you-tag { background: rgba(16,185,129,0.15); color: #34d399; }
 body.dark-mode .badge-champion { background: linear-gradient(90deg, rgba(251,191,36,0.25), rgba(245,158,11,0.18)); color: #fcd34d; }
 body.dark-mode .badge-hot { background: rgba(239,68,68,0.15); color: #f87171; }
 body.dark-mode .badge-star { background: rgba(245,158,11,0.15); color: #fcd34d; }
-body.dark-mode .badge-contrib { background: rgba(161,0,255,0.15); color: #C77DFF; }
+body.dark-mode .badge-contrib { background: rgba(105,131,255,0.15); color: #BCB5E7; }
 
 /* ── Mode Tabs ─────────────────────────────────────────────────────────────── */
 .lb-mode-tabs {
@@ -294,7 +294,7 @@ body.dark-mode .badge-contrib { background: rgba(161,0,255,0.15); color: #C77DFF
   background: var(--primary-grad);
   border-color: transparent;
   color: #fff;
-  box-shadow: 0 4px 12px rgba(161,0,255,0.30);
+  box-shadow: 0 4px 12px rgba(105,131,255,0.30);
 }
 
 /* ── Assessment filters ────────────────────────────────────────────────────── */
@@ -331,7 +331,7 @@ body.dark-mode .badge-contrib { background: rgba(161,0,255,0.15); color: #C77DFF
 .lb-ass-select:focus, .lb-ass-date:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(161,0,255,0.12);
+  box-shadow: 0 0 0 3px rgba(105,131,255,0.12);
 }
 .lb-ass-apply-btn {
   padding: 0.45rem 1.1rem;
@@ -396,7 +396,7 @@ body.dark-mode .badge-contrib { background: rgba(161,0,255,0.15); color: #C77DFF
   flex: 1;
 }
 .stair-item-first .stair-bar {
-  box-shadow: 0 0 16px rgba(161,0,255,0.45);
+  box-shadow: 0 0 16px rgba(105,131,255,0.45);
 }
 .stair-info {
   display: flex;
@@ -424,8 +424,8 @@ body.dark-mode .badge-contrib { background: rgba(161,0,255,0.15); color: #C77DFF
   flex-shrink: 0;
 }
 .stair-avatar-glow {
-  border-color: #A100FF;
-  box-shadow: 0 0 10px rgba(161,0,255,0.5);
+  border-color: #6983FF;
+  box-shadow: 0 0 10px rgba(105,131,255,0.5);
 }
 .stair-medal {
   font-size: 0.82rem;
@@ -478,7 +478,7 @@ body.dark-mode .badge-contrib { background: rgba(161,0,255,0.15); color: #C77DFF
 }
 .lb-runner-card:hover {
   border-color: var(--primary);
-  box-shadow: 0 2px 10px rgba(161,0,255,0.12);
+  box-shadow: 0 2px 10px rgba(105,131,255,0.12);
 }
 .lb-runner-rank {
   font-size: 0.82rem;

@@ -155,7 +155,7 @@
 
 .status-pill.approved { background: #D1FAE5; color: #065F46; }
 .status-pill.rejected { background: #FEE2E2; color: #991B1B; }
-.status-pill.under_review { background: #F3E8FF; color: #7B00C0; }
+.status-pill.under_review { background: #F3E8FF; color: #30176E; }
 
 @media (max-width: 768px) {
   .rd-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -211,5 +211,5 @@ body:has(.rd-kpi-row) .page-header p  { color: #8b949e !important; }
 .status-pill { font-weight: 700 !important; }
 .status-pill.approved   { background: rgba(16,185,129,0.15) !important; color: #34d399 !important; }
 .status-pill.rejected   { background: rgba(239,68,68,0.12)  !important; color: #f87171 !important; }
-.status-pill.under_review { background: rgba(161,0,255,0.15) !important; color: #C77DFF !important; }
+.status-pill.under_review { background: rgba(105,131,255,0.15) !important; color: #BCB5E7 !important; }
 .status-pill.draft      { background: rgba(107,114,128,0.15) !important; color: #9ca3af !important; }

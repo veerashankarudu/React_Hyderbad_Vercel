@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.accenture.quizhub</groupId>
+    <groupId>com.valkey.quizhub</groupId>
     <artifactId>quizhub-mcp-server</artifactId>
     <version>1.0.0</version>
     <name>QuizHub MCP Server</name>

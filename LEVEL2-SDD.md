@@ -2,7 +2,7 @@
 
 > Derived from: `Level2_ProblemStatement (1) (1).pptx`  
 > Project: Hack-N-Stack 2026 — Smart Quiz AI Hub  
-> Date: May 27, 2026
+> Date: June 20, 2026
 
 ---
 

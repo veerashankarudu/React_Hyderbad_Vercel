@@ -24,7 +24,7 @@ SLIDES = [
     ("00-login-page.png",
      "Role-Based Login",
      ["JWT-secured authentication", "SME & Admin roles", "Quick-access demo credentials", "Password reset via email OTP"],
-     "Welcome to QuizHub AI — an intelligent MCQ management platform built for Accenture's Hack-N-Stack 2026. This platform enables Subject Matter Experts to create, review, and manage technical interview questions powered by AI. We log in as an SME. The platform supports role-based access with SME and Admin roles, secured with JWT authentication."),
+     "Welcome to QuizHub AI — an intelligent MCQ management platform built for Valkey's Hack-N-Stack 2026. This platform enables Subject Matter Experts to create, review, and manage technical interview questions powered by AI. We log in as an SME. The platform supports role-based access with SME and Admin roles, secured with JWT authentication."),
 
     # Scene 2: Dashboard
     ("01-dashboard.png",
@@ -158,7 +158,7 @@ def add_title_slide(prs):
     bg = slide.background
     fill = bg.fill
     fill.solid()
-    fill.fore_color.rgb = RGBColor(0x7B, 0x2D, 0x8B)  # Accenture purple
+    fill.fore_color.rgb = RGBColor(0x7B, 0x2D, 0x8B)  # Valkey purple
 
     # Title
     txBox = slide.shapes.add_textbox(Inches(1), Inches(2), Inches(11), Inches(2))
@@ -182,7 +182,7 @@ def add_title_slide(prs):
     p3 = tf.add_paragraph()
     p3.text = ""
     p4 = tf.add_paragraph()
-    p4.text = "Accenture Hack-N-Stack 2026"
+    p4.text = "Valkey Hack-N-Stack 2026"
     p4.font.size = Pt(20)
     p4.font.color.rgb = RGBColor(200, 200, 255)
     p4.alignment = PP_ALIGN.CENTER
@@ -206,7 +206,7 @@ def add_title_slide(prs):
     notes_slide = slide.notes_slide
     notes_slide.notes_text_frame.text = (
         "Welcome to the QuizHub AI demo. This is an intelligent MCQ management platform "
-        "built for Accenture's Hack-N-Stack 2026. The platform is built with Spring Boot 3.2, "
+        "built for Valkey's Hack-N-Stack 2026. The platform is built with Spring Boot 3.2, "
         "React 19, Spring AI with LLM integration, MySQL 8, and WebSocket for real-time features. "
         "It has 2,029 automated tests with 92.5% backend coverage and 80% frontend coverage."
     )

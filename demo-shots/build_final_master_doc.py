@@ -115,7 +115,7 @@ def create_document():
     doc.add_paragraph()
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = p.add_run("Hack-N-Stack: Code the Future 2026\nTeam Bumble Bee — Accenture ATCI")
+    run = p.add_run("Hack-N-Stack: Code the Future 2026\nTeam Valkey — Valkey ATCI")
     run.font.size = Pt(14)
     run.bold = True
     doc.add_paragraph()
@@ -138,7 +138,7 @@ def create_document():
 
     doc.add_heading("1.1 Problem Statement", level=2)
     p = doc.add_paragraph()
-    p.add_run("Accenture ATCI's L&TT team uses third-party tools (Google Forms, Kahoot) → no control, no workflow, no analytics. Solution: Build internal Smart Quiz AI Hub with MCQ lifecycle, roles, bulk upload, AI.").font.size = Pt(10)
+    p.add_run("Valkey ATCI's L&TT team uses third-party tools (Google Forms, Kahoot) → no control, no workflow, no analytics. Solution: Build internal Smart Quiz AI Hub with MCQ lifecycle, roles, bulk upload, AI.").font.size = Pt(10)
 
     doc.add_heading("1.2 Level 1 — Core Requirements (ALL DONE ✅)", level=2)
     l1_table = doc.add_table(rows=10, cols=3)

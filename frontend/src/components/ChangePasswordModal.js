@@ -48,7 +48,7 @@ export default function ChangePasswordModal({ onClose }) {
             <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
               {t('cp.passwordChangedMsg')}
             </p>
-            <button type="button" onClick={onClose} style={{ background: 'var(--primary, #A100FF)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, cursor: 'pointer' }}>
+            <button type="button" onClick={onClose} style={{ background: 'var(--primary, #6983FF)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, cursor: 'pointer' }}>
               {t('common.close')}
             </button>
           </div>
@@ -115,7 +115,7 @@ export default function ChangePasswordModal({ onClose }) {
                 <button type="button" onClick={onClose} disabled={loading} style={{ background: 'transparent', border: '1.5px solid #D1D5DB', borderRadius: '8px', padding: '0.5rem 1.25rem', fontWeight: 600, cursor: 'pointer', color: 'var(--text-muted)' }}>
                   {t('common.cancel')}
                 </button>
-                <button type="submit" disabled={loading} style={{ background: 'var(--primary, #A100FF)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1.25rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
+                <button type="submit" disabled={loading} style={{ background: 'var(--primary, #6983FF)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 1.25rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
                   {loading ? t('common.saving') : t('cp.updatePassword')}
                 </button>
               </div>

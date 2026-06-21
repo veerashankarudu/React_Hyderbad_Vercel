@@ -267,7 +267,7 @@ r2.font.color.rgb = RGBColor(100, 100, 130)
 
 p3 = doc.add_paragraph()
 p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-r3 = p3.add_run("Accenture Hack-N-Stack 2026  |  May 2026")
+r3 = p3.add_run("Valkey Hack-N-Stack 2026  |  June 2026")
 r3.font.size = Pt(11)
 r3.font.color.rgb = RGBColor(150, 150, 160)
 

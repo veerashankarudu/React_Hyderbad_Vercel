@@ -40,7 +40,7 @@ function initials(name) {
 }
 
 // Deterministic avatar colour from name string
-const AVATAR_COLORS = ['#A100FF','#2563EB','#059669','#D97706','#DC2626','#0891B2','#A100FF','#DB2777'];
+const AVATAR_COLORS = ['#6983FF','#2563EB','#059669','#D97706','#DC2626','#0891B2','#6983FF','#DB2777'];
 function avatarColor(name) {
   if (!name) return '#6B7280';
   let h = 0;

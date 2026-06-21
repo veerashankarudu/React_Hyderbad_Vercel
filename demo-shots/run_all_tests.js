@@ -187,7 +187,7 @@ async function login(enterpriseId, password) {
     const regResp = await apiCall('POST', '/api/v1/auth/register', {
         enterpriseId: testUserId,
         fullName: 'Test Feature User',
-        email: `${testUserId}@accenture.com`,
+        email: `${testUserId}@valkey.com`,
         password: 'Test@1234',
         techStacks: ['Spring Boot']
     });
@@ -201,7 +201,7 @@ async function login(enterpriseId, password) {
     const dupResp = await apiCall('POST', '/api/v1/auth/register', {
         enterpriseId: 'divya.madhanasekar',
         fullName: 'Dup User',
-        email: 'dup@accenture.com',
+        email: 'dup@valkey.com',
         password: 'Test@1234',
         techStacks: ['Spring Boot']
     });
@@ -211,7 +211,7 @@ async function login(enterpriseId, password) {
     const weakPwdResp = await apiCall('POST', '/api/v1/auth/register', {
         enterpriseId: 'weak.test.user',
         fullName: 'Weak Pwd',
-        email: 'weak@accenture.com',
+        email: 'weak@valkey.com',
         password: '123',
         techStacks: ['Spring Boot']
     });

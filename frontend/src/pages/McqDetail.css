@@ -17,7 +17,7 @@
 .meta-item { background: var(--surface, #FAFAFA); border-radius: 10px; padding: 0.75rem 1rem; }
 .meta-item label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.3rem; }
 .meta-item span { font-size: 0.875rem; font-weight: 600; color: var(--text); }
-.ai-generated-badge { display: inline-block; margin-left: 0.5rem; font-size: 0.7rem; font-weight: 600; background: linear-gradient(135deg, #A100FF 0%, #3B82F6 100%); color: #fff; padding: 0.15rem 0.5rem; border-radius: 20px; vertical-align: middle; }
+.ai-generated-badge { display: inline-block; margin-left: 0.5rem; font-size: 0.7rem; font-weight: 600; background: linear-gradient(135deg, #6983FF 0%, #3B82F6 100%); color: #fff; padding: 0.15rem 0.5rem; border-radius: 20px; vertical-align: middle; }
 .comments-section h4 { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 0.75rem; margin-top: 1.5rem; }
 .comment-item { background: var(--primary-light); border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; border-left: 3px solid var(--primary); }
 .comment-author { font-size: 0.75rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 0.25rem; }
@@ -25,7 +25,7 @@
 
 /* ── Dark mode ── */
 body.dark-mode .detail-header-meta { color: rgba(255,255,255,0.55); }
-body.dark-mode .option-row { border-color: rgba(161,0,255,0.22); background: rgba(161,0,255,0.07); }
+body.dark-mode .option-row { border-color: rgba(105,131,255,0.22); background: rgba(105,131,255,0.07); }
 body.dark-mode .option-row:hover { filter: brightness(1.2); }
 body.dark-mode .option-text { color: #ffffff; font-weight: 500; }
 body.dark-mode .correct-badge { background: rgba(16,185,129,0.2); color: #34d399; }
@@ -70,8 +70,8 @@ body.dark-mode .option-row.correct .option-key { background: #10b981 !important;
 body.dark-mode .meta-item label { color: #6b7280; }
 body.dark-mode .meta-item span { color: #e2e8f0; }
 body.dark-mode .detail-meta-grid { border-top-color: rgba(255,255,255,0.07); }
-body.dark-mode .comment-item { background: rgba(161,0,255,0.1); border-left-color: #A100FF; }
-body.dark-mode .comment-author { color: #C77DFF; }
+body.dark-mode .comment-item { background: rgba(105,131,255,0.1); border-left-color: #6983FF; }
+body.dark-mode .comment-author { color: #BCB5E7; }
 body.dark-mode .comment-text { color: #cbd5e1; }
 
 /* ─── MOBILE ──────────────────────────────────────────── */

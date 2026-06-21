@@ -16,7 +16,7 @@ const TYPE_FILTERS = [
 ];
 
 const TYPE_META = {
-  ASSIGNED:  { icon: <ClipboardCheck size={16} />, labelKey: 'nb2.typeAssigned',  color: '#A100FF' },
+  ASSIGNED:  { icon: <ClipboardCheck size={16} />, labelKey: 'nb2.typeAssigned',  color: '#6983FF' },
   APPROVED:  { icon: <CheckCircle2 size={16} />, labelKey: 'nb2.typeApproved',   color: '#059669' },
   REJECTED:  { icon: <XCircle size={16} />, labelKey: 'nb2.typeRejected',   color: '#DC2626' },
   SUBMITTED: { icon: <Send size={16} />, labelKey: 'nb2.typeSubmitted',  color: '#0284C7' },
@@ -50,7 +50,7 @@ function groupByDate(notifications) {
 }
 
 function ActorAvatar({ initials, name, type }) {
-  const color = TYPE_META[type]?.color || '#A100FF';
+  const color = TYPE_META[type]?.color || '#6983FF';
   return (
     <span
       className="notif-avatar"

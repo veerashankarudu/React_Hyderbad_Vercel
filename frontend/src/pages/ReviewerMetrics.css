@@ -33,7 +33,7 @@ body.dark-mode .rm-page table th {
 body.dark-mode .rm-page .rm-row { border-top-color: rgba(255,255,255,0.06) !important; }
 body.dark-mode .rm-page .rm-row:nth-child(odd) { background: rgba(255,255,255,0.02) !important; }
 body.dark-mode .rm-page .rm-row:nth-child(even) { background: rgba(255,255,255,0.04) !important; }
-body.dark-mode .rm-page .rm-row:hover { background: rgba(161,0,255,0.08) !important; }
+body.dark-mode .rm-page .rm-row:hover { background: rgba(105,131,255,0.08) !important; }
 body.dark-mode .rm-page table td { color: #c9d1d9 !important; }
 
 /* Muted text */
@@ -64,7 +64,7 @@ body.dark-mode .rm-page .rm-sla-thead-row {
 body.dark-mode .rm-page .rm-sla-row { border-top-color: rgba(255,255,255,0.06) !important; }
 body.dark-mode .rm-page .rm-sla-row:nth-child(odd) { background: rgba(255,255,255,0.02) !important; }
 body.dark-mode .rm-page .rm-sla-row:nth-child(even) { background: rgba(239,68,68,0.04) !important; }
-body.dark-mode .rm-page .rm-sla-row:hover { background: rgba(161,0,255,0.08) !important; }
+body.dark-mode .rm-page .rm-sla-row:hover { background: rgba(105,131,255,0.08) !important; }
 
 /* SLA cell colors */
 .rm-sla-id { color: #991b1b; }
@@ -96,7 +96,7 @@ body.dark-mode .rm-page .error-msg { background: rgba(239,68,68,0.1); color: #f8
 body.dark-mode .rm-page .pagination button {
   background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: #94a3b8;
 }
-.rm-page .pagination button:hover { border-color: #A100FF; color: #C77DFF; }
-.rm-page .pagination button.active { background: #A100FF; color: white; border-color: #A100FF; font-weight: 600; }
+.rm-page .pagination button:hover { border-color: #6983FF; color: #BCB5E7; }
+.rm-page .pagination button.active { background: #6983FF; color: white; border-color: #6983FF; font-weight: 600; }
 .rm-page .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 .rm-page .pagination span { font-size: 0.85rem; color: var(--text-muted); }

@@ -442,7 +442,7 @@ def create_word_document(screenshots_taken):
     
     subtitle = doc.add_paragraph()
     subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = subtitle.add_run("Accenture Hack-N-Stack 2026 | Team Bumble Bee")
+    run = subtitle.add_run("Valkey Hack-N-Stack 2026 | Team Valkey")
     run.font.size = Pt(16)
     run.font.color.rgb = RGBColor(0x66, 0x33, 0x99)
     

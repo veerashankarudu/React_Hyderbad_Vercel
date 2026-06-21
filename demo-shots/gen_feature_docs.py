@@ -114,7 +114,7 @@ def build_doc(features, output_path, doc_num):
     doc.add_paragraph()
     cp3 = doc.add_paragraph()
     cp3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r3 = cp3.add_run("Accenture Hack-N-Stack 2026  ·  Team BumbleBee")
+    r3 = cp3.add_run("Valkey Hack-N-Stack 2026  ·  Team Valkey")
     r3.font.size = Pt(11);  r3.font.color.rgb = RGBColor(0x88, 0x88, 0x88)
 
     doc.add_page_break()
@@ -650,10 +650,10 @@ FEATURES = [
 
     # ── LATEST UI/UX ENHANCEMENTS ─────────────────────────────────────────────
     (422, "Transformers Topbar",  "Transformers-inspired animated topbar strip — cinematic story cycling every ~33s", "05_admin_dashboard_desktop.png", 0.50, 0.03),
-    (423, "Bumblebee Car Anim",   "Bumblebee Camaro CSS animation drives full topbar width with spinning wheels", "05_admin_dashboard_desktop.png", 0.35, 0.03),
+    (423, "Valkey Car Anim",   "Valkey Camaro CSS animation drives full topbar width with spinning wheels", "05_admin_dashboard_desktop.png", 0.35, 0.03),
     (424, "Explosion Burst FX",   "Explosion burst with 6 sparkle emoji particles when car reaches end", "05_admin_dashboard_desktop.png", 0.60, 0.03),
     (425, "CSS Robot Rise",       "CSS robot materialises from explosion with arm-throw animation", "05_admin_dashboard_desktop.png", 0.65, 0.03),
-    (426, "Saucer Launch",        "Saucer launch trailing '✦ BumbleBee Team ✦' label across screen", "05_admin_dashboard_desktop.png", 0.70, 0.03),
+    (426, "Saucer Launch",        "Saucer launch trailing '✦ Team Valkey ✦' label across screen", "05_admin_dashboard_desktop.png", 0.70, 0.03),
     (427, "Floating Orbs + Stars","Floating orbs + twinkling stars as live animated background accents", "05_admin_dashboard_desktop.png", 0.80, 0.03),
     (428, "Drag Reorder Widgets", "Drag-to-reorder dashboard widgets — order persisted in localStorage", "05_admin_dashboard_desktop.png", 0.17, 0.27),
     (429, "Sound Effects Toggle", "Sound effects system — useSoundEffects hook; toggle on/off + volume slider", "05_admin_dashboard_desktop.png", 0.72, 0.03),

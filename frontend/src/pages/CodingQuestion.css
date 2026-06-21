@@ -178,8 +178,8 @@ body.dark-mode .test-case-row input[type="text"] {
 }
 
 .coding-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.ai-btn { background: linear-gradient(135deg, #A100FF, #7B00C0); color: #fff; }
-.ai-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(161,0,255,0.3); }
+.ai-btn { background: linear-gradient(135deg, #6983FF, #30176E); color: #fff; }
+.ai-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(105,131,255,0.3); }
 .run-btn { background: linear-gradient(135deg, #059669, #047857); color: #fff; }
 .run-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(5,150,105,0.3); }
 .save-btn { background: linear-gradient(135deg, #3B82F6, #2563EB); color: #fff; }

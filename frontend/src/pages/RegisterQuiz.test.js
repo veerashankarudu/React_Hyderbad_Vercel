@@ -42,13 +42,13 @@ const TECH_STACKS = [
 ];
 
 const QUIZ_SESSIONS = [
-  { id: 10, title: 'Java Basics', questionCount: 10, token: 'tok-abc', expiresAt: null, createdAt: '2026-01-01T10:00:00Z' },
-  { id: 11, title: 'React Quiz',  questionCount: 5,  token: 'tok-def', expiresAt: null, createdAt: '2026-01-02T10:00:00Z' },
+  { id: 10, title: 'Java Basics', questionCount: 10, token: 'tok-abc', expiresAt: null, createdAt: '2026-06-20T10:00:00Z' },
+  { id: 11, title: 'React Quiz',  questionCount: 5,  token: 'tok-def', expiresAt: null, createdAt: '2026-06-20T10:00:00Z' },
 ];
 
 const ATTEMPTS = [
-  { id: 1, candidateName: 'Alice', candidateEmail: 'alice@example.com', score: 8, total: 10, percent: 80, timeTakenSeconds: 180, status: 'COMPLETED', violationCount: 0, submittedAt: '2026-03-01T12:00:00Z' },
-  { id: 2, candidateName: 'Bob',   candidateEmail: 'bob@example.com',   score: 4, total: 10, percent: 40, timeTakenSeconds: 600, status: 'TERMINATED', violationCount: 2, submittedAt: '2026-03-02T13:00:00Z' },
+  { id: 1, candidateName: 'Alice', candidateEmail: 'alice@example.com', score: 8, total: 10, percent: 80, timeTakenSeconds: 180, status: 'COMPLETED', violationCount: 0, submittedAt: '2026-06-20T12:00:00Z' },
+  { id: 2, candidateName: 'Bob',   candidateEmail: 'bob@example.com',   score: 4, total: 10, percent: 40, timeTakenSeconds: 600, status: 'TERMINATED', violationCount: 2, submittedAt: '2026-06-20T13:00:00Z' },
 ];
 
 const LEADERBOARD_DATA = [
